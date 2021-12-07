@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <PackageProjectUrl>https://github.com/aaasoft/Quick.Protocol</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/aaasoft/Quick.Protocol</RepositoryUrl>
+    <Copyright />
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>scbeta</Authors>
+    <Version>2.0.11</Version>
+    <Company />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NJsonSchema" Version="10.5.2" />
+  </ItemGroup>
+
+</Project>

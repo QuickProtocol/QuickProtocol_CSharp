@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RollForward>Major</RollForward>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Product>QP测试客户端</Product>
+    <AssemblyTitle>QP测试客户端</AssemblyTitle>
+    <Authors>aaasoft</Authors>
+    <Version>2.0.11</Version>
+    <ApplicationIcon>Images\Globe.ico</ApplicationIcon>
+    <Description>用于测试连接到Quick.Protocol服务端的客户端。
+
+项目地址：https://github.com/aaasoft/Quick.Protocol</Description>
+    <Copyright>Apache License</Copyright>
+    <RepositoryUrl>https://github.com/aaasoft/Quick.Protocol</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/aaasoft/Quick.Protocol</PackageProjectUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Quick.Protocol.Pipeline\Quick.Protocol.Pipeline.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.SerialPort\Quick.Protocol.SerialPort.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.Tcp\Quick.Protocol.Tcp.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.WebSocket.Client\Quick.Protocol.WebSocket.Client.csproj" />
+    <ProjectReference Include="..\Quick.Protocol\Quick.Protocol.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Quick.Xml" Version="1.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+  </ItemGroup>
+
+</Project>
