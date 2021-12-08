@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/aaasoft/Quick.Protocol</PackageProjectUrl>
     <RepositoryUrl>https://github.com/aaasoft/Quick.Protocol</RepositoryUrl>
@@ -17,7 +17,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="System.IO.Ports">
-      <Version>5.0.1</Version>
+      <Version>6.0.0</Version>
     </PackageReference>
   </ItemGroup>
 

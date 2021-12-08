@@ -44,11 +44,16 @@ namespace Quick.Protocol
         private QpChannelOptions options;
         private DateTime lastSendPackageTime = DateTime.MinValue;
 
-        private DES des = DES.Create();
         private byte[] passwordMd5Buffer;
         private ICryptoTransform enc;
         private ICryptoTransform dec;
         private Encoding encoding = Encoding.UTF8;
+
+        private Dictionary<string, Type> commandRequestTypeDict = new Dictionary<string, Type>();
+        private Dictionary<string, Type> commandResponseTypeDict = new Dictionary<string, Type>();
+        private Dictionary<Type, Type> commandRequestTypeResponseTypeDict = new Dictionary<Type, Type>();
+
+        private ConcurrentDictionary<string, CommandContext> commandDict = new ConcurrentDictionary<string, CommandContext>();
 
         /// <summary>
         /// 当时是否连接
@@ -99,6 +104,10 @@ namespace Quick.Protocol
             this.options = options;
             ChangeBufferSize(BufferSize);
             passwordMd5Buffer = CryptographyUtils.ComputeMD5Hash(Encoding.UTF8.GetBytes(options.Password)).Take(8).ToArray();
+            
+            DES des = DES.Create();
+            des.Mode = CipherMode.ECB;
+            des.Padding = PaddingMode.PKCS7;
             enc = des.CreateEncryptor(passwordMd5Buffer, passwordMd5Buffer);
             dec = des.CreateDecryptor(passwordMd5Buffer, passwordMd5Buffer);
 
@@ -112,10 +121,6 @@ namespace Quick.Protocol
                         noticeTypeDict[item.NoticeTypeName] = item.GetNoticeType();
                     }
                 }
-            }
-
-            foreach (var instructionSet in options.InstructionSet)
-            {
                 //添加命令数据包信息
                 if (instructionSet.CommandInfos != null && instructionSet.CommandInfos.Length > 0)
                 {
@@ -815,12 +820,6 @@ namespace Quick.Protocol
                 });
             }
         }
-
-        private Dictionary<string, Type> commandRequestTypeDict = new Dictionary<string, Type>();
-        private Dictionary<string, Type> commandResponseTypeDict = new Dictionary<string, Type>();
-        private Dictionary<Type, Type> commandRequestTypeResponseTypeDict = new Dictionary<Type, Type>();
-
-        private ConcurrentDictionary<string, CommandContext> commandDict = new ConcurrentDictionary<string, CommandContext>();
 
         /// <summary>
         /// 原始收到命令请求数据包事件
