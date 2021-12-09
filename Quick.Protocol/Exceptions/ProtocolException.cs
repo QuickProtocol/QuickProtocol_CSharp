@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Quick.Protocol
+namespace Quick.Protocol.Exceptions
 {
     public class ProtocolException : Exception
     {

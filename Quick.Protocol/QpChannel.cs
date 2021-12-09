@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Quick.Protocol.Exceptions;
 using Quick.Protocol.Utils;
 using System;
 using System.Collections.Concurrent;
@@ -66,6 +67,31 @@ namespace Quick.Protocol
         public Exception LastException { get; private set; }
 
         /// <summary>
+        /// 收到心跳数据包事件
+        /// </summary>
+        public event EventHandler HeartbeatPackageReceived;
+        /// <summary>
+        /// 原始收到通知数据包事件
+        /// </summary>
+        public event EventHandler<RawNoticePackageReceivedEventArgs> RawNoticePackageReceived;
+        /// <summary>
+        /// 收到通知数据包事件
+        /// </summary>
+        public event EventHandler<NoticePackageReceivedEventArgs> NoticePackageReceived;
+        /// <summary>
+        /// 原始收到命令请求数据包事件
+        /// </summary>
+        public event EventHandler<RawCommandRequestPackageReceivedEventArgs> RawCommandRequestPackageReceived;
+        /// <summary>
+        /// 收到命令请求数据包事件
+        /// </summary>
+        public event EventHandler<CommandRequestPackageReceivedEventArgs> CommandRequestPackageReceived;
+        /// <summary>
+        /// 收到命令响应数据包事件
+        /// </summary>
+        public event EventHandler<CommandResponsePackageReceivedEventArgs> CommandResponsePackageReceived;
+
+        /// <summary>
         /// 缓存大小，初始大小为1KB
         /// </summary>
         protected int BufferSize { get; set; } = 1 * 1024;
@@ -104,7 +130,7 @@ namespace Quick.Protocol
             this.options = options;
             ChangeBufferSize(BufferSize);
             passwordMd5Buffer = CryptographyUtils.ComputeMD5Hash(Encoding.UTF8.GetBytes(options.Password)).Take(8).ToArray();
-            
+
             DES des = DES.Create();
             des.Mode = CipherMode.ECB;
             des.Padding = PaddingMode.PKCS7;
@@ -145,7 +171,7 @@ namespace Quick.Protocol
 
             options.InternalCompress = false;
             options.InternalEncrypt = false;
-            ChangeTransportTimeout();            
+            ChangeTransportTimeout();
         }
 
         /// <summary>
@@ -156,267 +182,6 @@ namespace Quick.Protocol
             LastException = exception;
             LogUtils.Log("[ReadError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
             InitQpPackageHandler_Stream(null);
-        }
-
-        private void writePackageTotalLengthToBuffer(byte[] buffer, int offset, int packageTotalLength)
-        {
-            //构造包头
-            var ret = BitConverter.GetBytes(packageTotalLength);
-            //如果是小端字节序，则交换
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(ret);
-            Array.Copy(ret, 0, buffer, offset, sizeof(int));
-        }
-
-        private void sendPackage(Func<byte[], Tuple<int, byte[]>> getPackagePayloadFunc, Action afterSendHandler = null)
-        {
-            var stream = QpPackageHandler_Stream;
-            if (stream == null)
-                return;
-
-            lock (this)
-            {
-                var ret = getPackagePayloadFunc(sendBuffer);
-                var packageTotalLength = ret.Item1;
-                if (packageTotalLength < PACKAGE_HEAD_LENGTH)
-                    throw new IOException($"包大小[{packageTotalLength}]小于包头长度[{PACKAGE_HEAD_LENGTH}]");
-
-                byte[] packageBuffer = ret.Item2;
-
-                //构造包头
-                writePackageTotalLengthToBuffer(packageBuffer, 0, packageTotalLength);
-                try
-                {
-                    //如果包缓存是发送缓存
-                    if (packageBuffer == sendBuffer)
-                    {
-                        sendPackageBuffer(stream,
-                            new ArraySegment<byte>(packageBuffer, 0, packageTotalLength),
-                            afterSendHandler
-                            );
-                    }
-                    //否则，拆分为多个包发送
-                    else
-                    {
-                        if (LogUtils.LogSplit)
-                            LogUtils.Log("{0}: [Send-SplitPackage]Length:{1}", DateTime.Now, packageTotalLength);
-
-                        //每个包内容的最大长度为对方缓存大小减包头大小
-                        var maxTakeLength = BufferSize - PACKAGE_HEAD_LENGTH;
-                        var currentIndex = 0;
-                        while (currentIndex < packageTotalLength)
-                        {
-                            var restLength = packageTotalLength - currentIndex;
-                            int takeLength = 0;
-                            if (restLength >= maxTakeLength)
-                                takeLength = maxTakeLength;
-                            else
-                                takeLength = restLength;
-                            //构造包头
-                            writePackageTotalLengthToBuffer(sendBuffer, 0, PACKAGE_HEAD_LENGTH + takeLength);
-                            sendBuffer[4] = (byte)QpPackageType.Split;
-                            //复制包体
-                            Array.Copy(packageBuffer, currentIndex, sendBuffer, PACKAGE_HEAD_LENGTH, takeLength);
-                            //发送
-                            sendPackageBuffer(
-                                stream,
-                                new ArraySegment<byte>(sendBuffer, 0, PACKAGE_HEAD_LENGTH + takeLength),
-                                afterSendHandler);
-                            currentIndex += takeLength;
-                        }
-                    }
-                    lastSendPackageTime = DateTime.Now;
-                }
-                catch (Exception ex)
-                {
-                    LastException = ex;
-                    LogUtils.Log("[SendPackage]" + ExceptionUtils.GetExceptionString(ex));
-                    throw ex;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 发送心跳包
-        /// </summary>
-        public void SendHeartbeatPackage()
-        {
-            sendPackage(buffer =>
-            {
-                HEARTBEAT_PACKAGHE.CopyTo(buffer, 0);
-                return new Tuple<int, byte[]>(HEARTBEAT_PACKAGHE.Length, buffer);
-            });
-        }
-
-        public void SendNoticePackage(string noticePackageTypeName, string noticePackageContent)
-        {
-            sendPackage(buffer =>
-            {
-                //设置包类型
-                buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.Notice;
-                var typeName = noticePackageTypeName;
-                var content = noticePackageContent;
-
-                var typeNameByteLengthOffset = PACKAGE_HEAD_LENGTH;
-                //写入类名
-                var typeNameByteOffset = typeNameByteLengthOffset + 1;
-                var typeNameByteLength = encoding.GetEncoder().GetBytes(typeName.ToCharArray(), 0, typeName.Length, buffer, typeNameByteOffset, true);
-                //写入类名长度
-                buffer[typeNameByteLengthOffset] = Convert.ToByte(typeNameByteLength);
-
-                var contentOffset = typeNameByteOffset + typeNameByteLength;
-                var contentLength = encoding.GetByteCount(content);
-
-                var retBuffer = buffer;
-                //如果内容超出了缓存可用空间的大小
-                if (contentLength > buffer.Length - contentOffset)
-                {
-                    retBuffer = new byte[contentOffset + contentLength];
-                    Array.Copy(buffer, retBuffer, contentOffset);
-                    encoding.GetEncoder().GetBytes(content.ToCharArray(), 0, content.Length, retBuffer, contentOffset, true);
-                }
-                else
-                {
-                    contentLength = encoding.GetEncoder().GetBytes(content.ToCharArray(), 0, content.Length, buffer, contentOffset, true);
-                }
-                //包总长度
-                var packageTotalLength = contentOffset + contentLength;
-
-                if (LogUtils.LogNotice)
-                    LogUtils.Log("{0}: [Send-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-
-                return new Tuple<int, byte[]>(packageTotalLength, retBuffer);
-            });
-        }
-
-        /// <summary>
-        /// 发送通知包
-        /// </summary>
-        public void SendNoticePackage(object package)
-        {
-            SendNoticePackage(package.GetType().FullName, JsonConvert.SerializeObject(package));
-        }
-
-        /// <summary>
-        /// 发送命令请求包
-        /// </summary>
-        public void SendCommandRequestPackage(string commandId, string typeName, string content, Action afterSendHandler = null)
-        {
-            sendPackage(buffer =>
-            {
-                //设置包类型
-                buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.CommandRequest;
-                //写入指令编号
-                var commandIdBufferOffset = PACKAGE_HEAD_LENGTH;
-                var commandIdBuffer = Guid.Parse(commandId).ToByteArray();
-                Array.Copy(commandIdBuffer, 0, buffer, commandIdBufferOffset, commandIdBuffer.Length);
-
-                var typeNameByteLengthOffset = commandIdBufferOffset + 16;
-                //写入类名
-                var typeNameByteOffset = typeNameByteLengthOffset + 1;
-                var typeNameByteLength = encoding.GetEncoder().GetBytes(typeName.ToCharArray(), 0, typeName.Length, buffer, typeNameByteOffset, true);
-                //写入类名长度
-                buffer[typeNameByteLengthOffset] = Convert.ToByte(typeNameByteLength);
-
-                var contentOffset = typeNameByteOffset + typeNameByteLength;
-                var contentLength = encoding.GetByteCount(content);
-                //如果内容超出了缓存可用空间的大小
-                var retBuffer = buffer;
-                if (contentLength > buffer.Length - contentOffset)
-                {
-                    retBuffer = new byte[contentOffset + contentLength];
-                    Array.Copy(buffer, retBuffer, contentOffset);
-                    encoding.GetEncoder().GetBytes(content.ToCharArray(), 0, content.Length, retBuffer, contentOffset, true);
-                }
-                else
-                {
-                    contentLength = encoding.GetEncoder().GetBytes(content.ToCharArray(), 0, content.Length, buffer, contentOffset, true);
-                }
-                //包总长度
-                var packageTotalLength = contentOffset + contentLength;
-
-                if (LogUtils.LogCommand)
-                    LogUtils.Log("{0}: [Send-CommandRequestPackage]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandId, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-
-                return new Tuple<int, byte[]>(packageTotalLength, retBuffer);
-            }, afterSendHandler);
-        }
-
-        /// <summary>
-        /// 发送命令响应包
-        /// </summary>
-        public void SendCommandResponsePackage(string commandId, byte code, string message, string typeName, string content)
-        {
-            sendPackage(buffer =>
-            {
-                //设置包类型
-                buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.CommandResponse;
-                //写入指令编号
-                var commandIdBufferOffset = PACKAGE_HEAD_LENGTH;
-                var commandIdBuffer = Guid.Parse(commandId).ToByteArray();
-                Array.Copy(commandIdBuffer, 0, buffer, commandIdBufferOffset, commandIdBuffer.Length);
-                //写入返回码
-                var codeByteOffset = commandIdBufferOffset + commandIdBuffer.Length;
-                buffer[codeByteOffset] = code;
-
-                //如果是成功
-                if (code == 0)
-                {
-                    var typeNameByteLengthOffset = codeByteOffset + 1;
-                    //写入类名
-                    var typeNameByteOffset = typeNameByteLengthOffset + 1;
-                    var typeNameByteLength = encoding.GetEncoder().GetBytes(typeName.ToCharArray(), 0, typeName.Length, buffer, typeNameByteOffset, true);
-                    //写入类名长度
-                    buffer[typeNameByteLengthOffset] = Convert.ToByte(typeNameByteLength);
-
-                    var contentOffset = typeNameByteOffset + typeNameByteLength;
-                    var contentLength = encoding.GetByteCount(content);
-                    //如果内容超出了缓存可用空间的大小
-                    var retBuffer = buffer;
-                    if (contentLength > buffer.Length - contentOffset)
-                    {
-                        retBuffer = new byte[contentOffset + contentLength];
-                        Array.Copy(buffer, retBuffer, contentOffset);
-                        encoding.GetEncoder().GetBytes(content.ToCharArray(), 0, content.Length, retBuffer, contentOffset, true);
-                    }
-                    else
-                    {
-                        contentLength = encoding.GetEncoder().GetBytes(content.ToCharArray(), 0, content.Length, buffer, contentOffset, true);
-                    }
-                    //包总长度
-                    var packageTotalLength = contentOffset + contentLength;
-
-                    if (LogUtils.LogCommand)
-                        LogUtils.Log("{0}: [Send-CommandResponsePackage]CommandId:{1},Code:{2},Type:{3},Content:{4}", DateTime.Now, commandId, code, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-
-                    return new Tuple<int, byte[]>(packageTotalLength, retBuffer);
-                }
-                //如果是失败
-                else
-                {
-                    var messageOffset = codeByteOffset + 1;
-                    var messageLength = encoding.GetByteCount(message);
-                    //如果内容超出了缓存可用空间的大小
-                    var retBuffer = buffer;
-                    if (messageLength > buffer.Length - messageOffset)
-                    {
-                        retBuffer = new byte[messageOffset + messageLength];
-                        Array.Copy(buffer, retBuffer, messageOffset);
-                        encoding.GetEncoder().GetBytes(message.ToCharArray(), 0, message.Length, retBuffer, messageOffset, true);
-                    }
-                    else
-                    {
-                        messageLength = encoding.GetEncoder().GetBytes(message.ToCharArray(), 0, message.Length, buffer, messageOffset, true);
-                    }
-                    //包总长度
-                    var packageTotalLength = messageOffset + messageLength;
-
-                    if (LogUtils.LogNotice)
-                        LogUtils.Log("{0}: [Send-CommandResponsePackage]CommandId:{1},Code:{2},Message:{3}", DateTime.Now, commandId, code, message);
-
-                    return new Tuple<int, byte[]>(packageTotalLength, retBuffer);
-                }
-            });
         }
 
         //获取空闲的缓存
@@ -479,6 +244,255 @@ namespace Quick.Protocol
                         BitConverter.ToString(packageBuffer.Array, packageBuffer.Offset, packageBuffer.Count)
                         : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
             stream.Flush();
+        }
+
+        private void writePackageTotalLengthToBuffer(byte[] buffer, int offset, int packageTotalLength)
+        {
+            //构造包头
+            var ret = BitConverter.GetBytes(packageTotalLength);
+            //如果是小端字节序，则交换
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(ret);
+            Array.Copy(ret, 0, buffer, offset, sizeof(int));
+        }
+
+        private void sendPackage(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler = null)
+        {
+            var stream = QpPackageHandler_Stream;
+            if (stream == null)
+                return;
+
+            lock (this)
+            {
+                var ret = getPackagePayloadFunc(sendBuffer);
+                var packageTotalLength = ret.Count;
+                if (packageTotalLength < PACKAGE_HEAD_LENGTH)
+                    throw new IOException($"包大小[{packageTotalLength}]小于包头长度[{PACKAGE_HEAD_LENGTH}]");
+
+                byte[] packageBuffer = ret.Array;
+
+                //构造包头
+                writePackageTotalLengthToBuffer(packageBuffer, 0, packageTotalLength);
+                try
+                {
+                    //如果包缓存是发送缓存
+                    if (packageBuffer == sendBuffer)
+                    {
+                        sendPackageBuffer(stream,
+                            new ArraySegment<byte>(packageBuffer, 0, packageTotalLength),
+                            afterSendHandler
+                            );
+                    }
+                    //否则，拆分为多个包发送
+                    else
+                    {
+                        if (LogUtils.LogSplit)
+                            LogUtils.Log("{0}: [Send-SplitPackage]Length:{1}", DateTime.Now, packageTotalLength);
+
+                        //每个包内容的最大长度为对方缓存大小减包头大小
+                        var maxTakeLength = BufferSize - PACKAGE_HEAD_LENGTH;
+                        var currentIndex = 0;
+                        while (currentIndex < packageTotalLength)
+                        {
+                            var restLength = packageTotalLength - currentIndex;
+                            int takeLength = 0;
+                            if (restLength >= maxTakeLength)
+                                takeLength = maxTakeLength;
+                            else
+                                takeLength = restLength;
+                            //构造包头
+                            writePackageTotalLengthToBuffer(sendBuffer, 0, PACKAGE_HEAD_LENGTH + takeLength);
+                            sendBuffer[4] = (byte)QpPackageType.Split;
+                            //复制包体
+                            Array.Copy(packageBuffer, currentIndex, sendBuffer, PACKAGE_HEAD_LENGTH, takeLength);
+                            //发送
+                            sendPackageBuffer(
+                                stream,
+                                new ArraySegment<byte>(sendBuffer, 0, PACKAGE_HEAD_LENGTH + takeLength),
+                                afterSendHandler);
+                            currentIndex += takeLength;
+                        }
+                    }
+                    lastSendPackageTime = DateTime.Now;
+                }
+                catch (Exception ex)
+                {
+                    LastException = ex;
+                    LogUtils.Log("[SendPackage]" + ExceptionUtils.GetExceptionString(ex));
+                    throw ex;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 发送心跳包
+        /// </summary>
+        public void SendHeartbeatPackage()
+        {
+            sendPackage(buffer =>
+            {
+                HEARTBEAT_PACKAGHE.CopyTo(buffer, 0);
+                return new ArraySegment<byte>(buffer,0, HEARTBEAT_PACKAGHE.Length);
+            });
+        }
+
+        public void SendNoticePackage(string noticePackageTypeName, string noticePackageContent)
+        {
+            sendPackage(buffer =>
+            {
+                //设置包类型
+                buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.Notice;
+                var typeName = noticePackageTypeName;
+                var content = noticePackageContent;
+
+                var typeNameByteLengthOffset = PACKAGE_HEAD_LENGTH;
+                //写入类名
+                var typeNameByteOffset = typeNameByteLengthOffset + 1;
+                var typeNameByteLength = encoding.GetEncoder().GetBytes(typeName.ToCharArray(), 0, typeName.Length, buffer, typeNameByteOffset, true);
+                //写入类名长度
+                buffer[typeNameByteLengthOffset] = Convert.ToByte(typeNameByteLength);
+
+                var contentOffset = typeNameByteOffset + typeNameByteLength;
+                var contentLength = encoding.GetByteCount(content);
+
+                var retBuffer = buffer;
+                //如果内容超出了缓存可用空间的大小
+                if (contentLength > buffer.Length - contentOffset)
+                {
+                    retBuffer = new byte[contentOffset + contentLength];
+                    Array.Copy(buffer, retBuffer, contentOffset);
+                }
+                encoding.GetEncoder().GetBytes(content.ToCharArray(), 0, content.Length, retBuffer, contentOffset, true);
+
+                //包总长度
+                var packageTotalLength = contentOffset + contentLength;
+
+                if (LogUtils.LogNotice)
+                    LogUtils.Log("{0}: [Send-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+
+                return new ArraySegment<byte>(retBuffer, 0, packageTotalLength);
+            });
+        }
+
+        /// <summary>
+        /// 发送通知包
+        /// </summary>
+        public void SendNoticePackage(object package)
+        {
+            SendNoticePackage(package.GetType().FullName, JsonConvert.SerializeObject(package));
+        }
+
+        /// <summary>
+        /// 发送命令请求包
+        /// </summary>
+        public void SendCommandRequestPackage(string commandId, string typeName, string content, Action afterSendHandler = null)
+        {
+            sendPackage(buffer =>
+            {
+                //设置包类型
+                buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.CommandRequest;
+                //写入指令编号
+                var commandIdBufferOffset = PACKAGE_HEAD_LENGTH;
+                var commandIdBuffer = Guid.Parse(commandId).ToByteArray();
+                Array.Copy(commandIdBuffer, 0, buffer, commandIdBufferOffset, commandIdBuffer.Length);
+
+                var typeNameByteLengthOffset = commandIdBufferOffset + 16;
+                //写入类名
+                var typeNameByteOffset = typeNameByteLengthOffset + 1;
+                var typeNameByteLength = encoding.GetEncoder().GetBytes(typeName.ToCharArray(), 0, typeName.Length, buffer, typeNameByteOffset, true);
+                //写入类名长度
+                buffer[typeNameByteLengthOffset] = Convert.ToByte(typeNameByteLength);
+
+                var contentOffset = typeNameByteOffset + typeNameByteLength;
+                var contentLength = encoding.GetByteCount(content);
+                //如果内容超出了缓存可用空间的大小
+                var retBuffer = buffer;
+                if (contentLength > buffer.Length - contentOffset)
+                {
+                    retBuffer = new byte[contentOffset + contentLength];
+                    Array.Copy(buffer, retBuffer, contentOffset);
+                }
+                encoding.GetEncoder().GetBytes(content.ToCharArray(), 0, content.Length, retBuffer, contentOffset, true);
+
+                //包总长度
+                var packageTotalLength = contentOffset + contentLength;
+
+                if (LogUtils.LogCommand)
+                    LogUtils.Log("{0}: [Send-CommandRequestPackage]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandId, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+
+                return new ArraySegment<byte>(retBuffer, 0, packageTotalLength);
+            }, afterSendHandler);
+        }
+
+        /// <summary>
+        /// 发送命令响应包
+        /// </summary>
+        public void SendCommandResponsePackage(string commandId, byte code, string message, string typeName, string content)
+        {
+            sendPackage(buffer =>
+            {
+                //设置包类型
+                buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.CommandResponse;
+                //写入指令编号
+                var commandIdBufferOffset = PACKAGE_HEAD_LENGTH;
+                var commandIdBuffer = Guid.Parse(commandId).ToByteArray();
+                Array.Copy(commandIdBuffer, 0, buffer, commandIdBufferOffset, commandIdBuffer.Length);
+                //写入返回码
+                var codeByteOffset = commandIdBufferOffset + commandIdBuffer.Length;
+                buffer[codeByteOffset] = code;
+
+                //如果是成功
+                if (code == 0)
+                {
+                    var typeNameByteLengthOffset = codeByteOffset + 1;
+                    //写入类名
+                    var typeNameByteOffset = typeNameByteLengthOffset + 1;
+                    var typeNameByteLength = encoding.GetEncoder().GetBytes(typeName.ToCharArray(), 0, typeName.Length, buffer, typeNameByteOffset, true);
+                    //写入类名长度
+                    buffer[typeNameByteLengthOffset] = Convert.ToByte(typeNameByteLength);
+
+                    var contentOffset = typeNameByteOffset + typeNameByteLength;
+                    var contentLength = encoding.GetByteCount(content);
+                    //如果内容超出了缓存可用空间的大小
+                    var retBuffer = buffer;
+                    if (contentLength > buffer.Length - contentOffset)
+                    {
+                        retBuffer = new byte[contentOffset + contentLength];
+                        Array.Copy(buffer, retBuffer, contentOffset);
+                    }
+                    encoding.GetEncoder().GetBytes(content.ToCharArray(), 0, content.Length, retBuffer, contentOffset, true);
+
+                    //包总长度
+                    var packageTotalLength = contentOffset + contentLength;
+
+                    if (LogUtils.LogCommand)
+                        LogUtils.Log("{0}: [Send-CommandResponsePackage]CommandId:{1},Code:{2},Type:{3},Content:{4}", DateTime.Now, commandId, code, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+
+                    return new ArraySegment<byte>(retBuffer, 0, packageTotalLength);
+                }
+                //如果是失败
+                else
+                {
+                    var messageOffset = codeByteOffset + 1;
+                    var messageLength = encoding.GetByteCount(message);
+                    //如果内容超出了缓存可用空间的大小
+                    var retBuffer = buffer;
+                    if (messageLength > buffer.Length - messageOffset)
+                    {
+                        retBuffer = new byte[messageOffset + messageLength];
+                        Array.Copy(buffer, retBuffer, messageOffset);
+                    }
+                    encoding.GetEncoder().GetBytes(message.ToCharArray(), 0, message.Length, retBuffer, messageOffset, true);
+
+                    //包总长度
+                    var packageTotalLength = messageOffset + messageLength;
+
+                    if (LogUtils.LogNotice)
+                        LogUtils.Log("{0}: [Send-CommandResponsePackage]CommandId:{1},Code:{2},Message:{3}", DateTime.Now, commandId, code, message);
+
+                    return new ArraySegment<byte>(retBuffer, 0, packageTotalLength);
+                }
+            });
         }
 
         private async Task<int> readData(Stream stream, byte[] buffer, int startIndex, int totalCount, CancellationToken cancellationToken)
@@ -560,19 +574,12 @@ namespace Quick.Protocol
                     //如果设置了加密，则先解密
                     if (options.InternalEncrypt)
                     {
-                        try
-                        {
-                            var retBuffer = dec.TransformFinalBlock(currentPackageBuffer.Array, PACKAGE_TOTAL_LENGTH_LENGTH + currentPackageBuffer.Offset, currentPackageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH);
-                            var currentBuffer = getFreeBuffer(currentPackageBuffer.Array, recvBuffer, recvBuffer2);
-                            packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + retBuffer.Length;
-                            writePackageTotalLengthToBuffer(currentBuffer, 0, packageTotalLength);
-                            Array.Copy(retBuffer, 0, currentBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, retBuffer.Length);
-                            currentPackageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw ex;
-                        }
+                        var retBuffer = dec.TransformFinalBlock(currentPackageBuffer.Array, PACKAGE_TOTAL_LENGTH_LENGTH + currentPackageBuffer.Offset, currentPackageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH);
+                        var currentBuffer = getFreeBuffer(currentPackageBuffer.Array, recvBuffer, recvBuffer2);
+                        packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + retBuffer.Length;
+                        writePackageTotalLengthToBuffer(currentBuffer, 0, packageTotalLength);
+                        Array.Copy(retBuffer, 0, currentBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, retBuffer.Length);
+                        currentPackageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
                     }
                     //如果设置了压缩，则先解压
                     if (options.InternalCompress)
@@ -667,17 +674,124 @@ namespace Quick.Protocol
         }
 
         /// <summary>
-        /// 收到心跳数据包事件
+        /// 接收到原始通知数据包时
         /// </summary>
-        public event EventHandler HeartbeatPackageReceived;
+        /// <param name="typeName"></param>
+        /// <param name="content"></param>
+        protected void OnRawNoticePackageReceived(string typeName, string content)
+        {
+            //触发RawNoticePackageReceived事件
+            RawNoticePackageReceived?.Invoke(this, new RawNoticePackageReceivedEventArgs()
+            {
+                TypeName = typeName,
+                Content = content
+            });
+
+            //如果配置了触发NoticePackageReceived事件
+            if (options.RaiseNoticePackageReceivedEvent)
+            {
+                //如果在字典中未找到此类型名称，则直接返回
+                if (!noticeTypeDict.ContainsKey(typeName))
+                    return;
+                var contentModel = JsonConvert.DeserializeObject(content, noticeTypeDict[typeName]);
+                NoticePackageReceived?.Invoke(this, new NoticePackageReceivedEventArgs()
+                {
+                    TypeName = typeName,
+                    ContentModel = contentModel
+                });
+            }
+        }
+
         /// <summary>
-        /// 原始收到通知数据包事件
+        /// 接收到命令请求数据包时
         /// </summary>
-        public event EventHandler<RawNoticePackageReceivedEventArgs> RawNoticePackageReceived;
+        /// <param name="commandId"></param>
+        /// <param name="typeName"></param>
+        /// <param name="content"></param>
+        private void OnCommandRequestReceived(string commandId, string typeName, string content)
+        {
+            var eventArgs = new RawCommandRequestPackageReceivedEventArgs()
+            {
+                CommandId = commandId,
+                TypeName = typeName,
+                Content = content
+            };
+            RawCommandRequestPackageReceived?.Invoke(this, eventArgs);
+            //如果已经处理，则直接返回
+            if (eventArgs.Handled)
+                return;
+
+            try
+            {
+                //如果在字典中未找到此类型名称，则直接返回
+                if (!commandRequestTypeDict.ContainsKey(typeName))
+                    throw new CommandException(255, $"Unknown RequestType: {typeName}.");
+
+                var cmdRequestType = commandRequestTypeDict[typeName];
+                var cmdResponseType = commandRequestTypeResponseTypeDict[cmdRequestType];
+
+                var contentModel = JsonConvert.DeserializeObject(content, cmdRequestType);
+                CommandRequestPackageReceived?.Invoke(this, new CommandRequestPackageReceivedEventArgs()
+                {
+                    CommandId = commandId,
+                    TypeName = typeName,
+                    ContentModel = contentModel
+                });
+
+                var hasCommandExecuter = false;
+                if (options.CommandExecuterManagerList != null)
+                    foreach (var commandExecuterManager in options.CommandExecuterManagerList)
+                    {
+                        if (commandExecuterManager.CanExecuteCommand(typeName))
+                        {
+                            hasCommandExecuter = true;
+                            var responseModel = commandExecuterManager.ExecuteCommand(this, typeName, contentModel);
+                            SendCommandResponsePackage(commandId, 0, null, cmdResponseType.FullName, JsonConvert.SerializeObject(responseModel));
+                            break;
+                        }
+                    }
+                if (!hasCommandExecuter)
+                    throw new CommandException(255, $"No CommandExecuter for RequestType:{typeName}");
+            }
+            catch (CommandException ex)
+            {
+                string errorMessage = ExceptionUtils.GetExceptionString(ex);
+                SendCommandResponsePackage(commandId, ex.Code, errorMessage, null, null);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ExceptionUtils.GetExceptionString(ex);
+                SendCommandResponsePackage(commandId, 255, errorMessage, null, null);
+            }
+        }
+
         /// <summary>
-        /// 收到通知数据包事件
+        /// 接收到命令响应数据包时
         /// </summary>
-        public event EventHandler<NoticePackageReceivedEventArgs> NoticePackageReceived;
+        /// <param name="commandId"></param>
+        /// <param name="code"></param>
+        /// <param name="message"></param>
+        /// <param name="typeName"></param>
+        /// <param name="content"></param>
+        private void OnCommandResponseReceived(string commandId, byte code, string message, string typeName, string content)
+        {
+            CommandResponsePackageReceived?.Invoke(this, new CommandResponsePackageReceivedEventArgs()
+            {
+                CommandId = commandId,
+                Code = code,
+                Message = message,
+                TypeName = typeName,
+                Content = content
+            });
+            //设置指令响应
+            CommandContext commandContext;
+            if (!commandDict.TryRemove(commandId, out commandContext))
+                return;
+            if (code == 0)
+                commandContext.SetResponse(typeName, content);
+            else
+                commandContext.SetResponse(new CommandException(code, message));
+        }
 
         protected void BeginReadPackage(CancellationToken token)
         {
@@ -793,52 +907,6 @@ namespace Quick.Protocol
         }
 
         /// <summary>
-        /// 接收到原始通知数据包时
-        /// </summary>
-        /// <param name="typeName"></param>
-        /// <param name="content"></param>
-        protected void OnRawNoticePackageReceived(string typeName, string content)
-        {
-            //触发RawNoticePackageReceived事件
-            RawNoticePackageReceived?.Invoke(this, new RawNoticePackageReceivedEventArgs()
-            {
-                TypeName = typeName,
-                Content = content
-            });
-
-            //如果配置了触发NoticePackageReceived事件
-            if (options.RaiseNoticePackageReceivedEvent)
-            {
-                //如果在字典中未找到此类型名称，则直接返回
-                if (!noticeTypeDict.ContainsKey(typeName))
-                    return;
-                var contentModel = JsonConvert.DeserializeObject(content, noticeTypeDict[typeName]);
-                NoticePackageReceived?.Invoke(this, new NoticePackageReceivedEventArgs()
-                {
-                    TypeName = typeName,
-                    ContentModel = contentModel
-                });
-            }
-        }
-
-        /// <summary>
-        /// 原始收到命令请求数据包事件
-        /// </summary>
-        public event EventHandler<RawCommandRequestPackageReceivedEventArgs> RawCommandRequestPackageReceived;
-        /// <summary>
-        /// 收到命令请求数据包事件
-        /// </summary>
-        public event EventHandler<CommandRequestPackageReceivedEventArgs> CommandRequestPackageReceived;
-        /// <summary>
-        /// 原始收到命令响应数据包事件
-        /// </summary>
-        public event EventHandler<RawCommandResponsePackageReceivedEventArgs> RawCommandResponsePackageReceived;
-        /// <summary>
-        /// 收到命令响应数据包事件
-        /// </summary>
-        public event EventHandler<CommandResponsePackageReceivedEventArgs> CommandResponsePackageReceived;
-
-        /// <summary>
         /// 添加命令执行器管理器
         /// </summary>
         /// <param name="commandExecuterManager"></param>
@@ -846,7 +914,6 @@ namespace Quick.Protocol
         {
             options.CommandExecuterManagerList.Add(commandExecuterManager);
         }
-
 
         public async Task<CommandResponseTypeNameAndContent> SendCommand(string requestTypeName, string requestContent, int timeout = 30 * 1000, Action afterSendHandler = null)
         {
@@ -916,106 +983,6 @@ namespace Quick.Protocol
                 ret = await await TaskUtils.TaskWait(commandContext.ResponseTask, timeout);
             }
             return JsonConvert.DeserializeObject<TCmdResponse>(ret.Content);
-        }
-
-        /// <summary>
-        /// 接收到命令请求数据包时
-        /// </summary>
-        /// <param name="commandId"></param>
-        /// <param name="typeName"></param>
-        /// <param name="content"></param>
-        private void OnCommandRequestReceived(string commandId, string typeName, string content)
-        {
-            var eventArgs = new RawCommandRequestPackageReceivedEventArgs()
-            {
-                CommandId = commandId,
-                TypeName = typeName,
-                Content = content
-            };
-            RawCommandRequestPackageReceived?.Invoke(this, eventArgs);
-            //如果已经处理，则直接返回
-            if (eventArgs.Handled)
-                return;
-
-            try
-            {
-                //如果在字典中未找到此类型名称，则直接返回
-                if (!commandRequestTypeDict.ContainsKey(typeName))
-                    throw new CommandException(255, $"Unknown RequestType: {typeName}.");
-
-                var cmdRequestType = commandRequestTypeDict[typeName];
-                var cmdResponseType = commandRequestTypeResponseTypeDict[cmdRequestType];
-
-                var contentModel = JsonConvert.DeserializeObject(content, cmdRequestType);
-                CommandRequestPackageReceived?.Invoke(this, new CommandRequestPackageReceivedEventArgs()
-                {
-                    CommandId = commandId,
-                    TypeName = typeName,
-                    ContentModel = contentModel
-                });
-
-                var hasCommandExecuter = false;
-                if (options.CommandExecuterManagerList != null)
-                    foreach (var commandExecuterManager in options.CommandExecuterManagerList)
-                    {
-                        if (commandExecuterManager.CanExecuteCommand(typeName))
-                        {
-                            hasCommandExecuter = true;
-                            var responseModel = commandExecuterManager.ExecuteCommand(this, typeName, contentModel);
-                            SendCommandResponsePackage(commandId, 0, null, cmdResponseType.FullName, JsonConvert.SerializeObject(responseModel));
-                            break;
-                        }
-                    }
-                if (!hasCommandExecuter)
-                    throw new CommandException(255, $"No CommandExecuter for RequestType:{typeName}");
-            }
-            catch (CommandException ex)
-            {
-                string errorMessage = ExceptionUtils.GetExceptionString(ex);
-                SendCommandResponsePackage(commandId, ex.Code, errorMessage, null, null);
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ExceptionUtils.GetExceptionString(ex);
-                SendCommandResponsePackage(commandId, 255, errorMessage, null, null);
-            }
-        }
-
-        /// <summary>
-        /// 接收到命令响应数据包时
-        /// </summary>
-        /// <param name="commandId"></param>
-        /// <param name="code"></param>
-        /// <param name="message"></param>
-        /// <param name="typeName"></param>
-        /// <param name="content"></param>
-        private void OnCommandResponseReceived(string commandId, byte code, string message, string typeName, string content)
-        {
-            RawCommandResponsePackageReceived?.Invoke(this, new RawCommandResponsePackageReceivedEventArgs()
-            {
-                CommandId = commandId,
-                Code = code,
-                Message = message,
-                TypeName = typeName,
-                Content = content
-            });
-
-            CommandResponsePackageReceived?.Invoke(this, new CommandResponsePackageReceivedEventArgs()
-            {
-                CommandId = commandId,
-                Code = code,
-                Message = message,
-                TypeName = typeName,
-                Content = content
-            });
-            //设置指令响应
-            CommandContext commandContext;
-            if (!commandDict.TryRemove(commandId, out commandContext))
-                return;
-            if (code == 0)
-                commandContext.SetResponse(typeName, content);
-            else
-                commandContext.SetResponse(new CommandException(code, message));
         }
     }
 }

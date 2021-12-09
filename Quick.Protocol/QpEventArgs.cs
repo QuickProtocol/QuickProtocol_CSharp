@@ -80,34 +80,6 @@ namespace Quick.Protocol
         public object ContentModel { get; set; }
     }
 
-
-    /// <summary>
-    /// 原始收到命令响应数据包事件参数
-    /// </summary>
-    public class RawCommandResponsePackageReceivedEventArgs : QpEventArgs
-    {
-        /// <summary>
-        /// 命令编号
-        /// </summary>
-        public string CommandId { get; set; }
-        /// <summary>
-        /// 响应码
-        /// </summary>
-        public byte Code { get; set; }
-        /// <summary>
-        /// 错误消息
-        /// </summary>
-        public string Message { get; set; }
-        /// <summary>
-        /// 类型名称
-        /// </summary>
-        public string TypeName { get; set; }
-        /// <summary>
-        /// 内容
-        /// </summary>
-        public string Content { get; set; }
-    }
-
     /// <summary>
     /// 命令响应中的类型名称和内容
     /// </summary>
