@@ -6,6 +6,16 @@ namespace Quick.Protocol.Utils
 {
     public class ByteUtils
     {
+        public static byte[] HexDecode(string data)
+        {
+            var buffer = new byte[data.Length / 2];
+            for (var i = 0; i < data.Length; i += 2)
+            {
+                buffer[i / 2] = byte.Parse(data.Substring(i, 2), System.Globalization.NumberStyles.HexNumber);
+            }
+            return buffer;
+        }
+
         /// <summary>
         /// 字节数组 -> 整型数字(4字节)(大端字节序)
         /// </summary>

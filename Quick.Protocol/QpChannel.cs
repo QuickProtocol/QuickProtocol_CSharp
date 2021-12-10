@@ -393,7 +393,7 @@ namespace Quick.Protocol
                 buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.CommandRequest;
                 //写入指令编号
                 var commandIdBufferOffset = PACKAGE_HEAD_LENGTH;
-                var commandIdBuffer = Guid.Parse(commandId).ToByteArray();
+                var commandIdBuffer = ByteUtils.HexDecode(commandId);
                 Array.Copy(commandIdBuffer, 0, buffer, commandIdBufferOffset, commandIdBuffer.Length);
 
                 var typeNameByteLengthOffset = commandIdBufferOffset + 16;
@@ -435,7 +435,7 @@ namespace Quick.Protocol
                 buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.CommandResponse;
                 //写入指令编号
                 var commandIdBufferOffset = PACKAGE_HEAD_LENGTH;
-                var commandIdBuffer = Guid.Parse(commandId).ToByteArray();
+                var commandIdBuffer = ByteUtils.HexDecode(commandId);
                 Array.Copy(commandIdBuffer, 0, buffer, commandIdBufferOffset, commandIdBuffer.Length);
                 //写入返回码
                 var codeByteOffset = commandIdBufferOffset + commandIdBuffer.Length;
