@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageProjectUrl>https://github.com/aaasoft/Quick.Protocol</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/aaasoft/Quick.Protocol</RepositoryUrl>
+	  <PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
     <Version>2.0.11</Version>
     <Authors>scbeta</Authors>
     <Company />

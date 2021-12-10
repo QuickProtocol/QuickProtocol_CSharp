@@ -5,17 +5,16 @@
     <RollForward>Major</RollForward>
     <TargetFramework>net6.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <Product>QP测试客户端</Product>
-    <AssemblyTitle>QP测试客户端</AssemblyTitle>
+    <Product>[QuickProtocol]测试客户端</Product>
+    <AssemblyTitle>[QuickProtocol]测试客户端</AssemblyTitle>
     <Authors>aaasoft</Authors>
     <Version>2.0.11</Version>
     <ApplicationIcon>Images\Globe.ico</ApplicationIcon>
-    <Description>用于测试连接到Quick.Protocol服务端的客户端。
-
-项目地址：https://github.com/aaasoft/Quick.Protocol</Description>
+    <Description>用于测试连接到[QuickProtocol]服务端的客户端。
+项目地址：https://github.com/QuickProtocol</Description>
     <Copyright>Apache License</Copyright>
-    <RepositoryUrl>https://github.com/aaasoft/Quick.Protocol</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/aaasoft/Quick.Protocol</PackageProjectUrl>
+	<PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
