@@ -1,23 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  <PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
-	  <RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
-    <Version>2.0.11</Version>
-    <Authors>scbeta</Authors>
-    <Company />
-    <Product>Quick.Protocol</Product>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
+		<Version>2.1.0</Version>
+		<Authors>scbeta</Authors>
+		<Company />
+		<Product>Quick.Protocol</Product>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Quick.Protocol\Quick.Protocol.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Quick.Protocol\Quick.Protocol.csproj" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="System.Net.WebSockets.Client">
-      <Version>4.3.2</Version>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<PackageReference Include="System.Net.WebSockets.Client">
+			<Version>4.3.2</Version>
+		</PackageReference>
+	</ItemGroup>
 </Project>
