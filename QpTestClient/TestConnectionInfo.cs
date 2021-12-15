@@ -6,7 +6,7 @@ using System.Text;
 
 namespace QpTestClient
 {
-    public class ConnectionInfo
+    public class TestConnectionInfo
     {
         public string Name { get; set; }
         public string QpClientTypeName { get; set; }

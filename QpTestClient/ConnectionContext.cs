@@ -8,11 +8,11 @@ namespace QpTestClient
 {
     public class ConnectionContext : IDisposable
     {
-        public ConnectionInfo ConnectionInfo { get; private set; }
+        public TestConnectionInfo ConnectionInfo { get; private set; }
         public bool Connected { get; private set; } = false;
         public QpClient QpClient { get; private set; }
 
-        public ConnectionContext(ConnectionInfo connectionInfo)
+        public ConnectionContext(TestConnectionInfo connectionInfo)
         {
             ConnectionInfo = connectionInfo;
         }

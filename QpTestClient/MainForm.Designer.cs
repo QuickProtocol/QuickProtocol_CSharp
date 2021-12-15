@@ -37,6 +37,8 @@ namespace QpTestClient
             this.btnImportConnectionFile = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.btnExit = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.关于ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.scMain = new System.Windows.Forms.SplitContainer();
             this.tvQpInstructions = new System.Windows.Forms.TreeView();
             this.ilQpInstructions = new System.Windows.Forms.ImageList(this.components);
@@ -56,8 +58,7 @@ namespace QpTestClient
             this.btnRecvNotice_Notice = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsCommand = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.btnTestCommand_Command = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
-            this.关于ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnQuickAddConnection = new System.Windows.Forms.ToolStripMenuItem();
             this.tsMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scMain)).BeginInit();
             this.scMain.Panel1.SuspendLayout();
@@ -76,7 +77,7 @@ namespace QpTestClient
             this.toolStripDropDownButton1});
             this.tsMain.Location = new System.Drawing.Point(0, 0);
             this.tsMain.Name = "tsMain";
-            this.tsMain.Size = new System.Drawing.Size(833, 27);
+            this.tsMain.Size = new System.Drawing.Size(648, 25);
             this.tsMain.TabIndex = 2;
             this.tsMain.Text = "toolStrip1";
             // 
@@ -84,6 +85,7 @@ namespace QpTestClient
             // 
             this.btnFile.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.btnFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnQuickAddConnection,
             this.btnAddConnection,
             this.btnImportConnectionFile,
             this.toolStripSeparator1,
@@ -91,37 +93,55 @@ namespace QpTestClient
             this.btnFile.Image = ((System.Drawing.Image)(resources.GetObject("btnFile.Image")));
             this.btnFile.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnFile.Name = "btnFile";
-            this.btnFile.Size = new System.Drawing.Size(71, 24);
+            this.btnFile.Size = new System.Drawing.Size(59, 22);
             this.btnFile.Text = "文件(&F)";
             // 
             // btnAddConnection
             // 
             this.btnAddConnection.Name = "btnAddConnection";
-            this.btnAddConnection.Size = new System.Drawing.Size(224, 26);
+            this.btnAddConnection.Size = new System.Drawing.Size(151, 22);
             this.btnAddConnection.Text = "添加(&A)...";
             // 
             // btnImportConnectionFile
             // 
             this.btnImportConnectionFile.Name = "btnImportConnectionFile";
-            this.btnImportConnectionFile.Size = new System.Drawing.Size(224, 26);
+            this.btnImportConnectionFile.Size = new System.Drawing.Size(151, 22);
             this.btnImportConnectionFile.Text = "导入(&I)..";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(221, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(148, 6);
             // 
             // btnExit
             // 
             this.btnExit.Name = "btnExit";
-            this.btnExit.Size = new System.Drawing.Size(224, 26);
+            this.btnExit.Size = new System.Drawing.Size(151, 22);
             this.btnExit.Text = "退出(&X)";
+            // 
+            // toolStripDropDownButton1
+            // 
+            this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.关于ToolStripMenuItem});
+            this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
+            this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
+            this.toolStripDropDownButton1.Size = new System.Drawing.Size(62, 22);
+            this.toolStripDropDownButton1.Text = "帮助(&H)";
+            // 
+            // 关于ToolStripMenuItem
+            // 
+            this.关于ToolStripMenuItem.Name = "关于ToolStripMenuItem";
+            this.关于ToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.关于ToolStripMenuItem.Text = "关于(&A)";
+            this.关于ToolStripMenuItem.Click += new System.EventHandler(this.关于ToolStripMenuItem_Click);
             // 
             // scMain
             // 
             this.scMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.scMain.Location = new System.Drawing.Point(0, 27);
-            this.scMain.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.scMain.Location = new System.Drawing.Point(0, 25);
+            this.scMain.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.scMain.Name = "scMain";
             // 
             // scMain.Panel1
@@ -131,8 +151,9 @@ namespace QpTestClient
             // scMain.Panel2
             // 
             this.scMain.Panel2.Controls.Add(this.gbNodeInfo);
-            this.scMain.Size = new System.Drawing.Size(833, 512);
-            this.scMain.SplitterDistance = 276;
+            this.scMain.Size = new System.Drawing.Size(648, 433);
+            this.scMain.SplitterDistance = 214;
+            this.scMain.SplitterWidth = 3;
             this.scMain.TabIndex = 5;
             // 
             // tvQpInstructions
@@ -142,10 +163,10 @@ namespace QpTestClient
             this.tvQpInstructions.ImageIndex = 0;
             this.tvQpInstructions.ImageList = this.ilQpInstructions;
             this.tvQpInstructions.Location = new System.Drawing.Point(0, 0);
-            this.tvQpInstructions.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.tvQpInstructions.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.tvQpInstructions.Name = "tvQpInstructions";
             this.tvQpInstructions.SelectedImageIndex = 0;
-            this.tvQpInstructions.Size = new System.Drawing.Size(276, 512);
+            this.tvQpInstructions.Size = new System.Drawing.Size(214, 433);
             this.tvQpInstructions.TabIndex = 0;
             this.tvQpInstructions.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tvQpInstructions_AfterSelect);
             this.tvQpInstructions.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tvQpInstructions_NodeMouseDoubleClick);
@@ -165,10 +186,10 @@ namespace QpTestClient
             // 
             this.gbNodeInfo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gbNodeInfo.Location = new System.Drawing.Point(0, 0);
-            this.gbNodeInfo.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.gbNodeInfo.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.gbNodeInfo.Name = "gbNodeInfo";
-            this.gbNodeInfo.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.gbNodeInfo.Size = new System.Drawing.Size(553, 512);
+            this.gbNodeInfo.Padding = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.gbNodeInfo.Size = new System.Drawing.Size(431, 433);
             this.gbNodeInfo.TabIndex = 0;
             this.gbNodeInfo.TabStop = false;
             // 
@@ -187,64 +208,64 @@ namespace QpTestClient
             this.btnDelConnection,
             this.btnExportConnectionFile});
             this.cmsConnection.Name = "cmsConnection";
-            this.cmsConnection.Size = new System.Drawing.Size(169, 208);
+            this.cmsConnection.Size = new System.Drawing.Size(148, 192);
             // 
             // btnDisconnectConnection
             // 
             this.btnDisconnectConnection.Name = "btnDisconnectConnection";
-            this.btnDisconnectConnection.Size = new System.Drawing.Size(168, 24);
+            this.btnDisconnectConnection.Size = new System.Drawing.Size(147, 22);
             this.btnDisconnectConnection.Text = "断开(&D)";
             // 
             // btnConnectConnection
             // 
             this.btnConnectConnection.Name = "btnConnectConnection";
-            this.btnConnectConnection.Size = new System.Drawing.Size(168, 24);
+            this.btnConnectConnection.Size = new System.Drawing.Size(147, 22);
             this.btnConnectConnection.Text = "连接";
             // 
             // separatorConnection
             // 
             this.separatorConnection.Name = "separatorConnection";
-            this.separatorConnection.Size = new System.Drawing.Size(165, 6);
+            this.separatorConnection.Size = new System.Drawing.Size(144, 6);
             // 
             // btnRecvHeartbeat_Connection
             // 
             this.btnRecvHeartbeat_Connection.Name = "btnRecvHeartbeat_Connection";
-            this.btnRecvHeartbeat_Connection.Size = new System.Drawing.Size(168, 24);
+            this.btnRecvHeartbeat_Connection.Size = new System.Drawing.Size(147, 22);
             this.btnRecvHeartbeat_Connection.Text = "接收心跳(&H)..";
             // 
             // btnRecvNotice_Connection
             // 
             this.btnRecvNotice_Connection.Name = "btnRecvNotice_Connection";
-            this.btnRecvNotice_Connection.Size = new System.Drawing.Size(168, 24);
+            this.btnRecvNotice_Connection.Size = new System.Drawing.Size(147, 22);
             this.btnRecvNotice_Connection.Text = "接收通知(&R)..";
             // 
             // btnTestCommand_Connection
             // 
             this.btnTestCommand_Connection.Name = "btnTestCommand_Connection";
-            this.btnTestCommand_Connection.Size = new System.Drawing.Size(168, 24);
+            this.btnTestCommand_Connection.Size = new System.Drawing.Size(147, 22);
             this.btnTestCommand_Connection.Text = "测试命令(&T)..";
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(165, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(144, 6);
             // 
             // btnEditConnection
             // 
             this.btnEditConnection.Name = "btnEditConnection";
-            this.btnEditConnection.Size = new System.Drawing.Size(168, 24);
+            this.btnEditConnection.Size = new System.Drawing.Size(147, 22);
             this.btnEditConnection.Text = "编辑(&E)..";
             // 
             // btnDelConnection
             // 
             this.btnDelConnection.Name = "btnDelConnection";
-            this.btnDelConnection.Size = new System.Drawing.Size(168, 24);
+            this.btnDelConnection.Size = new System.Drawing.Size(147, 22);
             this.btnDelConnection.Text = "删除(&D)";
             // 
             // btnExportConnectionFile
             // 
             this.btnExportConnectionFile.Name = "btnExportConnectionFile";
-            this.btnExportConnectionFile.Size = new System.Drawing.Size(168, 24);
+            this.btnExportConnectionFile.Size = new System.Drawing.Size(147, 22);
             this.btnExportConnectionFile.Text = "导出(&X)..";
             // 
             // cmsNotice
@@ -253,12 +274,12 @@ namespace QpTestClient
             this.cmsNotice.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnRecvNotice_Notice});
             this.cmsNotice.Name = "cmsNotice";
-            this.cmsNotice.Size = new System.Drawing.Size(167, 28);
+            this.cmsNotice.Size = new System.Drawing.Size(147, 26);
             // 
             // btnRecvNotice_Notice
             // 
             this.btnRecvNotice_Notice.Name = "btnRecvNotice_Notice";
-            this.btnRecvNotice_Notice.Size = new System.Drawing.Size(166, 24);
+            this.btnRecvNotice_Notice.Size = new System.Drawing.Size(146, 22);
             this.btnRecvNotice_Notice.Text = "接收通知(&R)..";
             // 
             // cmsCommand
@@ -267,41 +288,29 @@ namespace QpTestClient
             this.cmsCommand.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnTestCommand_Command});
             this.cmsCommand.Name = "cmsCommand";
-            this.cmsCommand.Size = new System.Drawing.Size(136, 28);
+            this.cmsCommand.Size = new System.Drawing.Size(122, 26);
             // 
             // btnTestCommand_Command
             // 
             this.btnTestCommand_Command.Name = "btnTestCommand_Command";
-            this.btnTestCommand_Command.Size = new System.Drawing.Size(135, 24);
+            this.btnTestCommand_Command.Size = new System.Drawing.Size(121, 22);
             this.btnTestCommand_Command.Text = "测试(&T)..";
             // 
-            // toolStripDropDownButton1
+            // btnQuickAddConnection
             // 
-            this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.关于ToolStripMenuItem});
-            this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
-            this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
-            this.toolStripDropDownButton1.Size = new System.Drawing.Size(75, 24);
-            this.toolStripDropDownButton1.Text = "帮助(&H)";
-            // 
-            // 关于ToolStripMenuItem
-            // 
-            this.关于ToolStripMenuItem.Name = "关于ToolStripMenuItem";
-            this.关于ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
-            this.关于ToolStripMenuItem.Text = "关于(&A)";
-            this.关于ToolStripMenuItem.Click += new System.EventHandler(this.关于ToolStripMenuItem_Click);
+            this.btnQuickAddConnection.Name = "btnQuickAddConnection";
+            this.btnQuickAddConnection.Size = new System.Drawing.Size(151, 22);
+            this.btnQuickAddConnection.Text = "快速添加(&Q)...";
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(833, 539);
+            this.ClientSize = new System.Drawing.Size(648, 458);
             this.Controls.Add(this.scMain);
             this.Controls.Add(this.tsMain);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "MainForm";
@@ -350,6 +359,7 @@ namespace QpTestClient
         private System.Windows.Forms.ToolStripMenuItem btnRecvHeartbeat_Connection;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
         private System.Windows.Forms.ToolStripMenuItem 关于ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem btnQuickAddConnection;
     }
 }
 

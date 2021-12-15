@@ -18,16 +18,16 @@ namespace QpTestClient
 {
     public partial class ConnectForm : Form
     {
-        public ConnectionInfo ConnectionInfo { get; private set; }
+        public TestConnectionInfo ConnectionInfo { get; private set; }
 
         public ConnectForm()
         {
             InitializeComponent();
         }
 
-        public void EditConnectionInfo(ConnectionInfo connectionInfo)
+        public void EditConnectionInfo(TestConnectionInfo connectionInfo)
         {            
-            this.ConnectionInfo = XmlConvert.Deserialize<ConnectionInfo>(XmlConvert.Serialize(connectionInfo));
+            this.ConnectionInfo = XmlConvert.Deserialize<TestConnectionInfo>(XmlConvert.Serialize(connectionInfo));
             txtName.Text = connectionInfo.Name;
             var qpClientTypeInfo = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.QpClientType.FullName == connectionInfo.QpClientTypeName);
             cbConnectType.SelectedItem = qpClientTypeInfo;
@@ -79,7 +79,7 @@ namespace QpTestClient
                 txtName.Focus();
                 return;
             }
-            ConnectionInfo = new ConnectionInfo()
+            ConnectionInfo = new TestConnectionInfo()
             {
                 Name = name,
                 QpClientTypeName = qpClientTypeInfo.QpClientType.FullName,

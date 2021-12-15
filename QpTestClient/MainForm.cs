@@ -30,6 +30,7 @@ namespace QpTestClient
             btnImportConnectionFile.Click += BtnImportConnectionFile_Click;
             btnExit.Click += BtnExit_Click;
             //连接相关
+            btnQuickAddConnection.Click +=BtnQuickAddConnection_Click;
             btnDisconnectConnection.Click += BtnDisconnectConnection_Click;
             btnConnectConnection.Click += BtnConnectConnection_Click;
             btnRecvHeartbeat_Connection.Click += BtnRecvHeartbeat_Connection_Click;
@@ -45,7 +46,6 @@ namespace QpTestClient
 
             this.Text += $" ver:{ProductInfoUtils.GetAssemblyVersion()}";
         }
-
 
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -76,7 +76,7 @@ namespace QpTestClient
             try
             {
                 var file = ofd.FileName;
-                ConnectionInfo connectionInfo = QpdFileUtils.Load(file);
+                TestConnectionInfo connectionInfo = QpdFileUtils.Load(file);
                 connectionInfo.Name = Path.GetFileNameWithoutExtension(file);
                 addConnection(connectionInfo);
                 QpdFileUtils.SaveQpbFile(connectionInfo);
@@ -245,13 +245,24 @@ namespace QpTestClient
             }
         }
 
-        private void addConnection(ConnectionInfo connectionInfo)
+        private void addConnection(TestConnectionInfo connectionInfo)
         {
             var connectionNode = treeNodeCollection.Add(connectionInfo.Name, connectionInfo.Name, 0, 0);
             connectionNode.Tag = new ConnectionContext(connectionInfo);
             connectionNode.ContextMenuStrip = cmsConnection;
             if (connectionInfo.Instructions != null)
                 displayInstructions(connectionNode, connectionInfo.Instructions);
+        }
+
+        private void BtnQuickAddConnection_Click(object sender, EventArgs e)
+        {
+            var form = new QuickConnectForm();
+            var ret = form.ShowDialog();
+            if (ret != DialogResult.OK)
+                return;
+            var connectionInfo = form.ConnectionInfo;
+            addConnection(connectionInfo);
+            QpdFileUtils.SaveQpbFile(connectionInfo);
         }
 
         private void BtnAddConnection_Click(object sender, EventArgs e)

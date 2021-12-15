@@ -9,9 +9,9 @@ namespace QpTestClient.Utils
     {
         public static string QpbFileFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), nameof(QpTestClient));
 
-        public static string GetQpbFilePath(ConnectionInfo connectionInfo) => Path.Combine(QpbFileFolder, connectionInfo.Name + ".qpd");
+        public static string GetQpbFilePath(TestConnectionInfo connectionInfo) => Path.Combine(QpbFileFolder, connectionInfo.Name + ".qpd");
 
-        public static void SaveQpbFile(ConnectionInfo connectionInfo, string file = null)
+        public static void SaveQpbFile(TestConnectionInfo connectionInfo, string file = null)
         {
             var content = Quick.Xml.XmlConvert.Serialize(connectionInfo);
             if (!Directory.Exists(QpbFileFolder))
@@ -23,11 +23,11 @@ namespace QpTestClient.Utils
             File.WriteAllText(file, content, Encoding.UTF8);
         }
 
-        public static ConnectionInfo[] GetConnectionInfosFromQpbFileFolder()
+        public static TestConnectionInfo[] GetConnectionInfosFromQpbFileFolder()
         {
             if (!Directory.Exists(QpbFileFolder))
                 return null;
-            List<ConnectionInfo> list = new List<ConnectionInfo>();
+            List<TestConnectionInfo> list = new List<TestConnectionInfo>();
             foreach (var file in Directory.GetFiles(QpbFileFolder, "*.qpd"))
             {
                 try
@@ -40,17 +40,17 @@ namespace QpTestClient.Utils
             return list.ToArray();
         }
 
-        public static void DeleteQpbFile(ConnectionInfo connectionInfo)
+        public static void DeleteQpbFile(TestConnectionInfo connectionInfo)
         {
             var file = GetQpbFilePath(connectionInfo);
             if (File.Exists(file))
                 File.Delete(file);
         }
 
-        public static ConnectionInfo Load(string file)
+        public static TestConnectionInfo Load(string file)
         {
             var content = File.ReadAllText(file);
-            return Quick.Xml.XmlConvert.Deserialize<ConnectionInfo>(content);
+            return Quick.Xml.XmlConvert.Deserialize<TestConnectionInfo>(content);
         }
     }
 }
