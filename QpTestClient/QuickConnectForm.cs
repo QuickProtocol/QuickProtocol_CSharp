@@ -21,6 +21,14 @@ namespace QpTestClient
 
         private void btnOk_Click(object sender, EventArgs e)
         {
+            var name = txtName.Text.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                MessageBox.Show("请输入名称！", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtName.Focus();
+                return;
+            }
+
             var url = txtUrl.Text.Trim();
             if (string.IsNullOrEmpty(url))
             {
@@ -42,9 +50,10 @@ namespace QpTestClient
                 MessageBox.Show("无效的URL！", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+            connectionInfo.QpClientOptions.Password = password;
             ConnectionInfo = new TestConnectionInfo()
             {
-                Name = "快速添加连接_" + DateTime.Now.ToString("yyyyMMdd_HHmmss"),
+                Name = name,
                 QpClientTypeName = connectionInfo.QpClientType.FullName,
                 QpClientOptions = connectionInfo.QpClientOptions
             };
@@ -56,6 +65,11 @@ namespace QpTestClient
         {
             DialogResult = DialogResult.Cancel;
             Close();
+        }
+
+        private void QuickConnectForm_Load(object sender, EventArgs e)
+        {
+            txtName.Text="快速添加连接_" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
         }
     }
 }
