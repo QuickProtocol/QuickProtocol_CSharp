@@ -62,7 +62,8 @@ namespace Quick.Protocol.AllClients
         private static ConnectionInfo parsePipeConnectionInfo(Uri uri)
         {
             var options = new Pipeline.QpPipelineClientOptions();
-            options.PipeName= uri.Host;
+            options.ServerName= uri.Host;
+            options.PipeName= uri.AbsolutePath.Replace("/", string.Empty);
             queryStringToOptions(uri, options);
             return new ConnectionInfo()
             {
