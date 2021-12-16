@@ -60,7 +60,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
         {
             lock (webSocketContextQueue)
                 webSocketContextQueue.Clear();
-            waitForConnectionAutoResetEvent.Dispose();
+            waitForConnectionAutoResetEvent?.Dispose();
             base.Stop();
         }
 
