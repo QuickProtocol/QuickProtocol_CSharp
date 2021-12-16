@@ -28,6 +28,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="10.6.6" />
 		<PackageReference Include="Quick.Xml" Version="1.0.0" />
 	</ItemGroup>
 

@@ -228,6 +228,7 @@ namespace QpTestClient
             {
                 var instructionNode = connectionNode.Nodes.Add(instruction.Id, instruction.Name, 2, 2);
                 instructionNode.Tag = instruction;
+                instructionNode.ContextMenuStrip = cmsInstruction;
                 var noticesNode = instructionNode.Nodes.Add("Notice", "通知", 3, 3);
                 foreach (var noticeInfo in instruction.NoticeInfos)
                 {
@@ -435,6 +436,36 @@ namespace QpTestClient
         private void 关于ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new AboutBox().ShowDialog();
+        }
+
+        private async void btnGenCSharpCode_Click(object sender, EventArgs e)
+        {
+            var connectionNode = tvQpInstructions.SelectedNode;
+            var instruction = connectionNode.Tag as QpInstruction;
+            if (instruction == null)
+                return;
+
+            try
+            {
+                this.Enabled=false;
+                var fbd = new FolderBrowserDialog();
+                fbd.Description="请选择代码保存目录...";
+                var dr = fbd.ShowDialog();
+                if (dr== DialogResult.Cancel)
+                    return;
+                var folder = fbd.SelectedPath;
+                folder = Path.Combine(folder, instruction.Id);
+                await CodeGen.CSharpCodeGen.Generate(instruction, folder);
+                MessageBox.Show($"[{instruction.Name}]指令集生成C#代码成功！", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"[{instruction.Name}]指令集生成C#代码失败，原因：" + ExceptionUtils.GetExceptionMessage(ex), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            finally
+            {
+                this.Enabled=true;
+            }
         }
     }
 }

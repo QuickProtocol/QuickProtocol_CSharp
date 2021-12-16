@@ -33,6 +33,7 @@ namespace QpTestClient
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.tsMain = new System.Windows.Forms.ToolStrip();
             this.btnFile = new System.Windows.Forms.ToolStripDropDownButton();
+            this.btnQuickAddConnection = new System.Windows.Forms.ToolStripMenuItem();
             this.btnAddConnection = new System.Windows.Forms.ToolStripMenuItem();
             this.btnImportConnectionFile = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -58,7 +59,8 @@ namespace QpTestClient
             this.btnRecvNotice_Notice = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsCommand = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.btnTestCommand_Command = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnQuickAddConnection = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmsInstruction = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.btnGenCSharpCode = new System.Windows.Forms.ToolStripMenuItem();
             this.tsMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scMain)).BeginInit();
             this.scMain.Panel1.SuspendLayout();
@@ -67,6 +69,7 @@ namespace QpTestClient
             this.cmsConnection.SuspendLayout();
             this.cmsNotice.SuspendLayout();
             this.cmsCommand.SuspendLayout();
+            this.cmsInstruction.SuspendLayout();
             this.SuspendLayout();
             // 
             // tsMain
@@ -95,6 +98,12 @@ namespace QpTestClient
             this.btnFile.Name = "btnFile";
             this.btnFile.Size = new System.Drawing.Size(59, 22);
             this.btnFile.Text = "文件(&F)";
+            // 
+            // btnQuickAddConnection
+            // 
+            this.btnQuickAddConnection.Name = "btnQuickAddConnection";
+            this.btnQuickAddConnection.Size = new System.Drawing.Size(151, 22);
+            this.btnQuickAddConnection.Text = "快速添加(&Q)...";
             // 
             // btnAddConnection
             // 
@@ -296,11 +305,19 @@ namespace QpTestClient
             this.btnTestCommand_Command.Size = new System.Drawing.Size(121, 22);
             this.btnTestCommand_Command.Text = "测试(&T)..";
             // 
-            // btnQuickAddConnection
+            // cmsInstruction
             // 
-            this.btnQuickAddConnection.Name = "btnQuickAddConnection";
-            this.btnQuickAddConnection.Size = new System.Drawing.Size(151, 22);
-            this.btnQuickAddConnection.Text = "快速添加(&Q)...";
+            this.cmsInstruction.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnGenCSharpCode});
+            this.cmsInstruction.Name = "cmsInstruction";
+            this.cmsInstruction.Size = new System.Drawing.Size(181, 48);
+            // 
+            // btnGenCSharpCode
+            // 
+            this.btnGenCSharpCode.Name = "btnGenCSharpCode";
+            this.btnGenCSharpCode.Size = new System.Drawing.Size(180, 22);
+            this.btnGenCSharpCode.Text = "生成C#代码...";
+            this.btnGenCSharpCode.Click += new System.EventHandler(this.btnGenCSharpCode_Click);
             // 
             // MainForm
             // 
@@ -325,6 +342,7 @@ namespace QpTestClient
             this.cmsConnection.ResumeLayout(false);
             this.cmsNotice.ResumeLayout(false);
             this.cmsCommand.ResumeLayout(false);
+            this.cmsInstruction.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -360,6 +378,8 @@ namespace QpTestClient
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
         private System.Windows.Forms.ToolStripMenuItem 关于ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem btnQuickAddConnection;
+        private System.Windows.Forms.ContextMenuStrip cmsInstruction;
+        private System.Windows.Forms.ToolStripMenuItem btnGenCSharpCode;
     }
 }
 
