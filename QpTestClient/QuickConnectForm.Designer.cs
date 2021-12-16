@@ -34,9 +34,10 @@
             this.txtPassword = new System.Windows.Forms.TextBox();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnOk = new System.Windows.Forms.Button();
-            this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.txtName = new System.Windows.Forms.TextBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // txtUrl
@@ -62,7 +63,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(36, 175);
+            this.label1.Location = new System.Drawing.Point(35, 224);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(35, 17);
@@ -73,7 +74,7 @@
             // 
             this.txtPassword.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtPassword.Location = new System.Drawing.Point(75, 172);
+            this.txtPassword.Location = new System.Drawing.Point(74, 221);
             this.txtPassword.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '●';
@@ -82,7 +83,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(152, 201);
+            this.btnCancel.Location = new System.Drawing.Point(151, 250);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(73, 25);
@@ -93,7 +94,7 @@
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(75, 201);
+            this.btnOk.Location = new System.Drawing.Point(74, 250);
             this.btnOk.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(73, 25);
@@ -101,16 +102,6 @@
             this.btnOk.Text = "确定(&O)";
             this.btnOk.UseVisualStyleBackColor = true;
             this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(75, 67);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(191, 102);
-            this.label3.TabIndex = 9;
-            this.label3.Text = "示例\r\n----------------------------\r\nTCP: tcp://127.0.0.1:3000\r\nWebSocket: ws://127." +
-    "0.0.1:3000\r\n命名管道: pipe://Quick.Protocol\r\n串口: serialport://COM1";
             // 
             // label4
             // 
@@ -132,12 +123,36 @@
             this.txtName.Size = new System.Drawing.Size(321, 23);
             this.txtName.TabIndex = 3;
             // 
+            // textBox1
+            // 
+            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox1.Location = new System.Drawing.Point(75, 70);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ReadOnly = true;
+            this.textBox1.Size = new System.Drawing.Size(320, 145);
+            this.textBox1.TabIndex = 102;
+            this.textBox1.Text = "TCP: tcp://127.0.0.1:3000\r\nWebSocket: ws://127.0.0.1:3000\r\n命名管道: pipe://./Quick.P" +
+    "rotocol\r\n串口: serialport://COM1";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(37, 73);
+            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(35, 17);
+            this.label3.TabIndex = 103;
+            this.label3.Text = "示例:";
+            // 
             // QuickConnectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(407, 241);
+            this.ClientSize = new System.Drawing.Size(407, 294);
             this.Controls.Add(this.label3);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOk);
             this.Controls.Add(this.txtPassword);
@@ -163,8 +178,9 @@
         private System.Windows.Forms.TextBox txtPassword;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnOk;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox txtName;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label3;
     }
 }

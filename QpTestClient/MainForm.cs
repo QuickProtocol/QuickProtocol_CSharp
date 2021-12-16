@@ -248,6 +248,8 @@ namespace QpTestClient
 
         private void addConnection(TestConnectionInfo connectionInfo)
         {
+            if (connectionInfo==null)
+                return;
             var connectionNode = treeNodeCollection.Add(connectionInfo.Name, connectionInfo.Name, 0, 0);
             connectionNode.Tag = new ConnectionContext(connectionInfo);
             connectionNode.ContextMenuStrip = cmsConnection;
