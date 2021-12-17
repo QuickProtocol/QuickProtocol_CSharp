@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,7 +29,7 @@ namespace QpTestClient.CodeGen
             //如果没有属性，产生类
             if (schema.Properties.Count == 0)
             {
-                sb.Insert(code.Length-3, $"public class {typeInfo.TypeName}{Environment.NewLine}{{{Environment.NewLine}}}");
+                sb.Insert(code.Length-2, $"public partial class {typeInfo.TypeName}{Environment.NewLine}    {{{Environment.NewLine}    }}");
             }
 
             //如果是命令请求类型
@@ -66,6 +67,9 @@ namespace QpTestClient.CodeGen
 
         public static async Task Generate(QpInstruction instruction, string folder)
         {
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
             //生成通知类代码
             if (instruction.NoticeInfos!=null && instruction.NoticeInfos.Length>0)
             {
@@ -96,7 +100,7 @@ namespace QpTestClient.CodeGen
             sbInstruction.AppendLine("        public static QpInstruction Instance = new QpInstruction()");
             sbInstruction.AppendLine("        {");
             sbInstruction.AppendLine("            Id = typeof(Instruction).Namespace,");
-            sbInstruction.AppendLine($"            Name = {instruction.Name},");
+            sbInstruction.AppendLine($"            Name = \"{instruction.Name}\",");
             if (instruction.NoticeInfos!=null && instruction.NoticeInfos.Length>0)
             {
                 sbInstruction.AppendLine("            NoticeInfos = new[]");
@@ -130,6 +134,21 @@ namespace QpTestClient.CodeGen
             sbInstruction.AppendLine("    }");
             sbInstruction.AppendLine("}");
             File.WriteAllText(Path.Combine(folder, "Instruction.cs"), sbInstruction.ToString());
+            var qpVersion = typeof(QpChannel).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute >().InformationalVersion;
+            File.WriteAllText(Path.Combine(folder, instruction.Id + ".csproj"), @$"
+<Project Sdk=""Microsoft.NET.Sdk"">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include=""Quick.Protocol"" Version=""{qpVersion}"" />
+  </ItemGroup>
+
+</Project>
+");
+
         }
     }
 }

@@ -25,6 +25,8 @@ namespace Quick.Protocol.AllClients
 
         private static void queryStringToOptions(Uri uri, QpClientOptions options)
         {
+            if (string.IsNullOrEmpty(uri.Query))
+                return;
             var queryString = System.Web.HttpUtility.ParseQueryString(uri.Query);
             JObject jObj = new JObject();
             foreach (var key in queryString.AllKeys)

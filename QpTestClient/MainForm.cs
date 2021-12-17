@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -466,6 +467,54 @@ namespace QpTestClient
             }
             finally
             {
+                this.Enabled=true;
+            }
+        }
+
+        private async void btnGenDotNetAssembly_Click(object sender, EventArgs e)
+        {
+            var connectionNode = tvQpInstructions.SelectedNode;
+            var instruction = connectionNode.Tag as QpInstruction;
+            if (instruction == null)
+                return;
+
+            var codeFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            try
+            {
+                this.Enabled=false;
+
+                var fbd = new FolderBrowserDialog();
+                fbd.Description="请选择.NET程序集保存目录...";
+                var dr = fbd.ShowDialog();
+                if (dr== DialogResult.Cancel)
+                    return;
+                var folder = fbd.SelectedPath;
+
+                //生成代码
+                await CodeGen.CSharpCodeGen.Generate(instruction, codeFolder);
+                //编译程序集
+                ProcessStartInfo psi = new ProcessStartInfo("dotnet");
+                psi.WorkingDirectory = codeFolder;
+                psi.Arguments =$"build --configuration Release --output \"{folder}\"";
+                psi.UseShellExecute=true;
+                psi.WindowStyle = ProcessWindowStyle.Hidden;
+                var process = Process.Start(psi);
+                await process.WaitForExitAsync();
+                if (process.ExitCode != 0)
+                    throw new Exception($"编译.NET程序集时出错。");
+                MessageBox.Show($"[{instruction.Name}]指令集生成.NET程序集成功！", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"[{instruction.Name}]指令集生成.NET程序集失败，原因：" + ExceptionUtils.GetExceptionMessage(ex), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            finally
+            {
+                try
+                {
+                    Directory.Delete(codeFolder, true);
+                }
+                catch { }
                 this.Enabled=true;
             }
         }
