@@ -76,7 +76,7 @@ namespace Quick.Protocol
         /// 是否触发NoticePackageReceived事件
         /// </summary>
         [Category("高级")]
-        [DisplayName("是否触发NoticePackageReceived事件")]
+        [DisplayName("是否触发通知数据包接收事件")]
         public bool RaiseNoticePackageReceivedEvent { get; set; } = true;
 
         /// <summary>

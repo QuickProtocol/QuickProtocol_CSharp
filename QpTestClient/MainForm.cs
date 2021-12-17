@@ -412,6 +412,16 @@ namespace QpTestClient
             MessageBox.Show("导出成功！", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+        private void btnGenerateConnectionUrl_Click(object sender, EventArgs e)
+        {
+            var connectionNode = tvQpInstructions.SelectedNode;
+            var connectionContext = connectionNode.Tag as ConnectionContext;
+            if (connectionContext == null)
+                return;
+            var form = new Forms.GenerateConnectionUrl(connectionContext);
+            form.ShowDialog();
+        }
+
         private void BtnRecvNotice_Notice_Click(object sender, EventArgs e)
         {
             var noticeNode = tvQpInstructions.SelectedNode;

@@ -5,10 +5,11 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
-		<Version>2.1.0</Version>
+		<Version>2.1.2</Version>
 		<Authors>scbeta</Authors>
 		<Company />
 		<Product>Quick.Protocol</Product>
+		<Description>SerialPort support for Quick.Protocol</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

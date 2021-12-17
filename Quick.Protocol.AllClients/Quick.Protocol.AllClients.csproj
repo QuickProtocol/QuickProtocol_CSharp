@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	  <TargetFramework>netstandard2.0</TargetFramework>
@@ -7,8 +7,16 @@
 	  <Copyright />
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <Authors>scbeta</Authors>
-	  <Version>2.1.1</Version>
+	  <Version>2.1.2</Version>
 	  <Company />
+	  <Description>Connection url parse support.
+Common use:
+------------------
+TCP: ConnectionUriParser.Parse("tcp://127.0.0.1:3001");
+Pipe: ConnectionUriParser.Parse("pipe://./Quick.Protocol");
+WebSocket: ConnectionUriParser.Parse("ws://127.0.0.1:3001/qp");
+SerialPort: ConnectionUriParser.Parse("serialport://COM1");
+	  </Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -10,7 +10,7 @@ namespace Quick.Protocol.WebSocket.Client
         /// <summary>
         /// WebSocket的URL地址
         /// </summary>
-        [DisplayName("URL")]
+        [DisplayName("WebSocket地址")]
         [Category("常用")]
         public string Url { get; set; } = "ws://127.0.0.1:3011/qp_test";
 
