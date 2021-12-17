@@ -12,12 +12,7 @@ namespace Quick.Protocol
     public abstract class QpClient : QpChannel
     {
         private CancellationTokenSource cts = null;
-        public QpClientOptions Options { get; private set; }        
-
-        /// <summary>
-        /// 连接断开时
-        /// </summary>
-        public event EventHandler Disconnected;
+        public QpClientOptions Options { get; private set; }
 
         public QpClient(QpClientOptions options)
             : base(options)
@@ -39,8 +34,6 @@ namespace Quick.Protocol
             var token = cts.Token;
 
             var stream = await InnerConnectAsync();
-            IsConnected = true;
-
             //初始化网络
             InitQpPackageHandler_Stream(stream);
 
@@ -69,6 +62,7 @@ namespace Quick.Protocol
             }, 5000, () =>
             {
                 Options.OnAuthPassed();
+                IsConnected=true;
             });
 
             //开始心跳
@@ -96,23 +90,15 @@ namespace Quick.Protocol
             }
         }
 
-        protected virtual void Disconnect()
-        {
-            if (IsConnected)
-            {
-                IsConnected = false;
-                Disconnected?.Invoke(this, QpEventArgs.Empty);                
-            }
-        }
-
         /// <summary>
         /// 关闭连接
         /// </summary>
         public void Close()
         {
             cancellAll();
+            IsConnected = false;
             InitQpPackageHandler_Stream(null);
-            Disconnect();            
+            Disconnect();
         }
     }
 }

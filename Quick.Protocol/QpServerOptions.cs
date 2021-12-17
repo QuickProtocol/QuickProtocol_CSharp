@@ -12,7 +12,10 @@ namespace Quick.Protocol
         /// 缓存大小(默认128KB)
         /// </summary>
         public int BufferSize = 128 * 1024;
-
+        /// <summary>
+        /// 认证超时时间，在指定的超时时间没有完成认证，则断开连接
+        /// </summary>
+        public int AuthenticateTimeout { get; set; } = 5000;
         /// <summary>
         /// 服务端程序
         /// </summary>

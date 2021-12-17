@@ -57,9 +57,29 @@ namespace Quick.Protocol
         private ConcurrentDictionary<string, CommandContext> commandDict = new ConcurrentDictionary<string, CommandContext>();
 
         /// <summary>
-        /// 当时是否连接
+        /// 当前是否连接，要连接且认证通过后，才设置此属性为true
         /// </summary>
         public bool IsConnected { get; protected set; }
+
+        /// <summary>
+        /// 连接断开时
+        /// </summary>
+        public event EventHandler Disconnected;
+
+        /// <summary>
+        /// 断开连接时
+        /// </summary>
+        protected virtual void Disconnect()
+        {
+            lock (this)
+            {
+                if (IsConnected)
+                {
+                    IsConnected = false;
+                    Disconnected?.Invoke(this, QpEventArgs.Empty);
+                }
+            }
+        }
 
         /// <summary>
         /// 最后的异常
@@ -182,6 +202,7 @@ namespace Quick.Protocol
             LastException = exception;
             LogUtils.Log("[ReadError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
             InitQpPackageHandler_Stream(null);
+            Disconnect();
         }
 
         //获取空闲的缓存

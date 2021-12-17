@@ -25,12 +25,11 @@ namespace Quick.Protocol
         /// <summary>
         /// 通过认证时
         /// </summary>
-        public event EventHandler Auchenticated;
-
+        internal event EventHandler Auchenticated;
         /// <summary>
-        /// 连接断开时
+        /// 认证超时
         /// </summary>
-        public event EventHandler Disconnected;
+        internal event EventHandler AuchenticateTimeout;
 
         public QpServerChannel(QpServer server, Stream stream, string channelName, CancellationToken cancellationToken, QpServerOptions options) : base(options)
         {
@@ -43,7 +42,6 @@ namespace Quick.Protocol
             cancellationToken.Register(() => Stop());
             //修改缓存大小
             ChangeBufferSize(options.BufferSize);
-            IsConnected = true;
 
             //初始化连接相关指令处理器
             var connectAndAuthCommandExecuterManager = new CommandExecuterManager();
@@ -56,6 +54,25 @@ namespace Quick.Protocol
             InitQpPackageHandler_Stream(stream);
             //开始读取其他数据包
             BeginReadPackage(cts.Token);
+
+            //如果认证超时时间后没有通过认证，则断开连接
+            if (options.AuthenticateTimeout>0)
+                Task.Delay(options.AuthenticateTimeout, cts.Token).ContinueWith(t =>
+                {
+                    if (t.IsCanceled)
+                        return;
+                    if (stream!=null)
+                    {
+                        try
+                        {
+                            stream.Close();
+                            stream.Dispose();
+                            stream=null;
+                        }
+                        catch { }
+                    }
+                    AuchenticateTimeout?.Invoke(this, EventArgs.Empty);
+                });
         }
 
         private Commands.Connect.Response connect(QpChannel handler, Commands.Connect.Request request)
@@ -87,6 +104,7 @@ namespace Quick.Protocol
                 });
                 throw new CommandException(1, "认证失败！");
             }
+            IsConnected=true;
             Auchenticated?.Invoke(this, EventArgs.Empty);
             return new Commands.Authenticate.Response();
         }
@@ -147,11 +165,6 @@ namespace Quick.Protocol
             }
             Stop();
             base.OnReadError(exception);
-            if (IsConnected)
-            {
-                IsConnected = false;
-                Disconnected?.Invoke(this, QpEventArgs.Empty);
-            }
         }
     }
 }

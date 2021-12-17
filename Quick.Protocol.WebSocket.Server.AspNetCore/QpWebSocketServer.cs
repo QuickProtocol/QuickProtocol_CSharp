@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Quick.Protocol.Utils;
 using System;
 using System.Collections;
@@ -12,7 +11,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
     public class QpWebSocketServer : QpServer
     {
         private Queue<WebSocketContext> webSocketContextQueue = new Queue<WebSocketContext>();
-        private AutoResetEvent waitForConnectionAutoResetEvent;
+        private bool isStarted = false;
 
         private class WebSocketContext
         {
@@ -32,7 +31,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
         public override void Start()
         {
-            waitForConnectionAutoResetEvent = new AutoResetEvent(false);
+            isStarted=true;
             lock (webSocketContextQueue)
                 webSocketContextQueue.Clear();
             base.Start();
@@ -40,6 +39,10 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
         public Task OnNewConnection(System.Net.WebSockets.WebSocket webSocket, ConnectionInfo connectionInfo)
         {
+            //如果还没有开始接收，则直接关闭
+            if (!isStarted)
+                return webSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+
             var connectionInfoStr = $"WebSocket:{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
             var cts = new CancellationTokenSource();
             lock (webSocketContextQueue)
@@ -48,7 +51,6 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                         connectionInfoStr,
                         webSocket,
                         cts));
-            waitForConnectionAutoResetEvent.Set();
             return Task.Delay(-1, cts.Token).ContinueWith(t =>
              {
                  if (LogUtils.LogConnection)
@@ -58,40 +60,42 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
         public override void Stop()
         {
+            isStarted=false;
             lock (webSocketContextQueue)
                 webSocketContextQueue.Clear();
-            waitForConnectionAutoResetEvent?.Dispose();
             base.Stop();
         }
 
-        protected override Task InnerAcceptAsync(CancellationToken token)
+        protected override async Task InnerAcceptAsync(CancellationToken token)
         {
-            return Task.Run(() =>
+            WebSocketContext[] webSocketContexts = null;
+            lock (webSocketContextQueue)
             {
-                waitForConnectionAutoResetEvent.WaitOne();
-                WebSocketContext[] webSocketContexts = null;
-                lock (webSocketContextQueue)
+                webSocketContexts = webSocketContextQueue.ToArray();
+                webSocketContextQueue.Clear();
+            }
+            //如果当前没有WebSocket连接，则等待0.1秒后再返回
+            if (webSocketContexts == null || webSocketContexts.Length==0)
+            {
+                await Task.Delay(100);
+                return;
+            }
+            foreach (var context in webSocketContexts)
+            {
+                try
                 {
-                    webSocketContexts = webSocketContextQueue.ToArray();
-                    webSocketContextQueue.Clear();
+                    if (LogUtils.LogConnection)
+                        Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
+                    OnNewChannelConnected(new WebSocketServerStream(context.WebSocket, context.Cts), context.ConnectionInfo, token);
                 }
-                foreach (var context in webSocketContexts)
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        if (LogUtils.LogConnection)
-                            Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
-                        OnNewChannelConnected(new WebSocketServerStream(context.WebSocket,context.Cts), context.ConnectionInfo, token);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (LogUtils.LogConnection)
-                            Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
-                        try { context.WebSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, ex.Message, CancellationToken.None); }
-                        catch { }
-                    }
+                    if (LogUtils.LogConnection)
+                        Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                    try { await context.WebSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, ex.Message, CancellationToken.None); }
+                    catch { }
                 }
-            });
+            }
         }
     }
 }
