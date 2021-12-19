@@ -54,7 +54,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
             return Task.Delay(-1, cts.Token).ContinueWith(t =>
              {
                  if (LogUtils.LogConnection)
-                     Console.WriteLine("[Connection]{0} disconnected.", connectionInfoStr);
+                     LogUtils.Log("[Connection]{0} disconnected.", connectionInfoStr);
              });
         }
 
@@ -85,13 +85,13 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 try
                 {
                     if (LogUtils.LogConnection)
-                        Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
+                        LogUtils.Log("[Connection]{0} connected.", context.ConnectionInfo);
                     OnNewChannelConnected(new WebSocketServerStream(context.WebSocket, context.Cts), context.ConnectionInfo, token);
                 }
                 catch (Exception ex)
                 {
                     if (LogUtils.LogConnection)
-                        Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                        LogUtils.Log("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                     try { await context.WebSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, ex.Message, CancellationToken.None); }
                     catch { }
                 }

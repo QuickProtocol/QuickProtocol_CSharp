@@ -45,13 +45,13 @@ namespace Quick.Protocol.Tcp
                 {
                     var remoteEndPointStr = "TCP:" + tcpClient.Client.RemoteEndPoint.ToString();
                     if (LogUtils.LogConnection)
-                        Console.WriteLine("[Connection]{0} connected.", remoteEndPointStr);
+                        LogUtils.Log("[Connection]{0} connected.", remoteEndPointStr);
                     OnNewChannelConnected(tcpClient.GetStream(), remoteEndPointStr, token);
                 }
                 catch (Exception ex)
                 {
                     if (LogUtils.LogConnection)
-                        Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                        LogUtils.Log("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                     try { tcpClient.Close(); }
                     catch { }
                 }

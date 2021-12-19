@@ -70,7 +70,7 @@ namespace Quick.Protocol
             channel.AuchenticateTimeout += (sender, e) =>
             {
                 if (LogUtils.LogConnection)
-                    LogUtils.Log("[Connection]{0} auchenticate timeout.", channelName);
+                    LogUtils.Log("[Connection]{0} Auchenticate timeout.", channelName);
                 ChannelAuchenticateTimeout?.Invoke(this, channel);
             };
 

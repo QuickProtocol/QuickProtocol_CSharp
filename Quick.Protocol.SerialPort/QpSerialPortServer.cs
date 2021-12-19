@@ -23,7 +23,7 @@ namespace Quick.Protocol.SerialPort
         {
             this.ChannelDisconnected += QpSerialPortServer_ChannelDisconnected;
             if (LogUtils.LogConnection)
-                Console.WriteLine($"Opening SerialPort[{options.PortName}]...");
+                LogUtils.Log($"Opening SerialPort[{options.PortName}]...");
             serialPort = new System.IO.Ports.SerialPort(options.PortName,
                                                 options.BaudRate,
                                                 options.Parity,
@@ -31,7 +31,7 @@ namespace Quick.Protocol.SerialPort
                                                 options.StopBits);
             serialPort.Open();
             if (LogUtils.LogConnection)
-                Console.WriteLine($"SerialPort[{options.PortName}] open success.");
+                LogUtils.Log($"SerialPort[{options.PortName}] open success.");
             isAccepted = false;
             base.Start();
         }

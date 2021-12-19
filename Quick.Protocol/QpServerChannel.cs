@@ -59,8 +59,13 @@ namespace Quick.Protocol
             if (options.AuthenticateTimeout>0)
                 Task.Delay(options.AuthenticateTimeout, cts.Token).ContinueWith(t =>
                 {
-                    if (t.IsCanceled)
+                    //如果已经取消或者已经连接
+                    if (t.IsCanceled
+                    || IsConnected)
                         return;
+                    if (LogUtils.LogConnection)
+                        LogUtils.Log("[Connection]{0} Authenticate timeout.", channelName);
+
                     if (stream!=null)
                     {
                         try
@@ -102,7 +107,7 @@ namespace Quick.Protocol
                 {
                     Stop();
                 });
-                throw new CommandException(1, "认证失败！");
+                throw new CommandException(1, "Authenticate failed.");
             }
             IsConnected=true;
             Auchenticated?.Invoke(this, EventArgs.Empty);
