@@ -519,7 +519,7 @@ namespace Quick.Protocol
         private async Task<int> readData(Stream stream, byte[] buffer, int startIndex, int totalCount, CancellationToken cancellationToken)
         {
             if (totalCount > buffer.Length - startIndex)
-                throw new IOException($"要接收的数据大小[{totalCount}]超出了缓存的大小[{buffer.Length - startIndex}]！");
+                throw new IOException($"Recv data length[{totalCount}] bigger than buffer length[{buffer.Length - startIndex}]");
             int ret;
             var count = 0;
             while (count < totalCount)
@@ -529,7 +529,7 @@ namespace Quick.Protocol
                 if (readTask.IsCanceled || ret == 0)
                     break;
                 if (ret < 0)
-                    throw new IOException("从网络流中读取错误！");
+                    throw new IOException("Read error from stream.");
                 count += ret;
             }
             return count;
