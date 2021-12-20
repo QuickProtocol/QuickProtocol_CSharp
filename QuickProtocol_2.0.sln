@@ -43,7 +43,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApplication1", "Test\Web
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QpTestClient", "QpTestClient\QpTestClient.csproj", "{371967E0-628F-41F7-8983-BA4088CEC9D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quick.Protocol.AllClients", "Quick.Protocol.AllClients\Quick.Protocol.AllClients.csproj", "{09B8EC78-D2C8-44A7-A493-37C0F05BF580}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quick.Protocol.AllClients", "Quick.Protocol.AllClients\Quick.Protocol.AllClients.csproj", "{09B8EC78-D2C8-44A7-A493-37C0F05BF580}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

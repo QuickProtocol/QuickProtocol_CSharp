@@ -7,16 +7,19 @@
 	  <Copyright />
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <Authors>scbeta</Authors>
-	  <Version>2.1.2</Version>
+	  <Version>2.1.3</Version>
 	  <Company />
-	  <Description>Connection url parse support.
+	  <Description>Incluse all QpClient implements.
 Common use:
+------------------
+QpAllClients.RegisterUriSchema();
+
+Uri samples:
 ------------------
 TCP: ConnectionUriParser.Parse("tcp://127.0.0.1:3001");
 Pipe: ConnectionUriParser.Parse("pipe://./Quick.Protocol");
 WebSocket: ConnectionUriParser.Parse("ws://127.0.0.1:3001/qp");
-SerialPort: ConnectionUriParser.Parse("serialport://COM1");
-	  </Description>
+SerialPort: ConnectionUriParser.Parse("serialport://COM1");</Description>
   </PropertyGroup>
 
   <ItemGroup>
