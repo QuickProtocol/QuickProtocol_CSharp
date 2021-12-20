@@ -8,6 +8,7 @@ namespace Quick.Protocol.SerialPort
 {
     public class QpSerialPortClientOptions : QpClientOptions
     {
+        public const string URI_SCHEMA = "serialport";
         /// <summary>
         /// 端口名称
         /// </summary>
@@ -47,5 +48,18 @@ namespace Quick.Protocol.SerialPort
         }
 
         public override string GetConnectionInfo() => PortName;
+
+        public override Type GetQpClientType() => typeof(QpSerialPortClient);
+
+        protected override string ToUriBasic(HashSet<string> ignorePropertyNames)
+        {
+            ignorePropertyNames.Add(nameof(PortName));
+            return $"{URI_SCHEMA}://{PortName}";            
+        }
+
+        public static void RegisterUriSchema()
+        {
+            RegisterUriSchema(URI_SCHEMA, typeof(QpSerialPortClientOptions));
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Quick.Protocol.Utils;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -44,18 +45,22 @@ namespace QpTestClient
                 return;
             }
             var uri = new Uri(url);
-            var connectionInfo = Quick.Protocol.AllClients.ConnectionUriParser.Parse(uri);
-            if (connectionInfo==null)
+            Quick.Protocol.QpClientOptions options = null;
+            try
             {
-                MessageBox.Show("无效的URL！", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                options = Quick.Protocol.QpClientOptions.Parse(uri);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("解析URL时出错，原因：" + ExceptionUtils.GetExceptionString(ex), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            connectionInfo.QpClientOptions.Password = password;
+            options.Password = password;
             ConnectionInfo = new TestConnectionInfo()
             {
                 Name = name,
-                QpClientTypeName = connectionInfo.QpClientType.FullName,
-                QpClientOptions = connectionInfo.QpClientOptions
+                QpClientTypeName = options.GetQpClientType().FullName,
+                QpClientOptions = options
             };
             DialogResult = DialogResult.OK;
             Close();

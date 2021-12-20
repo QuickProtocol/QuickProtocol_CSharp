@@ -7,6 +7,7 @@ namespace Quick.Protocol.Tcp
 {
     public class QpTcpClientOptions : QpClientOptions
     {
+        public const string URI_SCHEMA = "tcp";
         /// <summary>
         /// 主机
         /// </summary>
@@ -42,5 +43,19 @@ namespace Quick.Protocol.Tcp
         }
 
         public override string GetConnectionInfo() => $"{Host}:{Port}";
+
+        public override Type GetQpClientType() => typeof(QpTcpClient);
+
+        protected override string ToUriBasic(HashSet<string> ignorePropertyNames)
+        {
+            ignorePropertyNames.Add(nameof(Host));
+            ignorePropertyNames.Add(nameof(Port));
+            return $"{URI_SCHEMA}://{Host}:{Port}";
+        }
+
+        public static void RegisterUriSchema()
+        {
+            RegisterUriSchema(URI_SCHEMA, typeof(QpTcpClientOptions));
+        }
     }
 }

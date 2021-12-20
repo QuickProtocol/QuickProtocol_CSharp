@@ -7,6 +7,8 @@ namespace Quick.Protocol.WebSocket.Client
 {
     public class QpWebSocketClientOptions : QpClientOptions
     {
+        public const string URI_SCHEMA = "ws";
+
         /// <summary>
         /// WebSocket的URL地址
         /// </summary>
@@ -24,5 +26,18 @@ namespace Quick.Protocol.WebSocket.Client
         }
 
         public override string GetConnectionInfo() => Url;
+
+        public override Type GetQpClientType() => typeof(QpWebSocketClient);
+
+        protected override string ToUriBasic(HashSet<string> ignorePropertyNames)
+        {
+            ignorePropertyNames.Add(nameof(Url));
+            return Url;
+        }
+
+        public static void RegisterUriSchema()
+        {
+            RegisterUriSchema(URI_SCHEMA, typeof(QpWebSocketClientOptions));
+        }
     }
 }

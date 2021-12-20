@@ -14,6 +14,8 @@ namespace QpTestClient
         [STAThread]
         static void Main()
         {
+            Quick.Protocol.QpAllClients.RegisterUriSchema();
+
             QpClientTypeManager.Instance.Init();
 
             Application.SetHighDpiMode(HighDpiMode.SystemAware);

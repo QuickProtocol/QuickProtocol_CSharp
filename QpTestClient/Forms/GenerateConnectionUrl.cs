@@ -35,8 +35,7 @@ namespace QpTestClient.Forms
             var includePassword = cbIncludePassword.Checked;
             var includeOtherProperty = cbIncludeOtherProperty.Checked;
 
-            txtOutput.Text = Quick.Protocol.AllClients.ConnectionUriParser.GenerateConnectionUri(
-                connectionContext.ConnectionInfo.QpClientOptions,
+            txtOutput.Text = connectionContext.ConnectionInfo.QpClientOptions.ToUri(
                 includePassword,
                 includeOtherProperty
                 ).ToString();

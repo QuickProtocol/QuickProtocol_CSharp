@@ -7,6 +7,8 @@ namespace Quick.Protocol.Pipeline
 {
     public class QpPipelineClientOptions : QpClientOptions
     {
+        public const string URI_SCHEMA = "pipe";
+
         [Category("常用")]
         [DisplayName("服务器名称")]
         public string ServerName { get; set; } = ".";
@@ -23,5 +25,19 @@ namespace Quick.Protocol.Pipeline
         }
 
         public override string GetConnectionInfo() => $"{ServerName}\\{PipeName}";
+
+        public override Type GetQpClientType() => typeof(QpPipelineClient);
+
+        protected override string ToUriBasic(HashSet<string> ignorePropertyNames)
+        {
+            ignorePropertyNames.Add(nameof(ServerName));
+            ignorePropertyNames.Add(nameof(PipeName));
+            return $"{URI_SCHEMA}://{ServerName}/{PipeName}";
+        }
+
+        public static void RegisterUriSchema()
+        {
+            RegisterUriSchema(URI_SCHEMA, typeof(QpPipelineClientOptions));
+        }
     }
 }

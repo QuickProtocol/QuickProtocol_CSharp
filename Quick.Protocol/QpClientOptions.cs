@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
@@ -61,6 +63,97 @@ namespace Quick.Protocol
         /// <returns></returns>
         public abstract string GetConnectionInfo();
 
+        /// <summary>
+        /// 获取客户端类型
+        /// </summary>
+        /// <returns></returns>
+        public abstract Type GetQpClientType();
+        /// <summary>
+        /// 创建客户端实例
+        /// </summary>
+        /// <returns></returns>
+        public virtual QpClient CreateClient()
+        {
+            return (QpClient)Activator.CreateInstance(GetQpClientType(), new object[] { this });
+        }
+
+        private void loadFromUri(Uri uri)
+        {
+            if (string.IsNullOrEmpty(uri.Query))
+                return;
+            var queryString = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            JObject jObj = new JObject();
+            foreach (var key in queryString.AllKeys)
+            {
+                jObj.Add(key, queryString[key]);
+            }
+            JsonConvert.PopulateObject(jObj.ToString(), this);
+        }
+
+        protected abstract string ToUriBasic(HashSet<string> ignorePropertyNames);
+
+        public Uri ToUri(bool includePassword = false, bool includeOtherProperty = false)
+        {
+            HashSet<string> ignorePropertyNames = new HashSet<string>();
+            ignorePropertyNames.Add(nameof(HeartBeatInterval));
+            if (!includePassword)
+                ignorePropertyNames.Add(nameof(Password));
+
+            string baseUrl = ToUriBasic(ignorePropertyNames);
+            if (includePassword || includeOtherProperty)
+            {
+                StringBuilder sb = new StringBuilder(baseUrl);
+                int currentIndex = 0;
+
+                var jObj = JObject.FromObject(this);
+                foreach (var property in jObj.Properties())
+                {
+                    var key = property.Name;
+                    if (ignorePropertyNames.Contains(key))
+                        continue;
+                    if (!includeOtherProperty && key!=nameof(Password))
+                        continue;
+                    if (currentIndex==0)
+                        sb.Append("?");
+                    if (currentIndex>0)
+                        sb.Append("&");
+                    currentIndex++;
+
+                    var value = property.Value.ToString();
+                    value=System.Web.HttpUtility.UrlEncode(value);
+                    sb.Append($"{key}={value}");
+                }
+                baseUrl=sb.ToString();
+            }
+            Uri uri = new Uri(baseUrl);
+            return uri;
+        }
+
         public override string ToString() => GetConnectionInfo();
+
+        private static Dictionary<string, Type> schemaQpClientOptionsTypeDict = new Dictionary<string, Type>();
+
+        public static void RegisterUriSchema<T>(string schema)
+            where T : QpClientOptions
+        {
+            RegisterUriSchema(schema, typeof(T));
+        }
+
+        public static void RegisterUriSchema(string schema, Type type)
+        {
+            if (!type.IsSubclassOf(typeof(QpClientOptions)))
+                throw new ArgumentException("Parameter 'type' muse be subclass of QpClientOptions", nameof(type));
+            schemaQpClientOptionsTypeDict[schema] = type;
+        }
+
+        public static QpClientOptions Parse(Uri uri)
+        {
+            if (!schemaQpClientOptionsTypeDict.ContainsKey(uri.Scheme))
+                throw new ArgumentException($"Unknown uri schema [{uri.Scheme}],you muse register uri schema before use it.", nameof(uri));
+            var qpClientOptionsType = schemaQpClientOptionsTypeDict[uri.Scheme];
+            var qpClientOptions = (QpClientOptions)Activator.CreateInstance(qpClientOptionsType);
+            qpClientOptions.loadFromUri(uri);
+            return qpClientOptions;
+        }
     }
 }
