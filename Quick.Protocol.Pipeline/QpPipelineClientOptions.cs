@@ -27,6 +27,13 @@ namespace Quick.Protocol.Pipeline
         public override string GetConnectionInfo() => $"{ServerName}\\{PipeName}";
 
         public override Type GetQpClientType() => typeof(QpPipelineClient);
+        
+        protected override void LoadFromUri(Uri uri)
+        {
+            ServerName =uri.Host;
+            PipeName = uri.AbsolutePath.Replace("/", string.Empty);
+            base.LoadFromUri(uri);
+        }
 
         protected override string ToUriBasic(HashSet<string> ignorePropertyNames)
         {

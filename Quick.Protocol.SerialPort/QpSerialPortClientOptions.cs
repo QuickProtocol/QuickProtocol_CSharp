@@ -50,6 +50,12 @@ namespace Quick.Protocol.SerialPort
         public override string GetConnectionInfo() => PortName;
 
         public override Type GetQpClientType() => typeof(QpSerialPortClient);
+        
+        protected override void LoadFromUri(Uri uri)
+        {
+            PortName = uri.Host;
+            base.LoadFromUri(uri);
+        }
 
         protected override string ToUriBasic(HashSet<string> ignorePropertyNames)
         {

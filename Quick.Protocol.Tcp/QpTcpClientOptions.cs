@@ -46,6 +46,13 @@ namespace Quick.Protocol.Tcp
 
         public override Type GetQpClientType() => typeof(QpTcpClient);
 
+        protected override void LoadFromUri(Uri uri)
+        {
+            Host=uri.Host;
+            Port=uri.Port;
+            base.LoadFromUri(uri);
+        }
+
         protected override string ToUriBasic(HashSet<string> ignorePropertyNames)
         {
             ignorePropertyNames.Add(nameof(Host));

@@ -7,7 +7,8 @@ namespace Quick.Protocol.WebSocket.Client
 {
     public class QpWebSocketClientOptions : QpClientOptions
     {
-        public const string URI_SCHEMA = "ws";
+        public const string URI_SCHEMA_WS = "ws";
+        public const string URI_SCHEMA_WSS = "wss";
 
         /// <summary>
         /// WebSocket的URL地址
@@ -21,13 +22,19 @@ namespace Quick.Protocol.WebSocket.Client
             base.Check();
             if (Url == null)
                 throw new ArgumentNullException(nameof(Url));
-            if (!Url.StartsWith("ws://"))
-                throw new ArgumentException("Url must start with ws://", nameof(Url));
+            if (!Url.StartsWith(URI_SCHEMA_WS + "://") && !Url.StartsWith(URI_SCHEMA_WSS + "://"))
+                throw new ArgumentException("Url must start with ws:// or wss://", nameof(Url));
         }
 
         public override string GetConnectionInfo() => Url;
 
         public override Type GetQpClientType() => typeof(QpWebSocketClient);
+
+        protected override void LoadFromUri(Uri uri)
+        {
+            Url = uri.ToString();
+            base.LoadFromUri(uri);
+        }
 
         protected override string ToUriBasic(HashSet<string> ignorePropertyNames)
         {
@@ -37,7 +44,8 @@ namespace Quick.Protocol.WebSocket.Client
 
         public static void RegisterUriSchema()
         {
-            RegisterUriSchema(URI_SCHEMA, typeof(QpWebSocketClientOptions));
+            RegisterUriSchema(URI_SCHEMA_WS, typeof(QpWebSocketClientOptions));
+            RegisterUriSchema(URI_SCHEMA_WSS, typeof(QpWebSocketClientOptions));
         }
     }
 }

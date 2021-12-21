@@ -77,7 +77,7 @@ namespace Quick.Protocol
             return (QpClient)Activator.CreateInstance(GetQpClientType(), new object[] { this });
         }
 
-        private void loadFromUri(Uri uri)
+        protected virtual void LoadFromUri(Uri uri)
         {
             if (string.IsNullOrEmpty(uri.Query))
                 return;
