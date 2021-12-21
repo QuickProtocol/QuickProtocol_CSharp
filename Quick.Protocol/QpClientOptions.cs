@@ -152,7 +152,7 @@ namespace Quick.Protocol
                 throw new ArgumentException($"Unknown uri schema [{uri.Scheme}],you muse register uri schema before use it.", nameof(uri));
             var qpClientOptionsType = schemaQpClientOptionsTypeDict[uri.Scheme];
             var qpClientOptions = (QpClientOptions)Activator.CreateInstance(qpClientOptionsType);
-            qpClientOptions.loadFromUri(uri);
+            qpClientOptions.LoadFromUri(uri);
             return qpClientOptions;
         }
     }
