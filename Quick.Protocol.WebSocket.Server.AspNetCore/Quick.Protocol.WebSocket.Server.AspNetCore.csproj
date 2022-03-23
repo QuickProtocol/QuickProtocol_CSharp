@@ -10,7 +10,16 @@
 		<Company />
 		<Product>Quick.Protocol</Product>
 		<Description>WebSocket server support for Quick.Protocol(Use ASP.NET Core)</Description>
+		<PackageIcon>logo.png</PackageIcon>
+		<PackageTags>QuickProtocol</PackageTags>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Include="..\logo.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />

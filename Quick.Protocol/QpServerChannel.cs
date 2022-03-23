@@ -145,8 +145,7 @@ namespace Quick.Protocol
         {
             try
             {
-                if (cts != null && !cts.IsCancellationRequested)
-                    cts.Cancel();
+                cts?.Cancel();
                 stream?.Close();
                 stream?.Dispose();
             }

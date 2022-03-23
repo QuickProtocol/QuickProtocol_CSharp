@@ -12,7 +12,7 @@ namespace Quick.Protocol
     {
         private CancellationTokenSource cts;
         private QpServerOptions options;
-        
+
         private List<QpServerChannel> channelList = new List<QpServerChannel>();
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Quick.Protocol
         /// 通道连接断开时
         /// </summary>
         public event EventHandler<QpServerChannel> ChannelDisconnected;
-        
+
         /// <summary>
         /// 通道认证超时
         /// </summary>
@@ -114,7 +114,7 @@ namespace Quick.Protocol
 
         public virtual void Stop()
         {
-            cts.Cancel();
+            cts?.Cancel();
             cts = null;
         }
     }
