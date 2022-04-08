@@ -55,6 +55,7 @@ namespace QpTestClient
             this.btnEditConnection = new System.Windows.Forms.ToolStripMenuItem();
             this.btnDelConnection = new System.Windows.Forms.ToolStripMenuItem();
             this.btnExportConnectionFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnGenerateConnectionUrl = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsNotice = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.btnRecvNotice_Notice = new System.Windows.Forms.ToolStripMenuItem();
             this.cmsCommand = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -62,7 +63,6 @@ namespace QpTestClient
             this.cmsInstruction = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.btnGenCSharpCode = new System.Windows.Forms.ToolStripMenuItem();
             this.btnGenDotNetAssembly = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnGenerateConnectionUrl = new System.Windows.Forms.ToolStripMenuItem();
             this.tsMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scMain)).BeginInit();
             this.scMain.Panel1.SuspendLayout();
@@ -104,30 +104,30 @@ namespace QpTestClient
             // btnQuickAddConnection
             // 
             this.btnQuickAddConnection.Name = "btnQuickAddConnection";
-            this.btnQuickAddConnection.Size = new System.Drawing.Size(224, 26);
+            this.btnQuickAddConnection.Size = new System.Drawing.Size(186, 26);
             this.btnQuickAddConnection.Text = "快速添加(&Q)...";
             // 
             // btnAddConnection
             // 
             this.btnAddConnection.Name = "btnAddConnection";
-            this.btnAddConnection.Size = new System.Drawing.Size(224, 26);
+            this.btnAddConnection.Size = new System.Drawing.Size(186, 26);
             this.btnAddConnection.Text = "添加(&A)...";
             // 
             // btnImportConnectionFile
             // 
             this.btnImportConnectionFile.Name = "btnImportConnectionFile";
-            this.btnImportConnectionFile.Size = new System.Drawing.Size(224, 26);
+            this.btnImportConnectionFile.Size = new System.Drawing.Size(186, 26);
             this.btnImportConnectionFile.Text = "导入(&I)..";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(221, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(183, 6);
             // 
             // btnExit
             // 
             this.btnExit.Name = "btnExit";
-            this.btnExit.Size = new System.Drawing.Size(224, 26);
+            this.btnExit.Size = new System.Drawing.Size(186, 26);
             this.btnExit.Text = "退出(&X)";
             // 
             // toolStripDropDownButton1
@@ -219,65 +219,72 @@ namespace QpTestClient
             this.btnExportConnectionFile,
             this.btnGenerateConnectionUrl});
             this.cmsConnection.Name = "cmsConnection";
-            this.cmsConnection.Size = new System.Drawing.Size(211, 260);
+            this.cmsConnection.Size = new System.Drawing.Size(169, 232);
             // 
             // btnDisconnectConnection
             // 
             this.btnDisconnectConnection.Name = "btnDisconnectConnection";
-            this.btnDisconnectConnection.Size = new System.Drawing.Size(210, 24);
+            this.btnDisconnectConnection.Size = new System.Drawing.Size(168, 24);
             this.btnDisconnectConnection.Text = "断开(&D)";
             // 
             // btnConnectConnection
             // 
             this.btnConnectConnection.Name = "btnConnectConnection";
-            this.btnConnectConnection.Size = new System.Drawing.Size(210, 24);
+            this.btnConnectConnection.Size = new System.Drawing.Size(168, 24);
             this.btnConnectConnection.Text = "连接";
             // 
             // separatorConnection
             // 
             this.separatorConnection.Name = "separatorConnection";
-            this.separatorConnection.Size = new System.Drawing.Size(207, 6);
+            this.separatorConnection.Size = new System.Drawing.Size(165, 6);
             // 
             // btnRecvHeartbeat_Connection
             // 
             this.btnRecvHeartbeat_Connection.Name = "btnRecvHeartbeat_Connection";
-            this.btnRecvHeartbeat_Connection.Size = new System.Drawing.Size(210, 24);
+            this.btnRecvHeartbeat_Connection.Size = new System.Drawing.Size(168, 24);
             this.btnRecvHeartbeat_Connection.Text = "接收心跳(&H)..";
             // 
             // btnRecvNotice_Connection
             // 
             this.btnRecvNotice_Connection.Name = "btnRecvNotice_Connection";
-            this.btnRecvNotice_Connection.Size = new System.Drawing.Size(210, 24);
+            this.btnRecvNotice_Connection.Size = new System.Drawing.Size(168, 24);
             this.btnRecvNotice_Connection.Text = "接收通知(&R)..";
             // 
             // btnTestCommand_Connection
             // 
             this.btnTestCommand_Connection.Name = "btnTestCommand_Connection";
-            this.btnTestCommand_Connection.Size = new System.Drawing.Size(210, 24);
+            this.btnTestCommand_Connection.Size = new System.Drawing.Size(168, 24);
             this.btnTestCommand_Connection.Text = "测试命令(&T)..";
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(207, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(165, 6);
             // 
             // btnEditConnection
             // 
             this.btnEditConnection.Name = "btnEditConnection";
-            this.btnEditConnection.Size = new System.Drawing.Size(210, 24);
+            this.btnEditConnection.Size = new System.Drawing.Size(168, 24);
             this.btnEditConnection.Text = "编辑(&E)..";
             // 
             // btnDelConnection
             // 
             this.btnDelConnection.Name = "btnDelConnection";
-            this.btnDelConnection.Size = new System.Drawing.Size(210, 24);
+            this.btnDelConnection.Size = new System.Drawing.Size(168, 24);
             this.btnDelConnection.Text = "删除(&D)";
             // 
             // btnExportConnectionFile
             // 
             this.btnExportConnectionFile.Name = "btnExportConnectionFile";
-            this.btnExportConnectionFile.Size = new System.Drawing.Size(210, 24);
+            this.btnExportConnectionFile.Size = new System.Drawing.Size(168, 24);
             this.btnExportConnectionFile.Text = "导出(&X)..";
+            // 
+            // btnGenerateConnectionUrl
+            // 
+            this.btnGenerateConnectionUrl.Name = "btnGenerateConnectionUrl";
+            this.btnGenerateConnectionUrl.Size = new System.Drawing.Size(168, 24);
+            this.btnGenerateConnectionUrl.Text = "生成URL(&U)..";
+            this.btnGenerateConnectionUrl.Click += new System.EventHandler(this.btnGenerateConnectionUrl_Click);
             // 
             // cmsNotice
             // 
@@ -329,13 +336,6 @@ namespace QpTestClient
             this.btnGenDotNetAssembly.Size = new System.Drawing.Size(198, 24);
             this.btnGenDotNetAssembly.Text = "生成.NET程序集...";
             this.btnGenDotNetAssembly.Click += new System.EventHandler(this.btnGenDotNetAssembly_Click);
-            // 
-            // btnGenerateConnectionUrl
-            // 
-            this.btnGenerateConnectionUrl.Name = "btnGenerateConnectionUrl";
-            this.btnGenerateConnectionUrl.Size = new System.Drawing.Size(210, 24);
-            this.btnGenerateConnectionUrl.Text = "生成URL(&U)..";
-            this.btnGenerateConnectionUrl.Click += new System.EventHandler(this.btnGenerateConnectionUrl_Click);
             // 
             // MainForm
             // 
