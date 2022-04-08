@@ -19,7 +19,8 @@ namespace Quick.Protocol
         private string question;
         //通过认证后，才允许使用的命令执行管理器列表
         private List<CommandExecuterManager> authedCommandExecuterManagerList = null;
-
+        //通过认证后，才允许使用的通知处理器管理器列表
+        private List<NoticeHandlerManager> authedNoticeHandlerManagerList = null;
         public string ChannelName { get; private set; }
 
         /// <summary>
@@ -38,6 +39,8 @@ namespace Quick.Protocol
             this.ChannelName = channelName;
             this.options = options;
             this.authedCommandExecuterManagerList = options.CommandExecuterManagerList;
+            this.authedNoticeHandlerManagerList = options.NoticeHandlerManagerList;
+
             cts = new CancellationTokenSource();
             cancellationToken.Register(() => Stop());
             //修改缓存大小
@@ -50,6 +53,7 @@ namespace Quick.Protocol
             connectAndAuthCommandExecuterManager.Register(new Commands.HandShake.Request(), handShake);
             connectAndAuthCommandExecuterManager.Register(new Commands.GetQpInstructions.Request(), getQpInstructions);
             options.CommandExecuterManagerList = new List<CommandExecuterManager>() { connectAndAuthCommandExecuterManager };
+            options.NoticeHandlerManagerList = null;
 
             InitQpPackageHandler_Stream(stream);
             //开始读取其他数据包
@@ -117,6 +121,7 @@ namespace Quick.Protocol
         private Commands.HandShake.Response handShake(QpChannel handler, Commands.HandShake.Request request)
         {
             options.CommandExecuterManagerList.AddRange(authedCommandExecuterManagerList);
+            options.NoticeHandlerManagerList = authedNoticeHandlerManagerList;
             options.InternalCompress = request.EnableCompress;
             options.InternalEncrypt = request.EnableEncrypt;
             options.InternalTransportTimeout = request.TransportTimeout;

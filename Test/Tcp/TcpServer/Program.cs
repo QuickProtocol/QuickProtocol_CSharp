@@ -34,7 +34,7 @@ namespace TcpServer
     </head>
     <body>
         <p>Welcome to use <b>Quick.Protocol</b>.</p>
-        <p>Source Code:<a href=""http://github.com/aaasoft/Quick.Protocol"">http://github.com/aaasoft/Quick.Protocol</a></p>
+        <p>Source Code:<a href=""https://github.com/QuickProtocol"">https://github.com/QuickProtocol</a></p>
         <p>Time:{DateTime.Now}</p>
     </body>
 </html>";

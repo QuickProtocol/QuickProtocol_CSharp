@@ -10,11 +10,6 @@ namespace Quick.Protocol
     {
         private Dictionary<string, Delegate> commandExecuterDict = new Dictionary<string, Delegate>();
 
-        public CommandExecuterManager()
-        {
-
-        }
-
         /// <summary>
         /// 获取全部注册的命令请求类型名称
         /// </summary>

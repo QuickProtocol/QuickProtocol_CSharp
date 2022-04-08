@@ -85,6 +85,12 @@ namespace Quick.Protocol
         [Browsable(false)]
         [JsonIgnore]
         public List<CommandExecuterManager> CommandExecuterManagerList { get; set; } = new List<CommandExecuterManager>();
+        /// <summary>
+        /// 通知处理器管理器列表
+        /// </summary>
+        [Browsable(false)]
+        [JsonIgnore]
+        public List<NoticeHandlerManager> NoticeHandlerManagerList { get; set; } = new List<NoticeHandlerManager>();
 
         // <summary>
         // 注册指令执行器管理器
@@ -92,6 +98,15 @@ namespace Quick.Protocol
         public void RegisterCommandExecuterManager(CommandExecuterManager commandExecuterManager)
         {
             CommandExecuterManagerList.Add(commandExecuterManager);
+        }
+
+        /// <summary>
+        /// 注册通知处理器管理器
+        /// </summary>
+        /// <param name="noticeHandlerManager"></param>
+        public void RegisterNoticeHandlerManager(NoticeHandlerManager noticeHandlerManager)
+        {
+            NoticeHandlerManagerList.Add(noticeHandlerManager);
         }
     }
 }

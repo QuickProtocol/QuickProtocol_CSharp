@@ -707,18 +707,32 @@ namespace Quick.Protocol
                 TypeName = typeName,
                 Content = content
             });
+            //如果在字典中未找到此类型名称，则直接返回
+            if (!noticeTypeDict.ContainsKey(typeName))
+                return;
+            var contentModel = JsonConvert.DeserializeObject(content, noticeTypeDict[typeName]);
+
+            //处理通知
+            var hasNoticeHandler = false;
+            if (options.NoticeHandlerManagerList != null)
+                foreach (var noticeHandlerManager in options.NoticeHandlerManagerList)
+                {
+                    if (noticeHandlerManager.CanHandleNoticed(typeName))
+                    {
+                        hasNoticeHandler = true;
+                        noticeHandlerManager.HandleNotice(this, typeName, contentModel);
+                        break;
+                    }
+                }
 
             //如果配置了触发NoticePackageReceived事件
             if (options.RaiseNoticePackageReceivedEvent)
-            {
-                //如果在字典中未找到此类型名称，则直接返回
-                if (!noticeTypeDict.ContainsKey(typeName))
-                    return;
-                var contentModel = JsonConvert.DeserializeObject(content, noticeTypeDict[typeName]);
+            {                
                 NoticePackageReceived?.Invoke(this, new NoticePackageReceivedEventArgs()
                 {
                     TypeName = typeName,
-                    ContentModel = contentModel
+                    ContentModel = contentModel,
+                    Handled = hasNoticeHandler
                 });
             }
         }

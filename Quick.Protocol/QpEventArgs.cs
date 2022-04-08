@@ -36,6 +36,10 @@ namespace Quick.Protocol
         /// 内容模型
         /// </summary>
         public object ContentModel { get; set; }
+        /// <summary>
+        /// 是否已处理
+        /// </summary>
+        public bool Handled { get; set; }
     }
 
     /// <summary>
