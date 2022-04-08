@@ -9,8 +9,23 @@ namespace QpTestClient
     public class ConnectionContext : IDisposable
     {
         public TestConnectionInfo ConnectionInfo { get; private set; }
-        public bool Connected { get; private set; } = false;
+
+        private bool _Connected = false;
+        public bool Connected
+        {
+            get { return _Connected; }
+            private set
+            {
+                if (_Connected == value)
+                    return;
+                _Connected = value;
+                if (!value)
+                    Disconnected?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
         public QpClient QpClient { get; private set; }
+        public event EventHandler Disconnected;
 
         public ConnectionContext(TestConnectionInfo connectionInfo)
         {

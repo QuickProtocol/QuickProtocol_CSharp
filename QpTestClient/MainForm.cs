@@ -313,14 +313,14 @@ namespace QpTestClient
             if (connectionContext == null)
                 return;
 
-            this.Enabled = false;
+            scMain.Enabled = false;
             try
             {
                 var preConnectionInfoContent = Quick.Xml.XmlConvert.Serialize(connectionContext.ConnectionInfo);
 
                 await connectionContext.Connect();
                 connectionNode.ImageIndex = connectionNode.SelectedImageIndex = 1;
-                connectionContext.QpClient.Disconnected += (sender, e) =>
+                connectionContext.Disconnected += (sender, e) =>
                 {
                     Invoke(new Action(() =>
                     {
@@ -339,7 +339,7 @@ namespace QpTestClient
             {
                 MessageBox.Show($"连接失败，原因：{ExceptionUtils.GetExceptionMessage(ex)}", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-            this.Enabled = true;
+            scMain.Enabled = true;
         }
 
         private void BtnRecvHeartbeat_Connection_Click(object sender, EventArgs e)
