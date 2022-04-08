@@ -1,4 +1,5 @@
-﻿using Quick.Protocol;
+﻿using Newtonsoft.Json;
+using Quick.Protocol;
 using System;
 
 namespace PipelineServer
@@ -15,13 +16,20 @@ namespace PipelineServer
             //Quick.Protocol.Utils.LogUtils.LogContent = true;
 
             var commandExecuterManager = new CommandExecuterManager();
-            commandExecuterManager.Register<Quick.Protocol.Commands.PrivateCommand.Request, Quick.Protocol.Commands.PrivateCommand.Response>((handler, req) =>
-            {
-                return new Quick.Protocol.Commands.PrivateCommand.Response()
+            commandExecuterManager.Register<Quick.Protocol.Commands.PrivateCommand.Request, Quick.Protocol.Commands.PrivateCommand.Response>(
+                (handler, req) =>
                 {
-                    Content = req.Content
-                };
-            });
+                    return new Quick.Protocol.Commands.PrivateCommand.Response()
+                    {
+                        Content = req.Content
+                    };
+                });
+            var noticeHandlerManager = new NoticeHandlerManager();
+            noticeHandlerManager.Register<Quick.Protocol.Notices.PrivateNotice>(
+                (handler, notice) =>
+                {
+                    Console.WriteLine($"收到PrivateNotice: {JsonConvert.SerializeObject(notice)}");
+                });
             var serverOptions = new Quick.Protocol.Pipeline.QpPipelineServerOptions()
             {
                 PipeName = "Quick.Protocol",
@@ -29,6 +37,7 @@ namespace PipelineServer
                 ServerProgram = nameof(PipelineServer) + " 1.0"
             };
             serverOptions.RegisterCommandExecuterManager(commandExecuterManager);
+            serverOptions.RegisterNoticeHandlerManager(noticeHandlerManager);
 
             var server = new Quick.Protocol.Pipeline.QpPipelineServer(serverOptions);
 

@@ -55,7 +55,7 @@ namespace PipelineClient
                     Console.WriteLine("SendCommand Error:" + ex.ToString());
                 }
 
-                //client.SendNoticePackage(new Quick.Protocol.Notices.Ping() { Content = "Hello Quick.Protocol V2!" });
+                client.SendNoticePackage(new Quick.Protocol.Notices.PrivateNotice() { Content = "Hello Quick.Protocol V2!" });
                 //client.SendNoticePackage(new Quick.Protocol.Notices.Ping() { Content = "".PadRight(5 * 1024, '0') });
             });
             Console.ReadLine();
