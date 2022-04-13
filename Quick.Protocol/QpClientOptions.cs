@@ -58,12 +58,6 @@ namespace Quick.Protocol
         }
 
         /// <summary>
-        /// 获取连接信息
-        /// </summary>
-        /// <returns></returns>
-        public abstract string GetConnectionInfo();
-
-        /// <summary>
         /// 获取客户端类型
         /// </summary>
         /// <returns></returns>
@@ -129,7 +123,7 @@ namespace Quick.Protocol
             return uri;
         }
 
-        public override string ToString() => GetConnectionInfo();
+        public override string ToString() => ToUri().ToString();
 
         private static Dictionary<string, Type> schemaQpClientOptionsTypeDict = new Dictionary<string, Type>();
 

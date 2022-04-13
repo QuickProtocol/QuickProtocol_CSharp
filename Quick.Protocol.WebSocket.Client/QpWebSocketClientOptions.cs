@@ -26,8 +26,6 @@ namespace Quick.Protocol.WebSocket.Client
                 throw new ArgumentException("Url must start with ws:// or wss://", nameof(Url));
         }
 
-        public override string GetConnectionInfo() => Url;
-
         public override Type GetQpClientType() => typeof(QpWebSocketClient);
 
         protected override void LoadFromUri(Uri uri)

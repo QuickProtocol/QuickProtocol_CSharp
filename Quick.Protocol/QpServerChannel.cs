@@ -16,12 +16,14 @@ namespace Quick.Protocol
         private Stream stream;
         private CancellationTokenSource cts;
         private QpServerOptions options;
+        private string channelName;
         private string question;
         //通过认证后，才允许使用的命令执行管理器列表
         private List<CommandExecuterManager> authedCommandExecuterManagerList = null;
         //通过认证后，才允许使用的通知处理器管理器列表
         private List<NoticeHandlerManager> authedNoticeHandlerManagerList = null;
-        public string ChannelName { get; private set; }
+        
+        public override string ChannelName => channelName;
 
         /// <summary>
         /// 通过认证时
@@ -36,7 +38,7 @@ namespace Quick.Protocol
         {
             this.server = server;
             this.stream = stream;
-            this.ChannelName = channelName;
+            this.channelName = channelName;
             this.options = options;
             this.authedCommandExecuterManagerList = options.CommandExecuterManagerList;
             this.authedNoticeHandlerManagerList = options.NoticeHandlerManagerList;
@@ -58,6 +60,8 @@ namespace Quick.Protocol
             InitQpPackageHandler_Stream(stream);
             //开始读取其他数据包
             BeginReadPackage(cts.Token);
+            //开始统计网络数据
+            BeginNetstat(cts.Token);
 
             //如果认证超时时间后没有通过认证，则断开连接
             if (options.AuthenticateTimeout>0)

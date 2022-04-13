@@ -104,17 +104,6 @@ namespace QpTestClient
             }
         }
 
-        private Control getPropertyGridControl(object obj)
-        {
-            TypeDescriptor.AddAttributes(obj, new Attribute[] { new ReadOnlyAttribute(true) });
-
-            var control = new PropertyGrid();
-            control.SelectedObject = obj;
-            control.ToolbarVisible = false;
-            control.PropertySort = PropertySort.NoSort;
-            return control;
-        }
-
         private void tvQpInstructions_AfterSelect(object sender, TreeViewEventArgs e)
         {
             var node = e.Node;
@@ -128,11 +117,11 @@ namespace QpTestClient
             else if (nodeObj is ConnectionContext)
             {
                 var connectionContext = (ConnectionContext)nodeObj;
-                showContent(getPropertyGridControl(connectionContext.ConnectionInfo.QpClientOptions));
+                showContent(new Controls.ConnectionInfoControl(connectionContext));
             }
             else if (nodeObj is QpInstruction)
             {
-                showContent(getPropertyGridControl(nodeObj));
+                showContent(UiUtils.GetPropertyGridControl(nodeObj));
             }
             else if (nodeObj is QpNoticeInfo)
             {

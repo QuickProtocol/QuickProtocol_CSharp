@@ -62,6 +62,10 @@ namespace Quick.Protocol
         [Category("高级")]
         [DisplayName("最大包大小")]
         public int MaxPackageSize { get; set; } = 10 * 1024 * 1024;
+        
+        [Category("高级")]
+        [DisplayName("是否启用网络统计")]
+        public bool EnableNetstat { get; set; } = true;
 
         public virtual void Check()
         {

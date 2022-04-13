@@ -20,7 +20,7 @@ namespace Quick.Protocol
             options.Check();
             this.Options = options;
         }
-
+        public override string ChannelName => Options.ToUri().ToString();
         protected abstract Task<Stream> InnerConnectAsync();
 
         /// <summary>
@@ -39,6 +39,8 @@ namespace Quick.Protocol
 
             //开始读取其他数据包
             BeginReadPackage(token);
+            //开始统计网络数据
+            BeginNetstat(token);
 
             var repConnect = await SendCommand(new Commands.Connect.Request()
             {

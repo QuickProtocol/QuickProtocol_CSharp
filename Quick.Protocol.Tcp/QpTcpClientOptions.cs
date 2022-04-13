@@ -42,8 +42,6 @@ namespace Quick.Protocol.Tcp
                 throw new ArgumentException("Port must between 0 and 65535", nameof(Port));
         }
 
-        public override string GetConnectionInfo() => $"{Host}:{Port}";
-
         public override Type GetQpClientType() => typeof(QpTcpClient);
 
         protected override void LoadFromUri(Uri uri)

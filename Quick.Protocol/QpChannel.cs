@@ -56,11 +56,58 @@ namespace Quick.Protocol
 
         private ConcurrentDictionary<string, CommandContext> commandDict = new ConcurrentDictionary<string, CommandContext>();
 
+        private bool _IsConnected = false;
         /// <summary>
         /// 当前是否连接，要连接且认证通过后，才设置此属性为true
         /// </summary>
-        public bool IsConnected { get; protected set; }
+        public bool IsConnected
+        {
+            get
+            {
+                return _IsConnected;
+            }
+            protected set
+            {
+                _IsConnected = value;
+                if (value)
+                    LastConnectedTime = DateTime.Now;
+                else
+                    LastDisconnectedTime = DateTime.Now;
+            }
+        }
 
+        /// <summary>
+        /// 通道名称
+        /// </summary>
+        public abstract string ChannelName { get; }
+
+        //长整型数字的一半，统计大于这个数时，统计计数归零，防止溢出
+        private long LONG_HALF_MAX_VALUE = long.MaxValue / 2;
+        /// <summary>
+        /// 总共接收到的字节数量
+        /// </summary>
+        public long BytesReceived { get; private set; }
+        /// <summary>
+        /// 总共发送的字节数量
+        /// </summary>
+        public long BytesSent { get; private set; }
+        /// <summary>
+        /// 每秒接收到的字节数量
+        /// </summary>
+        public long BytesReceivedPerSec { get; private set; }
+        /// <summary>
+        /// 每秒发送的字节数量
+        /// </summary>
+        public long BytesSentPerSec { get; private set; }
+
+        /// <summary>
+        /// 最后一次连接的时间
+        /// </summary>
+        public DateTime? LastConnectedTime { get; private set; }
+        /// <summary>
+        /// 最后一次断开的时间
+        /// </summary>
+        public DateTime? LastDisconnectedTime { get; private set; }
         /// <summary>
         /// 连接断开时
         /// </summary>
@@ -141,7 +188,7 @@ namespace Quick.Protocol
         /// <summary>
         /// 增加Tag属性，用于引用与处理器相关的对象
         /// </summary>
-        public Object Tag { get; set; }
+        public object Tag { get; set; }
 
         private Dictionary<string, Type> noticeTypeDict = new Dictionary<string, Type>();
 
@@ -255,6 +302,12 @@ namespace Quick.Protocol
             afterSendHandler?.Invoke();
             //发送包内容
             stream.Write(packageBuffer.Array, packageBuffer.Offset, packageBuffer.Count);
+            if (options.EnableNetstat)
+            {
+                BytesSent += packageBuffer.Count;
+                if (BytesSent > LONG_HALF_MAX_VALUE)
+                    BytesSent = 0;
+            }
             if (LogUtils.LogPackage)
                 LogUtils.Log(
                     "{0}: [Send-Package]Length:{1}，Type:{2}，Content:{3}",
@@ -340,7 +393,7 @@ namespace Quick.Protocol
                 {
                     LastException = ex;
                     LogUtils.Log("[SendPackage]" + ExceptionUtils.GetExceptionString(ex));
-                    throw ex;
+                    throw;
                 }
             }
         }
@@ -531,6 +584,12 @@ namespace Quick.Protocol
                 if (ret < 0)
                     throw new IOException("Read error from stream.");
                 count += ret;
+                if (options.EnableNetstat)
+                {
+                    BytesReceived += ret;
+                    if (BytesReceived > LONG_HALF_MAX_VALUE)
+                        BytesReceived = 0;
+                }
             }
             return count;
         }
@@ -826,6 +885,29 @@ namespace Quick.Protocol
                 commandContext.SetResponse(typeName, content);
             else
                 commandContext.SetResponse(new CommandException(code, message));
+        }
+        
+
+        protected void BeginNetstat(CancellationToken cancellationToken)
+        {
+            if (!options.EnableNetstat)
+                return;
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            long preBytesReceived = BytesReceived;
+            long preBytesSent = BytesSent;
+
+            Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ContinueWith(t =>
+            {
+                if (t.IsCanceled)
+                    return;
+                if (QpPackageHandler_Stream == null)
+                    return;
+                BytesReceivedPerSec = BytesReceived - preBytesReceived;
+                BytesSentPerSec = BytesSent - preBytesSent;
+                BeginNetstat(cancellationToken);
+            });
         }
 
         protected void BeginReadPackage(CancellationToken token)
