@@ -31,7 +31,7 @@ namespace Quick.Protocol.Pipeline
             return pipeClientStream;
         }
 
-        protected override void Disconnect()
+        public override void Disconnect()
         {
             if (pipeClientStream != null)
             {

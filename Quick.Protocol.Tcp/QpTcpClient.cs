@@ -37,7 +37,7 @@ namespace Quick.Protocol.Tcp
             return tcpClient.GetStream();
         }
 
-        protected override void Disconnect()
+        public override void Disconnect()
         {
             if (tcpClient != null)
             {

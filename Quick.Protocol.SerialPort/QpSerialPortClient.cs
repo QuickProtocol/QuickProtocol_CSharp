@@ -35,7 +35,7 @@ namespace Quick.Protocol.SerialPort
             return serialPort.BaseStream;
         }
 
-        protected override void Disconnect()
+        public override void Disconnect()
         {
             if (serialPort != null)
             {

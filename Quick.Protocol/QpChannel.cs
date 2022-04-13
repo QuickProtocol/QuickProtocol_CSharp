@@ -69,7 +69,7 @@ namespace Quick.Protocol
         /// <summary>
         /// 断开连接时
         /// </summary>
-        protected virtual void Disconnect()
+        public virtual void Disconnect()
         {
             lock (this)
             {
