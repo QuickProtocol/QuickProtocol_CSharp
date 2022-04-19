@@ -12,9 +12,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
     {
         private System.Net.WebSockets.WebSocket webSocket;
         private CancellationToken cancellationToken;
-        private const int ReadSize = 1024 * 4;
-        private byte[] readBuffer = new byte[ReadSize];
-
+        
         public WebSocketServerStream(System.Net.WebSockets.WebSocket webSocket, CancellationToken cancellationToken)
         {
             this.webSocket = webSocket;

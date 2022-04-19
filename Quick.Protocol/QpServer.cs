@@ -116,6 +116,11 @@ namespace Quick.Protocol
         {
             cts?.Cancel();
             cts = null;
+            lock (channelList)
+            {
+                channelList.Clear();
+                Channels = channelList.ToArray();
+            }
         }
     }
 }
