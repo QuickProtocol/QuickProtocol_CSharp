@@ -17,13 +17,11 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
         {
             public string ConnectionInfo { get; set; }
             public System.Net.WebSockets.WebSocket WebSocket { get; set; }
-            public CancellationTokenSource Cts { get; set; }
 
             public WebSocketContext(string connectionInfo, System.Net.WebSockets.WebSocket webSocket, CancellationTokenSource cts)
             {
                 ConnectionInfo = connectionInfo;
                 WebSocket = webSocket;
-                Cts = cts;
             }
         }
 
@@ -86,7 +84,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 {
                     if (LogUtils.LogConnection)
                         LogUtils.Log("[Connection]{0} connected.", context.ConnectionInfo);
-                    OnNewChannelConnected(new WebSocketServerStream(context.WebSocket, context.Cts), context.ConnectionInfo, token);
+                    OnNewChannelConnected(new WebSocketServerStream(context.WebSocket, token), context.ConnectionInfo, token);
                 }
                 catch (Exception ex)
                 {

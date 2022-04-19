@@ -11,14 +11,14 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
     internal class WebSocketServerStream : Stream
     {
         private System.Net.WebSockets.WebSocket webSocket;
-        private CancellationTokenSource cts = null;
+        private CancellationToken cancellationToken;
         private const int ReadSize = 1024 * 4;
         private byte[] readBuffer = new byte[ReadSize];
 
-        public WebSocketServerStream(System.Net.WebSockets.WebSocket webSocket, CancellationTokenSource cts)
+        public WebSocketServerStream(System.Net.WebSockets.WebSocket webSocket, CancellationToken cancellationToken)
         {
             this.webSocket = webSocket;
-            this.cts = cts;
+            this.cancellationToken = cancellationToken;
         }
 
         public override bool CanSeek => throw new NotImplementedException();
@@ -35,39 +35,23 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            try
-            {
-                var result = webSocket.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), cts.Token).Result;
-                return result.Count;
-            }
-            catch
-            {
-                cts.Cancel();
-                return 0;
-            }
+            var result = webSocket.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken).Result;
+            return result.Count;
         }
 
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            try
-            {
-                webSocket.SendAsync(
-                    new ArraySegment<byte>(buffer, offset, count),
-                    System.Net.WebSockets.WebSocketMessageType.Binary,
-                    true,
-                    cts.Token)
-                    .Wait();
-            }
-            catch
-            {
-                cts.Cancel();
-            }
+            webSocket.SendAsync(
+                new ArraySegment<byte>(buffer, offset, count),
+                System.Net.WebSockets.WebSocketMessageType.Binary,
+                true,
+                cancellationToken)
+                .Wait();
         }
 
         protected override void Dispose(bool disposing)
         {
-            cts.Cancel();
             webSocket.Dispose();
             base.Dispose(disposing);
         }
