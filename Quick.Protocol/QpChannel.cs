@@ -1029,7 +1029,16 @@ namespace Quick.Protocol
         /// <param name="commandExecuterManager"></param>
         public void AddCommandExecuterManager(CommandExecuterManager commandExecuterManager)
         {
-            options.CommandExecuterManagerList.Add(commandExecuterManager);
+            options.RegisterCommandExecuterManager(commandExecuterManager);
+        }
+
+        /// <summary>
+        /// 添加通知处理器管理器
+        /// </summary>
+        /// <param name="noticeHandlerManager"></param>
+        public void AddNoticeHandlerManager(NoticeHandlerManager noticeHandlerManager)
+        {
+            options.RegisterNoticeHandlerManager(noticeHandlerManager);
         }
 
         public async Task<CommandResponseTypeNameAndContent> SendCommand(string requestTypeName, string requestContent, int timeout = 30 * 1000, Action afterSendHandler = null)

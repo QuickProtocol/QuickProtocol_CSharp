@@ -12,7 +12,6 @@ namespace Quick.Protocol
 {
     public class QpServerChannel : QpChannel
     {
-        private QpServer server;
         private Stream stream;
         private CancellationTokenSource cts;
         private QpServerOptions options;
@@ -22,7 +21,7 @@ namespace Quick.Protocol
         private List<CommandExecuterManager> authedCommandExecuterManagerList = null;
         //通过认证后，才允许使用的通知处理器管理器列表
         private List<NoticeHandlerManager> authedNoticeHandlerManagerList = null;
-        
+
         public override string ChannelName => channelName;
 
         /// <summary>
@@ -34,9 +33,8 @@ namespace Quick.Protocol
         /// </summary>
         internal event EventHandler AuchenticateTimeout;
 
-        public QpServerChannel(QpServer server, Stream stream, string channelName, CancellationToken cancellationToken, QpServerOptions options) : base(options)
+        public QpServerChannel(Stream stream, string channelName, CancellationToken cancellationToken, QpServerOptions options) : base(options)
         {
-            this.server = server;
             this.stream = stream;
             this.channelName = channelName;
             this.options = options;
@@ -64,7 +62,7 @@ namespace Quick.Protocol
             BeginNetstat(cts.Token);
 
             //如果认证超时时间后没有通过认证，则断开连接
-            if (options.AuthenticateTimeout>0)
+            if (options.AuthenticateTimeout > 0)
                 Task.Delay(options.AuthenticateTimeout, cts.Token).ContinueWith(t =>
                 {
                     //如果已经取消或者已经连接
@@ -74,13 +72,13 @@ namespace Quick.Protocol
                     if (LogUtils.LogConnection)
                         LogUtils.Log("[Connection]{0} Authenticate timeout.", channelName);
 
-                    if (stream!=null)
+                    if (stream != null)
                     {
                         try
                         {
                             stream.Close();
                             stream.Dispose();
-                            stream=null;
+                            stream = null;
                         }
                         catch { }
                     }
@@ -117,7 +115,7 @@ namespace Quick.Protocol
                 });
                 throw new CommandException(1, "Authenticate failed.");
             }
-            IsConnected=true;
+            IsConnected = true;
             Auchenticated?.Invoke(this, EventArgs.Empty);
             return new Commands.Authenticate.Response();
         }
@@ -168,7 +166,6 @@ namespace Quick.Protocol
                 if (exception is ProtocolException)
                 {
                     var protocolException = (ProtocolException)exception;
-                    server.RemoveChannel(this);
                     if (LogUtils.LogConnection)
                         LogUtils.Log("[ProtocolErrorHandler]{0}: Begin ProtocolErrorHandler invoke...", DateTime.Now);
 
