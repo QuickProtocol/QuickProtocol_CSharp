@@ -22,11 +22,7 @@ namespace Quick.Protocol.Pipeline
         protected override async Task<Stream> InnerConnectAsync()
         {
             pipeClientStream = new NamedPipeClientStream(options.ServerName, options.PipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
-#if NETSTANDARD2_0
             await pipeClientStream.ConnectAsync(options.ConnectionTimeout);
-#else
-            await Task.Run(() => pipeClientStream.Connect(options.ConnectionTimeout));
-#endif
             pipeClientStream.ReadMode = PipeTransmissionMode.Byte;
             return pipeClientStream;
         }

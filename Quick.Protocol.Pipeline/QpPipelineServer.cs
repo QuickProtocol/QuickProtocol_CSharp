@@ -30,11 +30,7 @@ namespace Quick.Protocol.Pipeline
         {
             var serverStream = new NamedPipeServerStream(options.PipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
             Task waitForConnectionTask = null;
-#if NETSTANDARD2_0
             waitForConnectionTask = serverStream.WaitForConnectionAsync(token);
-#else
-            waitForConnectionTask = Task.Run(() => serverStream.WaitForConnection());
-#endif
             return waitForConnectionTask.ContinueWith(task =>
             {
                 if (task.IsCanceled)

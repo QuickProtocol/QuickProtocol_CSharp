@@ -16,7 +16,6 @@ namespace ConsoleTest
                 var psi = new ProcessStartInfo("dotnet");
                 psi.ArgumentList.Add($"{nameof(ConsoleTest)}.dll");
                 psi.ArgumentList.Add("client");
-                //psi.WorkingDirectory = typeof(Program);
                 psi.CreateNoWindow = true;
                 psi.UseShellExecute = false;
                 psi.RedirectStandardOutput = true;

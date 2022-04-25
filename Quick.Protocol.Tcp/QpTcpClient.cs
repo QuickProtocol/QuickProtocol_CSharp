@@ -42,9 +42,7 @@ namespace Quick.Protocol.Tcp
             if (tcpClient != null)
             {
                 tcpClient.Close();
-#if NETSTANDARD2_0
                 tcpClient.Dispose();
-#endif
                 tcpClient = null;
             }
 
