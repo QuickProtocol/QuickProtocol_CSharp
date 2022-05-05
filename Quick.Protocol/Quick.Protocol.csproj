@@ -1,29 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
-    <PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
-    <Copyright />
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>scbeta</Authors>
-	<Version>2.1.11</Version>
-    <Company />
-    <Description>A simple protocol for TCP,Pipeline,SerialPort,WebSocket.</Description>
-    <PackageIcon>logo.png</PackageIcon>
-    <PackageTags>QuickProtocol</PackageTags>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+		<PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
+		<Copyright />
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>scbeta</Authors>
+		<Version>2.1.12</Version>
+		<Company />
+		<Description>A simple protocol for TCP,Pipeline,SerialPort,WebSocket.</Description>
+		<PackageIcon>logo.png</PackageIcon>
+		<PackageTags>QuickProtocol</PackageTags>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\logo.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\logo.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NJsonSchema" Version="10.6.10" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="NJsonSchema" Version="10.6.10" />
+	</ItemGroup>
 
 </Project>
