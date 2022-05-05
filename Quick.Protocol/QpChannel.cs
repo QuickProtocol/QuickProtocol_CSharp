@@ -123,6 +123,7 @@ namespace Quick.Protocol
                 if (IsConnected)
                 {
                     IsConnected = false;
+                    InitQpPackageHandler_Stream(null);
                     Disconnected?.Invoke(this, QpEventArgs.Empty);
                 }
             }

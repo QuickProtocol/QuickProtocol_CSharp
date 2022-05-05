@@ -39,6 +39,7 @@ namespace Quick.Protocol.SerialPort
         {
             if (serialPort != null)
             {
+                serialPort.Close();
                 serialPort.Dispose();
                 serialPort = null;
             }

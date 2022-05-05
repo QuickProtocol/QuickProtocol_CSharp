@@ -88,8 +88,6 @@ namespace Quick.Protocol
                     if (LogUtils.LogConnection)
                         LogUtils.Log("[Connection]{0} Disconnected.", channelName);
                     RemoveChannel(channel);
-                    try { stream.Dispose(); }
-                    catch { }
                     ChannelDisconnected?.Invoke(this, channel);
                 };
             };

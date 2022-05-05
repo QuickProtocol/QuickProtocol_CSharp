@@ -41,6 +41,7 @@ namespace Quick.Protocol.SerialPort
             base.Stop();
             if (serialPort != null)
             {
+                serialPort.Close();
                 serialPort.Dispose();
                 serialPort = null;
             }
@@ -55,7 +56,7 @@ namespace Quick.Protocol.SerialPort
         protected override Task InnerAcceptAsync(CancellationToken token)
         {
             if (isAccepted)
-                return Task.Delay(1000, token);
+                return Task.Delay(100, token);
             isAccepted = true;
             
             return Task.Run(() =>
