@@ -114,11 +114,17 @@ namespace Quick.Protocol
         {
             cts?.Cancel();
             cts = null;
+
+            QpServerChannel[] channels;
             lock (channelList)
             {
+                channels = channelList.ToArray();
                 channelList.Clear();
-                Channels = channelList.ToArray();
+                Channels = new QpServerChannel[0];
             }
+            foreach (var channel in channels)
+                try { channel.Disconnect(); }
+                catch { }
         }
     }
 }

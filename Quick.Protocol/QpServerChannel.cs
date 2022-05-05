@@ -158,6 +158,11 @@ namespace Quick.Protocol
             }
             catch { }
         }
+        protected override void OnWriteError(Exception exception)
+        {
+            Stop();
+            base.OnWriteError(exception);
+        }
 
         protected override void OnReadError(Exception exception)
         {

@@ -74,6 +74,13 @@ namespace Quick.Protocol
                 BeginHeartBeat(token);
             }
         }
+        protected override void OnWriteError(Exception exception)
+        {
+            base.OnWriteError(exception);
+            Options.Init();
+            cancellAll();
+            Disconnect();
+        }
 
         protected override void OnReadError(Exception exception)
         {
@@ -85,11 +92,8 @@ namespace Quick.Protocol
 
         private void cancellAll()
         {
-            if (cts != null)
-            {
-                cts.Cancel();
-                cts = null;
-            }
+            cts?.Cancel();
+            cts = null;
         }
 
         /// <summary>

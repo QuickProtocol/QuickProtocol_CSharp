@@ -49,7 +49,10 @@ namespace Quick.Protocol
         private ICryptoTransform enc;
         private ICryptoTransform dec;
         private Encoding encoding = Encoding.UTF8;
-
+        //发送包锁对象
+        private object SEND_PACKAGE_LOCK_OBJ = new object();
+        //断开连接锁对象
+        private object DISCONNECT_LOCK_OBJ = new object();
         private Dictionary<string, Type> commandRequestTypeDict = new Dictionary<string, Type>();
         private Dictionary<string, Type> commandResponseTypeDict = new Dictionary<string, Type>();
         private Dictionary<Type, Type> commandRequestTypeResponseTypeDict = new Dictionary<Type, Type>();
@@ -118,15 +121,15 @@ namespace Quick.Protocol
         /// </summary>
         public virtual void Disconnect()
         {
-            lock (this)
+            lock (DISCONNECT_LOCK_OBJ)
             {
                 if (IsConnected)
                 {
-                    IsConnected = false;
-                    InitQpPackageHandler_Stream(null);
+                    IsConnected = false;                    
                     Disconnected?.Invoke(this, QpEventArgs.Empty);
                 }
             }
+            InitQpPackageHandler_Stream(null);
         }
 
         /// <summary>
@@ -232,14 +235,26 @@ namespace Quick.Protocol
 
         protected void InitQpPackageHandler_Stream(Stream stream)
         {
-            if (QpPackageHandler_Stream != null)
-                try { QpPackageHandler_Stream?.Dispose(); }
-                catch { }
+            var preStream = QpPackageHandler_Stream;
             QpPackageHandler_Stream = stream;
+
+            try { preStream?.Dispose(); }
+            catch { }
 
             options.InternalCompress = false;
             options.InternalEncrypt = false;
             ChangeTransportTimeout();
+        }
+
+        /// <summary>
+        /// 当发送出错时
+        /// </summary>
+        protected virtual void OnWriteError(Exception exception)
+        {
+            LastException = exception;
+            LogUtils.Log("[WriteError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
+            InitQpPackageHandler_Stream(null);
+            Disconnect();
         }
 
         /// <summary>
@@ -337,7 +352,7 @@ namespace Quick.Protocol
             if (stream == null)
                 return;
 
-            lock (this)
+            lock (SEND_PACKAGE_LOCK_OBJ)
             {
                 var ret = getPackagePayloadFunc(sendBuffer);
                 var packageTotalLength = ret.Count;
@@ -392,8 +407,7 @@ namespace Quick.Protocol
                 }
                 catch (Exception ex)
                 {
-                    LastException = ex;
-                    LogUtils.Log("[SendPackage]" + ExceptionUtils.GetExceptionString(ex));
+                    OnWriteError(ex);
                     throw;
                 }
             }
@@ -940,7 +954,7 @@ namespace Quick.Protocol
                         case QpPackageType.Heartbeat:
                             {
                                 if (LogUtils.LogHeartbeat)
-                                    LogUtils.Log("{0}: [Recv-HeartbetaPackage]", DateTime.Now);
+                                    LogUtils.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
                                 HeartbeatPackageReceived?.Invoke(this, QpEventArgs.Empty);
                                 break;
                             }
