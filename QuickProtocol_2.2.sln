@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quick.Protocol.AllClients",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Console", "Console", "{8E34D46D-9D1D-40D1-89CD-DCE8EE07F958}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTest", "Test\ConsoleTest\ConsoleTest.csproj", "{18B3BC1D-D5F9-4D54-81C2-4B4EF3898AF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleTest", "Test\ConsoleTest\ConsoleTest.csproj", "{18B3BC1D-D5F9-4D54-81C2-4B4EF3898AF3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -41,7 +41,8 @@ namespace QpTestClient.Controls
             showNetStat(@$"发送的字节数：{channel.BytesSent.ToString("N0")}
 接收的字节数：{channel.BytesReceived.ToString("N0")}
 每秒发送字节数：{channel.BytesSentPerSec.ToString("N0")}
-每秒接收字节数：{channel.BytesSentPerSec.ToString("N0")}");
+每秒接收字节数：{channel.BytesSentPerSec.ToString("N0")}
+包发送队列数量：{channel.PackageSendQueueCount}");
         }
 
         private void showNetStat(string content)

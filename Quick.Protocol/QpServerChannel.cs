@@ -56,14 +56,17 @@ namespace Quick.Protocol
             options.NoticeHandlerManagerList = null;
 
             InitQpPackageHandler_Stream(stream);
+            var token = cts.Token;
             //开始读取其他数据包
-            BeginReadPackage(cts.Token);
+            BeginReadPackage(token);
+            //开始发送数据包
+            BeginSendPackage(token);
             //开始统计网络数据
-            BeginNetstat(cts.Token);
+            BeginNetstat(token);
 
             //如果认证超时时间后没有通过认证，则断开连接
             if (options.AuthenticateTimeout > 0)
-                Task.Delay(options.AuthenticateTimeout, cts.Token).ContinueWith(t =>
+                Task.Delay(options.AuthenticateTimeout, token).ContinueWith(t =>
                 {
                     //如果已经取消或者已经连接
                     if (t.IsCanceled

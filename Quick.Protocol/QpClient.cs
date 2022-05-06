@@ -39,6 +39,8 @@ namespace Quick.Protocol
 
             //开始读取其他数据包
             BeginReadPackage(token);
+            //开始发送数据包
+            BeginSendPackage(token);
             //开始统计网络数据
             BeginNetstat(token);
 
@@ -64,7 +66,7 @@ namespace Quick.Protocol
             }, 5000, () =>
             {
                 Options.OnAuthPassed();
-                IsConnected=true;
+                IsConnected = true;
             });
 
             //开始心跳

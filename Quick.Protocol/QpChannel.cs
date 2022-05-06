@@ -49,10 +49,10 @@ namespace Quick.Protocol
         private ICryptoTransform enc;
         private ICryptoTransform dec;
         private Encoding encoding = Encoding.UTF8;
-        //发送包锁对象
-        private object SEND_PACKAGE_LOCK_OBJ = new object();
+        
         //断开连接锁对象
         private object DISCONNECT_LOCK_OBJ = new object();
+
         private Dictionary<string, Type> commandRequestTypeDict = new Dictionary<string, Type>();
         private Dictionary<string, Type> commandResponseTypeDict = new Dictionary<string, Type>();
         private Dictionary<Type, Type> commandRequestTypeResponseTypeDict = new Dictionary<Type, Type>();
@@ -102,6 +102,14 @@ namespace Quick.Protocol
         /// 每秒发送的字节数量
         /// </summary>
         public long BytesSentPerSec { get; private set; }
+        /// <summary>
+        /// 包发送队列
+        /// </summary>
+        private ConcurrentQueue<QpPackageSendQueueItem> packageSendQueue = new ConcurrentQueue<QpPackageSendQueueItem>();
+        /// <summary>
+        /// 包发送队列数量
+        /// </summary>
+        public int PackageSendQueueCount => packageSendQueue.Count;
 
         /// <summary>
         /// 最后一次连接的时间
@@ -123,6 +131,7 @@ namespace Quick.Protocol
         {
             lock (DISCONNECT_LOCK_OBJ)
             {
+                packageSendQueue.Clear();
                 if (IsConnected)
                 {
                     IsConnected = false;                    
@@ -279,7 +288,7 @@ namespace Quick.Protocol
             return null;
         }
 
-        private void sendPackageBuffer(Stream stream, ArraySegment<byte> packageBuffer, Action afterSendHandler = null)
+        private void sendPackageBuffer(Stream stream, ArraySegment<byte> packageBuffer, Action afterSendHandler)
         {
             var packageType = packageBuffer.Array[packageBuffer.Offset + PACKAGE_HEAD_LENGTH - 1];
 
@@ -314,8 +323,10 @@ namespace Quick.Protocol
                     packageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
                 }
             }
+            
             //执行AfterSendHandler
             afterSendHandler?.Invoke();
+
             //发送包内容
             stream.Write(packageBuffer.Array, packageBuffer.Offset, packageBuffer.Count);
             if (options.EnableNetstat)
@@ -346,88 +357,91 @@ namespace Quick.Protocol
             Array.Copy(ret, 0, buffer, offset, sizeof(int));
         }
 
-        private void sendPackage(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler = null)
+        private Task sendPackageAsync(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler)
+        {
+            var item = new QpPackageSendQueueItem(getPackagePayloadFunc, afterSendHandler);
+            packageSendQueue.Enqueue(item);
+            return item.SendTask;
+        }
+
+        private void sendPackage(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler)
         {
             var stream = QpPackageHandler_Stream;
             if (stream == null)
-                return;
+                throw new ArgumentNullException(nameof(QpPackageHandler_Stream));
 
-            lock (SEND_PACKAGE_LOCK_OBJ)
+            var ret = getPackagePayloadFunc(sendBuffer);
+            var packageTotalLength = ret.Count;
+            if (packageTotalLength < PACKAGE_HEAD_LENGTH)
+                throw new IOException($"包大小[{packageTotalLength}]小于包头长度[{PACKAGE_HEAD_LENGTH}]");
+
+            byte[] packageBuffer = ret.Array;
+
+            //构造包头
+            writePackageTotalLengthToBuffer(packageBuffer, 0, packageTotalLength);
+            try
             {
-                var ret = getPackagePayloadFunc(sendBuffer);
-                var packageTotalLength = ret.Count;
-                if (packageTotalLength < PACKAGE_HEAD_LENGTH)
-                    throw new IOException($"包大小[{packageTotalLength}]小于包头长度[{PACKAGE_HEAD_LENGTH}]");
-
-                byte[] packageBuffer = ret.Array;
-
-                //构造包头
-                writePackageTotalLengthToBuffer(packageBuffer, 0, packageTotalLength);
-                try
+                //如果包缓存是发送缓存
+                if (packageBuffer == sendBuffer)
                 {
-                    //如果包缓存是发送缓存
-                    if (packageBuffer == sendBuffer)
-                    {
-                        sendPackageBuffer(stream,
-                            new ArraySegment<byte>(packageBuffer, 0, packageTotalLength),
-                            afterSendHandler
-                            );
-                    }
-                    //否则，拆分为多个包发送
-                    else
-                    {
-                        if (LogUtils.LogSplit)
-                            LogUtils.Log("{0}: [Send-SplitPackage]Length:{1}", DateTime.Now, packageTotalLength);
-
-                        //每个包内容的最大长度为对方缓存大小减包头大小
-                        var maxTakeLength = BufferSize - PACKAGE_HEAD_LENGTH;
-                        var currentIndex = 0;
-                        while (currentIndex < packageTotalLength)
-                        {
-                            var restLength = packageTotalLength - currentIndex;
-                            int takeLength = 0;
-                            if (restLength >= maxTakeLength)
-                                takeLength = maxTakeLength;
-                            else
-                                takeLength = restLength;
-                            //构造包头
-                            writePackageTotalLengthToBuffer(sendBuffer, 0, PACKAGE_HEAD_LENGTH + takeLength);
-                            sendBuffer[4] = (byte)QpPackageType.Split;
-                            //复制包体
-                            Array.Copy(packageBuffer, currentIndex, sendBuffer, PACKAGE_HEAD_LENGTH, takeLength);
-                            //发送
-                            sendPackageBuffer(
-                                stream,
-                                new ArraySegment<byte>(sendBuffer, 0, PACKAGE_HEAD_LENGTH + takeLength),
-                                afterSendHandler);
-                            currentIndex += takeLength;
-                        }
-                    }
-                    lastSendPackageTime = DateTime.Now;
+                    sendPackageBuffer(stream,
+                        new ArraySegment<byte>(packageBuffer, 0, packageTotalLength),
+                        afterSendHandler);
                 }
-                catch (Exception ex)
+                //否则，拆分为多个包发送
+                else
                 {
-                    OnWriteError(ex);
-                    throw;
+                    if (LogUtils.LogSplit)
+                        LogUtils.Log("{0}: [Send-SplitPackage]Length:{1}", DateTime.Now, packageTotalLength);
+
+                    //每个包内容的最大长度为对方缓存大小减包头大小
+                    var maxTakeLength = BufferSize - PACKAGE_HEAD_LENGTH;
+                    var currentIndex = 0;
+                    while (currentIndex < packageTotalLength)
+                    {
+                        var restLength = packageTotalLength - currentIndex;
+                        int takeLength = 0;
+                        if (restLength >= maxTakeLength)
+                            takeLength = maxTakeLength;
+                        else
+                            takeLength = restLength;
+                        //构造包头
+                        writePackageTotalLengthToBuffer(sendBuffer, 0, PACKAGE_HEAD_LENGTH + takeLength);
+                        sendBuffer[4] = (byte)QpPackageType.Split;
+                        //复制包体
+                        Array.Copy(packageBuffer, currentIndex, sendBuffer, PACKAGE_HEAD_LENGTH, takeLength);
+                        //发送
+                        sendPackageBuffer(
+                            stream,
+                            new ArraySegment<byte>(sendBuffer, 0, PACKAGE_HEAD_LENGTH + takeLength),
+                            afterSendHandler);
+                        currentIndex += takeLength;
+                    }
                 }
+                lastSendPackageTime = DateTime.Now;
+            }
+            catch (Exception ex)
+            {
+                OnWriteError(ex);
+                throw;
             }
         }
 
         /// <summary>
         /// 发送心跳包
         /// </summary>
-        public void SendHeartbeatPackage()
+        public Task SendHeartbeatPackage()
         {
-            sendPackage(buffer =>
+            return sendPackageAsync(buffer =>
             {
                 HEARTBEAT_PACKAGHE.CopyTo(buffer, 0);
-                return new ArraySegment<byte>(buffer,0, HEARTBEAT_PACKAGHE.Length);
-            });
+                return new ArraySegment<byte>(buffer, 0, HEARTBEAT_PACKAGHE.Length);
+            }, null);
         }
 
-        public void SendNoticePackage(string noticePackageTypeName, string noticePackageContent)
+        public Task SendNoticePackage(string noticePackageTypeName, string noticePackageContent)
         {
-            sendPackage(buffer =>
+            return sendPackageAsync(buffer =>
             {
                 //设置包类型
                 buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.Notice;
@@ -460,23 +474,23 @@ namespace Quick.Protocol
                     LogUtils.Log("{0}: [Send-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
 
                 return new ArraySegment<byte>(retBuffer, 0, packageTotalLength);
-            });
+            }, null);
         }
 
         /// <summary>
         /// 发送通知包
         /// </summary>
-        public void SendNoticePackage(object package)
+        public Task SendNoticePackage(object package)
         {
-            SendNoticePackage(package.GetType().FullName, JsonConvert.SerializeObject(package));
+            return SendNoticePackage(package.GetType().FullName, JsonConvert.SerializeObject(package));
         }
 
         /// <summary>
         /// 发送命令请求包
         /// </summary>
-        public void SendCommandRequestPackage(string commandId, string typeName, string content, Action afterSendHandler = null)
+        public Task SendCommandRequestPackage(string commandId, string typeName, string content, Action afterSendHandler = null)
         {
-            sendPackage(buffer =>
+            return sendPackageAsync(buffer =>
             {
                 //设置包类型
                 buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.CommandRequest;
@@ -516,9 +530,9 @@ namespace Quick.Protocol
         /// <summary>
         /// 发送命令响应包
         /// </summary>
-        public void SendCommandResponsePackage(string commandId, byte code, string message, string typeName, string content)
+        public Task SendCommandResponsePackage(string commandId, byte code, string message, string typeName, string content)
         {
-            sendPackage(buffer =>
+            return sendPackageAsync(buffer =>
             {
                 //设置包类型
                 buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.CommandResponse;
@@ -581,7 +595,7 @@ namespace Quick.Protocol
 
                     return new ArraySegment<byte>(retBuffer, 0, packageTotalLength);
                 }
-            });
+            }, null);
         }
 
         private async Task<int> readData(Stream stream, byte[] buffer, int startIndex, int totalCount, CancellationToken cancellationToken)
@@ -746,6 +760,37 @@ namespace Quick.Protocol
             return new ArraySegment<byte>(finalPackageBuffer.Array,
                     finalPackageBuffer.Offset,
                     finalPackageBuffer.Count);
+        }
+
+        protected void BeginSendPackage(CancellationToken cancellationToken)
+        {
+            Task.Delay(10, cancellationToken).ContinueWith(t =>
+            {
+                if (t.IsCanceled)
+                    return;
+                //开始发送数据包
+                QpPackageSendQueueItem item = null;
+                while (packageSendQueue.Count > 0)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        return;
+                    var stream = QpPackageHandler_Stream;
+                    if (stream == null)
+                        return;
+                    if (!packageSendQueue.TryDequeue(out item))
+                        continue;
+                    try
+                    {
+                        sendPackage(item.GetPackagePayloadFunc,item.AfterSendHandler);
+                        item.SetResult(null);
+                    }
+                    catch (Exception ex)
+                    {
+                        item.SetResult(ex);
+                    }
+                }
+                BeginSendPackage(cancellationToken);
+            });
         }
 
         protected void BeginHeartBeat(CancellationToken cancellationToken)
@@ -1062,7 +1107,7 @@ namespace Quick.Protocol
 
             if (timeout <= 0)
             {
-                SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, afterSendHandler);
+                await SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, afterSendHandler);
                 return await commandContext.ResponseTask;
             }
             //如果设置了超时
@@ -1099,7 +1144,7 @@ namespace Quick.Protocol
             CommandResponseTypeNameAndContent ret = null;
             if (timeout <= 0)
             {
-                SendCommandRequestPackage(commandContext.Id, typeName, requestContent, afterSendHandler);
+                await SendCommandRequestPackage(commandContext.Id, typeName, requestContent, afterSendHandler);
                 ret = await commandContext.ResponseTask;
             }
             //如果设置了超时
