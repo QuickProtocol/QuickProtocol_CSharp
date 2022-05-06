@@ -592,6 +592,8 @@ namespace Quick.Protocol
             var count = 0;
             while (count < totalCount)
             {
+                if (cancellationToken.IsCancellationRequested)
+                    break;
                 var readTask = stream.ReadAsync(buffer, count + startIndex, totalCount - count, cancellationToken);
                 ret = await await TaskUtils.TaskWait(readTask, options.InternalTransportTimeout);
                 if (readTask.IsCanceled || ret == 0)
@@ -629,11 +631,12 @@ namespace Quick.Protocol
             MemoryStream splitMs = null;
             while (true)
             {
-                var currentRecvBuffer = recvBuffer;
-                //读取包头
-                var ret = await readData(stream, currentRecvBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH, token);
                 if (token.IsCancellationRequested)
                     return nullArraySegment;
+
+                var currentRecvBuffer = recvBuffer;
+                //读取包头
+                var ret = await readData(stream, currentRecvBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH, token);                
                 if (ret == 0)
                     throw new IOException("未读取到数据！");
                 if (ret < PACKAGE_TOTAL_LENGTH_LENGTH)
@@ -653,11 +656,12 @@ namespace Quick.Protocol
                     throw new ProtocolException(new ArraySegment<byte>(recvBuffer, 0, ret), $"数据包总长度[{packageTotalLength}]大于缓存大小[{recvBuffer.Length}]");
                 //包体长度
                 var packageBodyLength = packageTotalLength - PACKAGE_TOTAL_LENGTH_LENGTH;
-                //读取包体
-                ret = await readData(stream, recvBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, packageBodyLength, token);
 
                 if (token.IsCancellationRequested)
                     return nullArraySegment;
+                //读取包体
+                ret = await readData(stream, recvBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, packageBodyLength, token);
+                
                 if (ret < packageBodyLength)
                     throw new ProtocolException(new ArraySegment<byte>(recvBuffer, 0, PACKAGE_HEAD_LENGTH + ret), $"包体读取错误！包体长度：{packageBodyLength}，读取数据长度：{ret}");
 
@@ -746,9 +750,6 @@ namespace Quick.Protocol
 
         protected void BeginHeartBeat(CancellationToken cancellationToken)
         {
-            if (QpPackageHandler_Stream == null)
-                return;
-
             if (options.HeartBeatInterval > 0)
                 Task.Delay(options.HeartBeatInterval, cancellationToken).ContinueWith(t =>
                 {
@@ -932,8 +933,6 @@ namespace Quick.Protocol
             var readPackageTask = ReadPackageAsync(token);
             readPackageTask.ContinueWith(t =>
             {
-                if (QpPackageHandler_Stream == null)
-                    return;
                 //如果已经取消
                 if (t.IsCanceled || token.IsCancellationRequested)
                     return;
