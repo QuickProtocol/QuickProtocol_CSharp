@@ -31,7 +31,7 @@ namespace Quick.Protocol
         /// <summary>
         /// 认证超时
         /// </summary>
-        internal event EventHandler AuchenticateTimeout;
+        public event EventHandler AuchenticateTimeout;
 
         public QpServerChannel(Stream stream, string channelName, CancellationToken cancellationToken, QpServerOptions options) : base(options)
         {

@@ -323,7 +323,7 @@ namespace Quick.Protocol
                     packageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
                 }
             }
-            
+
             //执行AfterSendHandler
             afterSendHandler?.Invoke();
 
@@ -351,7 +351,7 @@ namespace Quick.Protocol
                     LogUtils.LogContent ?
                         BitConverter.ToString(packageBuffer.Array, packageBuffer.Offset, packageBuffer.Count)
                         : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-            stream.Flush();
+            await stream.FlushAsync();
         }
 
         private void writePackageTotalLengthToBuffer(byte[] buffer, int offset, int packageTotalLength)

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Quick.Protocol.Streams
 {
@@ -30,9 +32,39 @@ namespace Quick.Protocol.Streams
             output.Flush();
         }
 
+        public override int Read(Span<byte> buffer)
+        {
+            return input.Read(buffer);
+        }
+
+        public override int ReadByte()
+        {
+            return input.ReadByte();
+        }
+
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        {
+            return input.BeginRead(buffer, offset, count, callback, state);
+        }
+
+        public override int EndRead(IAsyncResult asyncResult)
+        {
+            return input.EndRead(asyncResult);
+        }
+
         public override int Read(byte[] buffer, int offset, int count)
         {
             return input.Read(buffer, offset, count);
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return input.ReadAsync(buffer, offset, count, cancellationToken);
+        }
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            return input.ReadAsync(buffer, cancellationToken);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -48,6 +80,30 @@ namespace Quick.Protocol.Streams
         public override void Write(byte[] buffer, int offset, int count)
         {
             output.Write(buffer, offset, count);
+        }
+
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return output.WriteAsync(buffer, offset, count, cancellationToken);
+        }
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            return output.WriteAsync(buffer, cancellationToken);
+        }
+
+        public override void Write(ReadOnlySpan<byte> buffer)
+        {
+            output.Write(buffer);
+        }
+
+        public override void WriteByte(byte value)
+        {
+            output.WriteByte(value);
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return output.FlushAsync(cancellationToken);
         }
     }
 }

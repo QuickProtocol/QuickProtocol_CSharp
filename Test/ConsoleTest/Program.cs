@@ -30,14 +30,18 @@ namespace ConsoleTest
                     ChannelName = $"Process:{process.Id}"
                 };
                 var channel = new QpStreamServerChannel(options);
+                channel.AuchenticateTimeout += (sender, e) =>
+                {
+                    Console.WriteLine(DateTime.Now.ToString() + "[Server]: 认证超时！");
+                    isDisconnected = true;
+                };
                 channel.Disconnected += (sender, e) =>
                 {
                     Console.WriteLine(DateTime.Now.ToString() + "[Server]: 连接已断开！");
                     isDisconnected = true;
                 };
                 channel.HeartbeatPackageReceived += (sender, e) => Console.WriteLine(DateTime.Now.ToString() + "[Server]: 收到心跳包");
-                channel.RawNoticePackageReceived+=(sender,e)=> Console.WriteLine($"[Client_RawNoticePackageReceived]TypeName:{e.TypeName},Content:{e.Content}"); ;
-                
+                channel.RawNoticePackageReceived+=(sender,e)=> Console.WriteLine($"[Client_RawNoticePackageReceived]TypeName:{e.TypeName},Content:{e.Content}"); ;                
             }
             else
             {
@@ -58,11 +62,13 @@ namespace ConsoleTest
                 {
                     if (t.IsCanceled)
                     {
+                        isDisconnected = true;
                         Debug.WriteLine("连接已取消");
                         return;
                     }
                     if (t.IsFaulted)
                     {
+                        isDisconnected = true;
                         Debug.WriteLine("连接出错，原因：" + t.Exception.InnerException.ToString());
                         return;
                     }
