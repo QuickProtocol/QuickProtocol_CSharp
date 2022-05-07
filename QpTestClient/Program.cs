@@ -15,6 +15,7 @@ namespace QpTestClient
         static void Main()
         {
             Quick.Protocol.QpAllClients.RegisterUriSchema();
+            Quick.Protocol.SerialPort.QpSerialPortClientOptions.RegisterUriSchema();
 
             QpClientTypeManager.Instance.Init();
 
