@@ -288,7 +288,7 @@ namespace Quick.Protocol
             return null;
         }
 
-        private void sendPackageBuffer(Stream stream, ArraySegment<byte> packageBuffer, Action afterSendHandler)
+        private async Task writePackageBuffer(Stream stream, ArraySegment<byte> packageBuffer, Action afterSendHandler)
         {
             var packageType = packageBuffer.Array[packageBuffer.Offset + PACKAGE_HEAD_LENGTH - 1];
 
@@ -305,7 +305,7 @@ namespace Quick.Protocol
                         for (var i = 0; i < PACKAGE_TOTAL_LENGTH_LENGTH; i++)
                             ms.WriteByte(0);
                         using (var gzStream = new GZipStream(ms, CompressionMode.Compress, true))
-                            gzStream.Write(packageBuffer.Array, packageBuffer.Offset + PACKAGE_TOTAL_LENGTH_LENGTH, packageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH);
+                            await gzStream.WriteAsync(packageBuffer.Array, packageBuffer.Offset + PACKAGE_TOTAL_LENGTH_LENGTH, packageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH);
                         var packageTotalLength = Convert.ToInt32(ms.Position);
                         writePackageTotalLengthToBuffer(currentBuffer, 0, packageTotalLength);
                         packageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
@@ -328,7 +328,14 @@ namespace Quick.Protocol
             afterSendHandler?.Invoke();
 
             //发送包内容
-            stream.Write(packageBuffer.Array, packageBuffer.Offset, packageBuffer.Count);
+            var writeTask = stream.WriteAsync(packageBuffer.Array, packageBuffer.Offset, packageBuffer.Count);
+            await await TaskUtils.TaskWait(writeTask, options.InternalTransportTimeout);
+
+            if (writeTask.IsCanceled)
+                return;
+            if (writeTask.Exception != null)
+                throw new IOException("Write error from stream.", writeTask.Exception.InnerException);
+
             if (options.EnableNetstat)
             {
                 BytesSent += packageBuffer.Count;
@@ -357,14 +364,14 @@ namespace Quick.Protocol
             Array.Copy(ret, 0, buffer, offset, sizeof(int));
         }
 
-        private Task sendPackageAsync(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler)
+        private Task writePackageAsync(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler)
         {
             var item = new QpPackageSendQueueItem(getPackagePayloadFunc, afterSendHandler);
             packageSendQueue.Enqueue(item);
             return item.SendTask;
         }
 
-        private void sendPackage(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler)
+        private async Task writePackage(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler)
         {
             var stream = QpPackageHandler_Stream;
             if (stream == null)
@@ -384,7 +391,7 @@ namespace Quick.Protocol
                 //如果包缓存是发送缓存
                 if (packageBuffer == sendBuffer)
                 {
-                    sendPackageBuffer(stream,
+                    await writePackageBuffer(stream,
                         new ArraySegment<byte>(packageBuffer, 0, packageTotalLength),
                         afterSendHandler);
                 }
@@ -411,7 +418,7 @@ namespace Quick.Protocol
                         //复制包体
                         Array.Copy(packageBuffer, currentIndex, sendBuffer, PACKAGE_HEAD_LENGTH, takeLength);
                         //发送
-                        sendPackageBuffer(
+                        await writePackageBuffer(
                             stream,
                             new ArraySegment<byte>(sendBuffer, 0, PACKAGE_HEAD_LENGTH + takeLength),
                             afterSendHandler);
@@ -432,7 +439,7 @@ namespace Quick.Protocol
         /// </summary>
         public Task SendHeartbeatPackage()
         {
-            return sendPackageAsync(buffer =>
+            return writePackageAsync(buffer =>
             {
                 HEARTBEAT_PACKAGHE.CopyTo(buffer, 0);
                 return new ArraySegment<byte>(buffer, 0, HEARTBEAT_PACKAGHE.Length);
@@ -441,7 +448,7 @@ namespace Quick.Protocol
 
         public Task SendNoticePackage(string noticePackageTypeName, string noticePackageContent)
         {
-            return sendPackageAsync(buffer =>
+            return writePackageAsync(buffer =>
             {
                 //设置包类型
                 buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.Notice;
@@ -490,7 +497,7 @@ namespace Quick.Protocol
         /// </summary>
         public Task SendCommandRequestPackage(string commandId, string typeName, string content, Action afterSendHandler = null)
         {
-            return sendPackageAsync(buffer =>
+            return writePackageAsync(buffer =>
             {
                 //设置包类型
                 buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.CommandRequest;
@@ -532,7 +539,7 @@ namespace Quick.Protocol
         /// </summary>
         public Task SendCommandResponsePackage(string commandId, byte code, string message, string typeName, string content)
         {
-            return sendPackageAsync(buffer =>
+            return writePackageAsync(buffer =>
             {
                 //设置包类型
                 buffer[PACKAGE_HEAD_LENGTH - 1] = (byte)QpPackageType.CommandResponse;
@@ -728,7 +735,7 @@ namespace Quick.Protocol
                         splitMs = new MemoryStream(splitMsCapacity);
                         isReadingSplitPackage = true;
                     }
-                    splitMs.Write(currentPackageBuffer.Array, currentPackageBuffer.Offset + PACKAGE_HEAD_LENGTH, currentPackageBuffer.Count - PACKAGE_HEAD_LENGTH);
+                    await splitMs.WriteAsync(currentPackageBuffer.Array, currentPackageBuffer.Offset + PACKAGE_HEAD_LENGTH, currentPackageBuffer.Count - PACKAGE_HEAD_LENGTH);
 
                     //如果拆分包已经读取完成
                     if (splitMs.Position >= splitMsCapacity)
@@ -764,7 +771,7 @@ namespace Quick.Protocol
 
         protected void BeginSendPackage(CancellationToken cancellationToken)
         {
-            Task.Delay(10, cancellationToken).ContinueWith(t =>
+            Task.Delay(10, cancellationToken).ContinueWith(async t =>
             {
                 if (t.IsCanceled)
                     return;
@@ -781,7 +788,7 @@ namespace Quick.Protocol
                         continue;
                     try
                     {
-                        sendPackage(item.GetPackagePayloadFunc,item.AfterSendHandler);
+                        await writePackage(item.GetPackagePayloadFunc, item.AfterSendHandler);
                         item.SetResult(null);
                     }
                     catch (Exception ex)
@@ -989,96 +996,103 @@ namespace Quick.Protocol
                     return;
                 }
                 //解析包
-                var package = t.Result;
-                if (package.Count > 0)
+                try
                 {
-                    var packageType = (QpPackageType)package.Array[package.Offset + PACKAGE_HEAD_LENGTH - 1];
-                    switch (packageType)
+                    var package = t.Result;
+                    if (package.Count > 0)
                     {
-                        case QpPackageType.Heartbeat:
-                            {
-                                if (LogUtils.LogHeartbeat)
-                                    LogUtils.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
-                                HeartbeatPackageReceived?.Invoke(this, QpEventArgs.Empty);
-                                break;
-                            }
-                        case QpPackageType.Notice:
-                            {
-                                var typeNameLengthOffset = package.Offset + PACKAGE_HEAD_LENGTH;
-                                var typeNameLength = package.Array[typeNameLengthOffset];
-
-                                var typeNameOffset = typeNameLengthOffset + 1;
-                                var typeName = encoding.GetString(package.Array, typeNameOffset, typeNameLength);
-
-                                var contentOffset = typeNameOffset + typeNameLength;
-                                var content = encoding.GetString(package.Array, contentOffset, package.Offset + package.Count - contentOffset);
-
-                                if (LogUtils.LogNotice)
-                                    LogUtils.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-
-                                OnRawNoticePackageReceived(typeName, content);
-                                break;
-                            }
-                        case QpPackageType.CommandRequest:
-                            {
-                                var commandIdOffset = package.Offset + PACKAGE_HEAD_LENGTH;
-                                var commandId = BitConverter.ToString(package.Array, commandIdOffset, COMMAND_ID_LENGTH).Replace("-", string.Empty).ToLower();
-
-                                var typeNameLengthOffset = commandIdOffset + COMMAND_ID_LENGTH;
-                                var typeNameLength = package.Array[typeNameLengthOffset];
-
-                                var typeNameOffset = typeNameLengthOffset + 1;
-                                var typeName = encoding.GetString(package.Array, typeNameOffset, typeNameLength);
-
-                                var contentOffset = typeNameOffset + typeNameLength;
-                                var content = encoding.GetString(package.Array, contentOffset, package.Offset + package.Count - contentOffset);
-
-                                if (LogUtils.LogCommand)
-                                    LogUtils.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-
-                                OnCommandRequestReceived(commandId, typeName, content);
-                                break;
-                            }
-                        case QpPackageType.CommandResponse:
-                            {
-                                var commandIdOffset = package.Offset + PACKAGE_HEAD_LENGTH;
-                                var commandId = BitConverter.ToString(package.Array, commandIdOffset, COMMAND_ID_LENGTH).Replace("-", string.Empty).ToLower();
-
-                                var codeOffset = commandIdOffset + COMMAND_ID_LENGTH;
-                                var code = package.Array[codeOffset];
-
-                                string typeName = null;
-                                string content = null;
-                                string message = null;
-
-                                //如果成功
-                                if (code == 0)
+                        var packageType = (QpPackageType)package.Array[package.Offset + PACKAGE_HEAD_LENGTH - 1];
+                        switch (packageType)
+                        {
+                            case QpPackageType.Heartbeat:
                                 {
-                                    var typeNameLengthOffset = codeOffset + 1;
+                                    if (LogUtils.LogHeartbeat)
+                                        LogUtils.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
+                                    HeartbeatPackageReceived?.Invoke(this, QpEventArgs.Empty);
+                                    break;
+                                }
+                            case QpPackageType.Notice:
+                                {
+                                    var typeNameLengthOffset = package.Offset + PACKAGE_HEAD_LENGTH;
                                     var typeNameLength = package.Array[typeNameLengthOffset];
 
                                     var typeNameOffset = typeNameLengthOffset + 1;
-                                    typeName = encoding.GetString(package.Array, typeNameOffset, typeNameLength);
+                                    var typeName = encoding.GetString(package.Array, typeNameOffset, typeNameLength);
 
                                     var contentOffset = typeNameOffset + typeNameLength;
-                                    content = encoding.GetString(package.Array, contentOffset, package.Offset + package.Count - contentOffset);
+                                    var content = encoding.GetString(package.Array, contentOffset, package.Offset + package.Count - contentOffset);
+
+                                    if (LogUtils.LogNotice)
+                                        LogUtils.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+
+                                    OnRawNoticePackageReceived(typeName, content);
+                                    break;
                                 }
-                                else
+                            case QpPackageType.CommandRequest:
                                 {
-                                    var messageOffset = codeOffset + 1;
-                                    message = encoding.GetString(package.Array, messageOffset, package.Offset + package.Count - messageOffset);
+                                    var commandIdOffset = package.Offset + PACKAGE_HEAD_LENGTH;
+                                    var commandId = BitConverter.ToString(package.Array, commandIdOffset, COMMAND_ID_LENGTH).Replace("-", string.Empty).ToLower();
+
+                                    var typeNameLengthOffset = commandIdOffset + COMMAND_ID_LENGTH;
+                                    var typeNameLength = package.Array[typeNameLengthOffset];
+
+                                    var typeNameOffset = typeNameLengthOffset + 1;
+                                    var typeName = encoding.GetString(package.Array, typeNameOffset, typeNameLength);
+
+                                    var contentOffset = typeNameOffset + typeNameLength;
+                                    var content = encoding.GetString(package.Array, contentOffset, package.Offset + package.Count - contentOffset);
+
+                                    if (LogUtils.LogCommand)
+                                        LogUtils.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+
+                                    OnCommandRequestReceived(commandId, typeName, content);
+                                    break;
                                 }
+                            case QpPackageType.CommandResponse:
+                                {
+                                    var commandIdOffset = package.Offset + PACKAGE_HEAD_LENGTH;
+                                    var commandId = BitConverter.ToString(package.Array, commandIdOffset, COMMAND_ID_LENGTH).Replace("-", string.Empty).ToLower();
 
-                                if (LogUtils.LogCommand)
-                                    LogUtils.Log("{0}: [Recv-CommandResponsePackage]Code:{1}，Message：{2}，Type:{3},Content:{4}", DateTime.Now, code, message, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                                    var codeOffset = commandIdOffset + COMMAND_ID_LENGTH;
+                                    var code = package.Array[codeOffset];
 
-                                OnCommandResponseReceived(commandId, code, message, typeName, content);
-                                break;
-                            }
+                                    string typeName = null;
+                                    string content = null;
+                                    string message = null;
+
+                                    //如果成功
+                                    if (code == 0)
+                                    {
+                                        var typeNameLengthOffset = codeOffset + 1;
+                                        var typeNameLength = package.Array[typeNameLengthOffset];
+
+                                        var typeNameOffset = typeNameLengthOffset + 1;
+                                        typeName = encoding.GetString(package.Array, typeNameOffset, typeNameLength);
+
+                                        var contentOffset = typeNameOffset + typeNameLength;
+                                        content = encoding.GetString(package.Array, contentOffset, package.Offset + package.Count - contentOffset);
+                                    }
+                                    else
+                                    {
+                                        var messageOffset = codeOffset + 1;
+                                        message = encoding.GetString(package.Array, messageOffset, package.Offset + package.Count - messageOffset);
+                                    }
+
+                                    if (LogUtils.LogCommand)
+                                        LogUtils.Log("{0}: [Recv-CommandResponsePackage]Code:{1}，Message：{2}，Type:{3},Content:{4}", DateTime.Now, code, message, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+
+                                    OnCommandResponseReceived(commandId, code, message, typeName, content);
+                                    break;
+                                }
+                        }
                     }
+                    //读取下一个数据包
+                    BeginReadPackage(token);
                 }
-                //读取下一个数据包
-                BeginReadPackage(token);
+                catch (Exception ex)
+                {
+                    OnReadError(ex);
+                }
             });
         }
 

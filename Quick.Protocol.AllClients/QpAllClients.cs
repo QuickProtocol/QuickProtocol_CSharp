@@ -9,7 +9,6 @@ namespace Quick.Protocol
         public static void RegisterUriSchema()
         {
             Pipeline.QpPipelineClientOptions.RegisterUriSchema();
-            SerialPort.QpSerialPortClientOptions.RegisterUriSchema();
             Tcp.QpTcpClientOptions.RegisterUriSchema();
             WebSocket.Client.QpWebSocketClientOptions.RegisterUriSchema();
         }

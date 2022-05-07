@@ -7,9 +7,9 @@
 	  <Copyright />
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <Authors>scbeta</Authors>
-	  <Version>2.2.0</Version>
+	  <Version>2.2.1</Version>
 	  <Company />
-	  <Description>Incluse all QpClient implements.
+	  <Description>Incluse in common usage QpClient implements.
 Common use:
 ------------------
 QpAllClients.RegisterUriSchema();
@@ -18,8 +18,7 @@ Uri samples:
 ------------------
 TCP: ConnectionUriParser.Parse("tcp://127.0.0.1:3001");
 Pipe: ConnectionUriParser.Parse("pipe://./Quick.Protocol");
-WebSocket: ConnectionUriParser.Parse("ws://127.0.0.1:3001/qp");
-SerialPort: ConnectionUriParser.Parse("serialport://COM1");</Description>
+WebSocket: ConnectionUriParser.Parse("ws://127.0.0.1:3001/qp");</Description>
 	  <PackageIcon>logo.png</PackageIcon>
 	  <PackageTags>QuickProtocol</PackageTags>
   </PropertyGroup>
@@ -33,7 +32,6 @@ SerialPort: ConnectionUriParser.Parse("serialport://COM1");</Description>
 
   <ItemGroup>
     <ProjectReference Include="..\Quick.Protocol.Pipeline\Quick.Protocol.Pipeline.csproj" />
-    <ProjectReference Include="..\Quick.Protocol.SerialPort\Quick.Protocol.SerialPort.csproj" />
     <ProjectReference Include="..\Quick.Protocol.Tcp\Quick.Protocol.Tcp.csproj" />
     <ProjectReference Include="..\Quick.Protocol.WebSocket.Client\Quick.Protocol.WebSocket.Client.csproj" />
     <ProjectReference Include="..\Quick.Protocol\Quick.Protocol.csproj" />
