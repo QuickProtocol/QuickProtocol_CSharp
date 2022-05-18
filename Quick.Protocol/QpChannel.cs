@@ -495,6 +495,19 @@ namespace Quick.Protocol
         /// <summary>
         /// 发送命令请求包
         /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task SendCommandRequest(object request)
+        {
+            var requestType = request.GetType();
+            var typeName = requestType.FullName;
+            var requestContent = JsonConvert.SerializeObject(request);
+            await SendCommandRequestPackage(CommandContext.GenerateNewId(), typeName, requestContent);
+        }
+
+        /// <summary>
+        /// 发送命令请求包
+        /// </summary>
         public Task SendCommandRequestPackage(string commandId, string typeName, string content, Action afterSendHandler = null)
         {
             return writePackageAsync(buffer =>

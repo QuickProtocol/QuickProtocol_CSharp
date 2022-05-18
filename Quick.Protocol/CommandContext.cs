@@ -8,6 +8,7 @@ namespace Quick.Protocol
 {
     public class CommandContext
     {
+        public static string GenerateNewId() => Guid.NewGuid().ToString("N").ToLower();
         public string Id { get; private set; }
         private CommandException commandException;
         private bool isTimeout = false;
@@ -16,7 +17,7 @@ namespace Quick.Protocol
 
         public CommandContext(string typeName)
         {
-            Id = Guid.NewGuid().ToString("N").ToLower();
+            Id = GenerateNewId();
             ResponseTask = new Task<CommandResponseTypeNameAndContent>(() =>
             {
                 if (isTimeout)
