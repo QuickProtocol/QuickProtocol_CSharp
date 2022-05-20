@@ -12,7 +12,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
     {
         private System.Net.WebSockets.WebSocket webSocket;
         private CancellationToken cancellationToken;
-        
+
         public WebSocketServerStream(System.Net.WebSockets.WebSocket webSocket, CancellationToken cancellationToken)
         {
             this.webSocket = webSocket;
@@ -37,6 +37,11 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
             return result.Count;
         }
 
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
+            return result.Count;
+        }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
@@ -47,6 +52,16 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 cancellationToken)
                 .Wait();
         }
+
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return webSocket.SendAsync(
+                new ArraySegment<byte>(buffer, offset, count),
+                System.Net.WebSockets.WebSocketMessageType.Binary,
+                true,
+                cancellationToken);
+        }
+
 
         protected override void Dispose(bool disposing)
         {

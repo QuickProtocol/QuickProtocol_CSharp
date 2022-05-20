@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Quick.Protocol;
 using Quick.Protocol.WebSocket.Server.AspNetCore;
 using System;
 using System.Collections.Generic;
@@ -28,14 +29,15 @@ namespace Microsoft.AspNetCore.Builder
                     }
                     else
                     {
+                        var qpLibVersion = typeof(QpChannel).Assembly.GetName().Version;
                         var message = $@"
 <html>
     <head>
         <title>Quick.Protocol</title>
     </head>
     <body>
-        <p>Welcome to use <b>Quick.Protocol</b>.</p>
-        <p>Source Code:<a href=""http://github.com/aaasoft/Quick.Protocol"">http://github.com/aaasoft/Quick.Protocol</a></p>
+        <p>Welcome to use <b>Quick.Protocol {qpLibVersion.ToString(3)}</b></p>
+        <p>Source Code:<a href=""https://github.com/QuickProtocol/"">https://github.com/QuickProtocol/</a></p>
         <p>ServerProgram:{string.Join(" | ", options.InstructionSet.Select(t => $"{t.Name}({t.Id})"))}</p>
         <p>InstructionSet:{DateTime.Now}</p>
         <p>MaxPackageSize:{options.MaxPackageSize}</p>

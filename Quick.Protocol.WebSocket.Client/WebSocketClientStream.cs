@@ -49,11 +49,27 @@ namespace Quick.Protocol.WebSocket.Client
             return result.Count;
         }
 
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), CancellationToken.None);
+            return result.Count;
+        }
+
         public override void Write(byte[] buffer, int offset, int count)
         {
             if (closeReason != null)
                 throw new IOException(closeReason);
-            client.SendAsync(new ArraySegment<byte>(buffer, offset, count), System.Net.WebSockets.WebSocketMessageType.Binary, true, CancellationToken.None);
+
+            client.SendAsync(
+                new ArraySegment<byte>(buffer, offset, count),
+                System.Net.WebSockets.WebSocketMessageType.Binary,
+                true,
+                CancellationToken.None).Wait();
+        }
+
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return client.SendAsync(new ArraySegment<byte>(buffer, offset, count), System.Net.WebSockets.WebSocketMessageType.Binary, true, CancellationToken.None);
         }
 
         protected override void Dispose(bool disposing)
