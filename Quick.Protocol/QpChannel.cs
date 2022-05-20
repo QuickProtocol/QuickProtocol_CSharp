@@ -49,7 +49,10 @@ namespace Quick.Protocol
         private ICryptoTransform enc;
         private ICryptoTransform dec;
         private Encoding encoding = Encoding.UTF8;
-        
+
+        private Task sendPackageTask = Task.CompletedTask;
+        //发送包锁对象
+        private object SEND_PACKAGE_LOCK_OBJ = new object();
         //断开连接锁对象
         private object DISCONNECT_LOCK_OBJ = new object();
 
@@ -103,13 +106,9 @@ namespace Quick.Protocol
         /// </summary>
         public long BytesSentPerSec { get; private set; }
         /// <summary>
-        /// 包发送队列
-        /// </summary>
-        private ConcurrentQueue<QpPackageSendQueueItem> packageSendQueue = new ConcurrentQueue<QpPackageSendQueueItem>();
-        /// <summary>
         /// 包发送队列数量
         /// </summary>
-        public int PackageSendQueueCount => packageSendQueue.Count;
+        public int PackageSendQueueCount = 0;
 
         /// <summary>
         /// 最后一次连接的时间
@@ -129,16 +128,18 @@ namespace Quick.Protocol
         /// </summary>
         public virtual void Disconnect()
         {
+            var shouldRaiseDisconnectedEvent = false;
             lock (DISCONNECT_LOCK_OBJ)
             {
-                packageSendQueue.Clear();
                 if (IsConnected)
                 {
-                    IsConnected = false;                    
-                    Disconnected?.Invoke(this, QpEventArgs.Empty);
+                    IsConnected = false;
+                    shouldRaiseDisconnectedEvent = true;
                 }
             }
             InitQpPackageHandler_Stream(null);
+            if (shouldRaiseDisconnectedEvent)
+                Disconnected?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -366,9 +367,19 @@ namespace Quick.Protocol
 
         private Task writePackageAsync(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler)
         {
-            var item = new QpPackageSendQueueItem(getPackagePayloadFunc, afterSendHandler);
-            packageSendQueue.Enqueue(item);
-            return item.SendTask;
+            Interlocked.Increment(ref PackageSendQueueCount);
+            lock (SEND_PACKAGE_LOCK_OBJ)
+            {
+                sendPackageTask = sendPackageTask.ContinueWith(t =>
+                {
+                    var stream = QpPackageHandler_Stream;
+                    if (stream == null)
+                        throw new IOException("Connection is disconnected.");
+                    writePackage(getPackagePayloadFunc, afterSendHandler).Wait();
+                });
+                sendPackageTask.ContinueWith(t => Interlocked.Decrement(ref PackageSendQueueCount));
+                return sendPackageTask;
+            }            
         }
 
         private async Task writePackage(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler)
@@ -780,37 +791,6 @@ namespace Quick.Protocol
             return new ArraySegment<byte>(finalPackageBuffer.Array,
                     finalPackageBuffer.Offset,
                     finalPackageBuffer.Count);
-        }
-
-        protected void BeginSendPackage(CancellationToken cancellationToken)
-        {
-            Task.Delay(options.CheckSendQueueInterval, cancellationToken).ContinueWith(async t =>
-            {
-                if (t.IsCanceled)
-                    return;
-                //开始发送数据包
-                QpPackageSendQueueItem item = null;
-                while (packageSendQueue.Count > 0)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                        return;
-                    var stream = QpPackageHandler_Stream;
-                    if (stream == null)
-                        return;
-                    if (!packageSendQueue.TryDequeue(out item))
-                        continue;
-                    try
-                    {
-                        await writePackage(item.GetPackagePayloadFunc, item.AfterSendHandler);
-                        item.SetResult(null);
-                    }
-                    catch (Exception ex)
-                    {
-                        item.SetResult(ex);
-                    }
-                }
-                BeginSendPackage(cancellationToken);
-            });
         }
 
         protected void BeginHeartBeat(CancellationToken cancellationToken)

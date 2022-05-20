@@ -75,11 +75,15 @@ Content-Length: {Encoding.UTF8.GetByteCount(message)}
                 while (true)
                 {
                     Thread.Sleep(1000);
-                    e.SendNoticePackage(new Quick.Protocol.Notices.PrivateNotice()
+                    try
                     {
-                        Action = "NowTime",
-                        Content = DateTime.Now.ToString()
-                    });
+                        e.SendNoticePackage(new Quick.Protocol.Notices.PrivateNotice()
+                        {
+                            Action = "NowTime",
+                            Content = DateTime.Now.ToString()
+                        }).Wait();
+                    }
+                    catch { break; }
                 }
             });
         }

@@ -33,15 +33,20 @@ namespace QpTestClient.Forms
 
         private async void btnSend_Click(object sender, EventArgs e)
         {
+            txtTestRequest.Focus();
+            txtTestResponse.Clear();
+
             var commandRequestTypeName = txtCommandRequestTypeName.Text.Trim();
             if (string.IsNullOrEmpty(commandRequestTypeName))
             {
-                txtCommandRequestTypeName.Focus();
+                txtTestResponse.AppendText($"{DateTime.Now.ToLongTimeString()}: 请输入命令请求类型！");
+                txtCommandRequestTypeName.Focus();                
                 return;
             }
             var requestContent = txtTestRequest.Text.Trim();
             if (string.IsNullOrEmpty(requestContent))
             {
+                txtTestResponse.AppendText($"{DateTime.Now.ToLongTimeString()}: 请输入请求内容！");
                 txtTestRequest.Focus();
                 return;
             }
@@ -54,8 +59,6 @@ namespace QpTestClient.Forms
             }
 
             btnSend.Enabled = false;
-            txtTestRequest.Focus();
-            txtTestResponse.Clear();
             txtTestResponse.AppendText($"{DateTime.Now.ToLongTimeString()}: 开始执行...{Environment.NewLine}");
             try
             {

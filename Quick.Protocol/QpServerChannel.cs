@@ -59,8 +59,6 @@ namespace Quick.Protocol
             var token = cts.Token;
             //开始读取其他数据包
             BeginReadPackage(token);
-            //开始发送数据包
-            BeginSendPackage(token);
             //开始统计网络数据
             BeginNetstat(token);
 

@@ -11,8 +11,7 @@
 		<Version>2.2.3</Version>
 		<ApplicationIcon>logo.ico</ApplicationIcon>
 		<Description>用于测试连接到[QuickProtocol]服务端的客户端。
-项目地址：https://github.com/QuickProtocol
-		</Description>
+项目地址：https://github.com/QuickProtocol</Description>
 		<Copyright>Apache License</Copyright>
 		<PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>

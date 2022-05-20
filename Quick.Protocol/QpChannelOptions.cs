@@ -30,13 +30,6 @@ namespace Quick.Protocol
         public int HeartBeatInterval => InternalTransportTimeout / 3;
 
         /// <summary>
-        /// 检查发送队列间隔
-        /// </summary>
-        [Category("高级")]
-        [DisplayName("检查发送队列间隔")]
-        public int CheckSendQueueInterval => 100;
-
-        /// <summary>
         /// 密码
         /// </summary>
         [Category("常用")]
