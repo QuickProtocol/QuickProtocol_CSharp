@@ -10,11 +10,32 @@ namespace Quick.Protocol
     public abstract class QpChannelOptions
     {
         /// <summary>
+        /// 内部是否压缩
+        /// </summary>
+        internal virtual bool InternalCompress { get; set; } = false;
+        /// <summary>
+        /// 内部是否加密
+        /// </summary>
+        internal virtual bool InternalEncrypt { get; set; } = false;
+        /// <summary>
+        /// 内部接收超时(默认15秒)
+        /// </summary>
+        internal int InternalTransportTimeout { get; set; } = 15 * 1000;
+
+        /// <summary>
         /// 心跳间隔，为发送或接收超时中小的值的三分一
         /// </summary>
         [Category("高级")]
         [DisplayName("心跳间隔")]
         public int HeartBeatInterval => InternalTransportTimeout / 3;
+
+        /// <summary>
+        /// 检查发送队列间隔
+        /// </summary>
+        [Category("高级")]
+        [DisplayName("检查发送队列间隔")]
+        public int CheckSendQueueInterval => 100;
+
         /// <summary>
         /// 密码
         /// </summary>
@@ -42,19 +63,6 @@ namespace Quick.Protocol
                         .ToArray();
             }
         }
-
-        /// <summary>
-        /// 内部是否压缩
-        /// </summary>
-        internal virtual bool InternalCompress { get; set; } = false;
-        /// <summary>
-        /// 内部是否加密
-        /// </summary>
-        internal virtual bool InternalEncrypt { get; set; } = false;
-        /// <summary>
-        /// 内部接收超时(默认15秒)
-        /// </summary>
-        internal int InternalTransportTimeout { get; set; } = 15 * 1000;
 
         /// <summary>
         /// 最大包大小(默认为：10MB)

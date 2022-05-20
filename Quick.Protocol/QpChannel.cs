@@ -784,7 +784,7 @@ namespace Quick.Protocol
 
         protected void BeginSendPackage(CancellationToken cancellationToken)
         {
-            Task.Delay(10, cancellationToken).ContinueWith(async t =>
+            Task.Delay(options.CheckSendQueueInterval, cancellationToken).ContinueWith(async t =>
             {
                 if (t.IsCanceled)
                     return;
