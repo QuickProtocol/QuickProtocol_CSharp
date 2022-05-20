@@ -7,7 +7,7 @@
 	  <Copyright />
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <Authors>scbeta</Authors>
-	  <Version>2.2.2</Version>
+	  <Version>2.2.3</Version>
 	  <Company />
 	  <Description>Incluse in common usage QpClient implements.
 Common use:
