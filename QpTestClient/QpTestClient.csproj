@@ -31,8 +31,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="10.6.10" />
-		<PackageReference Include="Quick.Xml" Version="1.0.0" />
+		<PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="10.8.0" />
+		<PackageReference Include="Quick.Xml" Version="1.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
