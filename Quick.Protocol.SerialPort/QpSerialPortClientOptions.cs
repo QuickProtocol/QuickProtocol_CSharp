@@ -8,7 +8,7 @@ namespace Quick.Protocol.SerialPort
 {
     public class QpSerialPortClientOptions : QpClientOptions
     {
-        public const string URI_SCHEMA = "serialport";
+        public const string URI_SCHEMA = "qp.serial";
         /// <summary>
         /// 端口名称
         /// </summary>

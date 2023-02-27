@@ -74,7 +74,7 @@ namespace QpTestClient
 
         private void QuickConnectForm_Load(object sender, EventArgs e)
         {
-            txtName.Text="快速添加连接_" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            txtName.Text = "快速添加连接_" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
         }
     }
 }

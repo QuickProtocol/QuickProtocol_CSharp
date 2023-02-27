@@ -28,146 +28,142 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.txtUrl = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtPassword = new System.Windows.Forms.TextBox();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.btnOk = new System.Windows.Forms.Button();
-            this.label4 = new System.Windows.Forms.Label();
-            this.txtName = new System.Windows.Forms.TextBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.SuspendLayout();
+            txtUrl = new System.Windows.Forms.TextBox();
+            label2 = new System.Windows.Forms.Label();
+            label1 = new System.Windows.Forms.Label();
+            txtPassword = new System.Windows.Forms.TextBox();
+            btnCancel = new System.Windows.Forms.Button();
+            btnOk = new System.Windows.Forms.Button();
+            label4 = new System.Windows.Forms.Label();
+            txtName = new System.Windows.Forms.TextBox();
+            textBox1 = new System.Windows.Forms.TextBox();
+            label3 = new System.Windows.Forms.Label();
+            SuspendLayout();
             // 
             // txtUrl
             // 
-            this.txtUrl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtUrl.Location = new System.Drawing.Point(75, 41);
-            this.txtUrl.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.txtUrl.Name = "txtUrl";
-            this.txtUrl.Size = new System.Drawing.Size(321, 23);
-            this.txtUrl.TabIndex = 4;
+            txtUrl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            txtUrl.Location = new System.Drawing.Point(150, 75);
+            txtUrl.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            txtUrl.Name = "txtUrl";
+            txtUrl.Size = new System.Drawing.Size(638, 38);
+            txtUrl.TabIndex = 4;
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(36, 44);
-            this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(34, 17);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "URL:";
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(72, 80);
+            label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(66, 31);
+            label2.TabIndex = 5;
+            label2.Text = "URL:";
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(35, 224);
-            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 17);
-            this.label1.TabIndex = 5;
-            this.label1.Text = "密码:";
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(70, 408);
+            label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(68, 31);
+            label1.TabIndex = 5;
+            label1.Text = "密码:";
             // 
             // txtPassword
             // 
-            this.txtPassword.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtPassword.Location = new System.Drawing.Point(74, 221);
-            this.txtPassword.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.txtPassword.Name = "txtPassword";
-            this.txtPassword.PasswordChar = '●';
-            this.txtPassword.Size = new System.Drawing.Size(321, 23);
-            this.txtPassword.TabIndex = 5;
+            txtPassword.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            txtPassword.Location = new System.Drawing.Point(148, 403);
+            txtPassword.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            txtPassword.Name = "txtPassword";
+            txtPassword.PasswordChar = '●';
+            txtPassword.Size = new System.Drawing.Size(638, 38);
+            txtPassword.TabIndex = 5;
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(151, 250);
-            this.btnCancel.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(73, 25);
-            this.btnCancel.TabIndex = 101;
-            this.btnCancel.Text = "取消(&C)";
-            this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            btnCancel.Location = new System.Drawing.Point(302, 456);
+            btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            btnCancel.Name = "btnCancel";
+            btnCancel.Size = new System.Drawing.Size(146, 46);
+            btnCancel.TabIndex = 101;
+            btnCancel.Text = "取消(&C)";
+            btnCancel.UseVisualStyleBackColor = true;
+            btnCancel.Click += btnCancel_Click;
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(74, 250);
-            this.btnOk.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.btnOk.Name = "btnOk";
-            this.btnOk.Size = new System.Drawing.Size(73, 25);
-            this.btnOk.TabIndex = 100;
-            this.btnOk.Text = "确定(&O)";
-            this.btnOk.UseVisualStyleBackColor = true;
-            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
+            btnOk.Location = new System.Drawing.Point(148, 456);
+            btnOk.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            btnOk.Name = "btnOk";
+            btnOk.Size = new System.Drawing.Size(146, 46);
+            btnOk.TabIndex = 100;
+            btnOk.Text = "确定(&O)";
+            btnOk.UseVisualStyleBackColor = true;
+            btnOk.Click += btnOk_Click;
             // 
             // label4
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(36, 15);
-            this.label4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(35, 17);
-            this.label4.TabIndex = 5;
-            this.label4.Text = "名称:";
+            label4.AutoSize = true;
+            label4.Location = new System.Drawing.Point(72, 27);
+            label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(68, 31);
+            label4.TabIndex = 5;
+            label4.Text = "名称:";
             // 
             // txtName
             // 
-            this.txtName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtName.Location = new System.Drawing.Point(75, 12);
-            this.txtName.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.txtName.Name = "txtName";
-            this.txtName.Size = new System.Drawing.Size(321, 23);
-            this.txtName.TabIndex = 3;
+            txtName.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            txtName.Location = new System.Drawing.Point(150, 22);
+            txtName.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            txtName.Name = "txtName";
+            txtName.Size = new System.Drawing.Size(638, 38);
+            txtName.TabIndex = 3;
             // 
             // textBox1
             // 
-            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox1.Location = new System.Drawing.Point(75, 70);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(320, 145);
-            this.textBox1.TabIndex = 102;
-            this.textBox1.Text = "TCP: tcp://127.0.0.1:3000\r\nWebSocket: ws://127.0.0.1:3000\r\n命名管道: pipe://./Quick.P" +
-    "rotocol\r\n串口: serialport://COM1";
+            textBox1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            textBox1.Location = new System.Drawing.Point(150, 128);
+            textBox1.Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
+            textBox1.Multiline = true;
+            textBox1.Name = "textBox1";
+            textBox1.ReadOnly = true;
+            textBox1.Size = new System.Drawing.Size(636, 261);
+            textBox1.TabIndex = 102;
+            textBox1.Text = "TCP: qp.tcp://127.0.0.1:3000\r\nWebSocket: qp.ws://127.0.0.1:3000\r\n命名管道: qp.pipe://./Quick.Protocol\r\n串口: qp.serial://COM1";
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(37, 73);
-            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(35, 17);
-            this.label3.TabIndex = 103;
-            this.label3.Text = "示例:";
+            label3.AutoSize = true;
+            label3.Location = new System.Drawing.Point(74, 133);
+            label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(68, 31);
+            label3.TabIndex = 103;
+            label3.Text = "示例:";
             // 
             // QuickConnectForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(407, 294);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.btnOk);
-            this.Controls.Add(this.txtPassword);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.txtName);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.txtUrl);
-            this.Controls.Add(this.label2);
-            this.Name = "QuickConnectForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "快速添加连接";
-            this.Load += new System.EventHandler(this.QuickConnectForm_Load);
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(814, 536);
+            Controls.Add(label3);
+            Controls.Add(textBox1);
+            Controls.Add(btnCancel);
+            Controls.Add(btnOk);
+            Controls.Add(txtPassword);
+            Controls.Add(label1);
+            Controls.Add(txtName);
+            Controls.Add(label4);
+            Controls.Add(txtUrl);
+            Controls.Add(label2);
+            Margin = new System.Windows.Forms.Padding(6, 5, 6, 5);
+            Name = "QuickConnectForm";
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            Text = "快速添加连接";
+            Load += QuickConnectForm_Load;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion

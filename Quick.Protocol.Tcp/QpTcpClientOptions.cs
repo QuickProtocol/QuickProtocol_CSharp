@@ -7,7 +7,7 @@ namespace Quick.Protocol.Tcp
 {
     public class QpTcpClientOptions : QpClientOptions
     {
-        public const string URI_SCHEMA = "tcp";
+        public const string URI_SCHEMA = "qp.tcp";
         /// <summary>
         /// 主机
         /// </summary>
@@ -46,8 +46,8 @@ namespace Quick.Protocol.Tcp
 
         protected override void LoadFromUri(Uri uri)
         {
-            Host=uri.Host;
-            Port=uri.Port;
+            Host = uri.Host;
+            Port = uri.Port;
             base.LoadFromUri(uri);
         }
 

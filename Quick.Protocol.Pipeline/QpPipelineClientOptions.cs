@@ -7,7 +7,7 @@ namespace Quick.Protocol.Pipeline
 {
     public class QpPipelineClientOptions : QpClientOptions
     {
-        public const string URI_SCHEMA = "pipe";
+        public const string URI_SCHEMA = "qp.pipe";
 
         [Category("常用")]
         [DisplayName("服务器名称")]
