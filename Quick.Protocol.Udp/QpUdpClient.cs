@@ -3,18 +3,18 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using UdpAsTcp;
 
 namespace Quick.Protocol.Udp
 {
     [DisplayName("UDP")]
     public class QpUdpClient : QpClient
     {
-        private UdpClient udpClient;
+        private UdpAsTcpClient udpAsTcpClient;
         private QpUdpClientOptions options;
 
         public QpUdpClient(QpUdpClientOptions options) : base(options)
@@ -24,26 +24,27 @@ namespace Quick.Protocol.Udp
 
         protected override async Task<Stream> InnerConnectAsync()
         {
-            if (udpClient != null)
+            if (udpAsTcpClient != null)
                 Close();
             //开始连接
             if (string.IsNullOrEmpty(options.LocalHost))
-                udpClient = new UdpClient();
+                udpAsTcpClient = new UdpAsTcpClient();
             else
-                udpClient = new UdpClient(new IPEndPoint(IPAddress.Parse(options.LocalHost), options.LocalPort));
-            var remoteHostAddresses = await Dns.GetHostAddressesAsync(options.Host);
-            var remoteEndPoint = new IPEndPoint(remoteHostAddresses.First(), options.Port);
-            await TaskUtils.TaskWait(Task.Run(() => udpClient.Connect(remoteEndPoint)), options.ConnectionTimeout);
-            return new UdpClientStream(udpClient, remoteEndPoint);
+                udpAsTcpClient = new UdpAsTcpClient(new IPEndPoint(IPAddress.Parse(options.LocalHost), options.LocalPort));
+            await TaskUtils.TaskWait(Task.Run(() => udpAsTcpClient.Connect(options.Host, options.Port)), options.ConnectionTimeout);
+
+            if (!udpAsTcpClient.Connected)
+                throw new IOException($"Failed to connect to {options.Host}:{options.Port}.");
+            return udpAsTcpClient.GetStream();
         }
 
         public override void Disconnect()
         {
-            if (udpClient != null)
+            if (udpAsTcpClient != null)
             {
-                udpClient.Close();
-                udpClient.Dispose();
-                udpClient = null;
+                udpAsTcpClient.Close();
+                udpAsTcpClient.Dispose();
+                udpAsTcpClient = null;
             }
 
             base.Disconnect();

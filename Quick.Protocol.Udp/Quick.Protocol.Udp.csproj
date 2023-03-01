@@ -22,6 +22,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="UdpAsTcp" Version="1.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\Quick.Protocol\Quick.Protocol.csproj" />
 	</ItemGroup>
 

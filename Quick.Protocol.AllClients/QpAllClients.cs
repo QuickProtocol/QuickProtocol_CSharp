@@ -10,6 +10,7 @@ namespace Quick.Protocol
         {
             Pipeline.QpPipelineClientOptions.RegisterUriSchema();
             Tcp.QpTcpClientOptions.RegisterUriSchema();
+            Udp.QpUdpClientOptions.RegisterUriSchema();
             WebSocket.Client.QpWebSocketClientOptions.RegisterUriSchema();
         }
     }
