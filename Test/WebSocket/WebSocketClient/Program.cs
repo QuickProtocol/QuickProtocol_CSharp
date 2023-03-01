@@ -14,7 +14,7 @@ namespace WebSocketClient
 
             var client = new Quick.Protocol.WebSocket.Client.QpWebSocketClient(new Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions()
             {
-                Url = "ws://127.0.0.1:3011/qp_test",
+                Url = "qp.ws://127.0.0.1:3011/qp_test",
                 Password = "HelloQP"
             });
             client.Disconnected += (sender, e) =>

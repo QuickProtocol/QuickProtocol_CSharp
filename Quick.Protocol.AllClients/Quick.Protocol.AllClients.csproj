@@ -7,7 +7,7 @@
 	  <Copyright />
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <Authors>scbeta</Authors>
-	  <Version>2.2.5</Version>
+	  <Version>2.2.6</Version>
 	  <Company />
 	  <Description>Incluse in common usage QpClient implements.
 Common use:
@@ -16,9 +16,10 @@ QpAllClients.RegisterUriSchema();
 
 Uri samples:
 ------------------
-TCP: ConnectionUriParser.Parse("tcp://127.0.0.1:3001");
-Pipe: ConnectionUriParser.Parse("pipe://./Quick.Protocol");
-WebSocket: ConnectionUriParser.Parse("ws://127.0.0.1:3001/qp");</Description>
+TCP: ConnectionUriParser.Parse("qp.tcp://127.0.0.1:3001");
+UDP: ConnectionUriParser.Parse("qp.udp://127.0.0.1:3001");
+Pipe: ConnectionUriParser.Parse("qp.pipe://./Quick.Protocol");
+WebSocket: ConnectionUriParser.Parse("qp.ws://127.0.0.1:3001/qp");</Description>
 	  <PackageIcon>logo.png</PackageIcon>
 	  <PackageTags>QuickProtocol</PackageTags>
   </PropertyGroup>

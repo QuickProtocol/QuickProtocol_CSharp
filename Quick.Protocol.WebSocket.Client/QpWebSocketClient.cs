@@ -22,7 +22,10 @@ namespace Quick.Protocol.WebSocket.Client
         protected override async Task<Stream> InnerConnectAsync()
         {
             client = new System.Net.WebSockets.ClientWebSocket();
-            await client.ConnectAsync(new Uri(options.Url), CancellationToken.None);
+            var url = options.Url;
+            if (url.StartsWith("qp."))
+                url = url.Substring(3);
+            await client.ConnectAsync(new Uri(url), CancellationToken.None);
             return new WebSocketClientStream(client);
         }
     }
