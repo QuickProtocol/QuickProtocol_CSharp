@@ -49,13 +49,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Console", "Console", "{8E34
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleTest", "Test\ConsoleTest\ConsoleTest.csproj", "{18B3BC1D-D5F9-4D54-81C2-4B4EF3898AF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quick.Protocol.Udp", "Quick.Protocol.Udp\Quick.Protocol.Udp.csproj", "{6D0DF333-FB4D-47EE-828A-4775D67D9DB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quick.Protocol.Udp", "Quick.Protocol.Udp\Quick.Protocol.Udp.csproj", "{6D0DF333-FB4D-47EE-828A-4775D67D9DB2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Udp", "Udp", "{AEC82A87-FD4C-4188-84C0-7365DB96AD00}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdpClient", "Test\Udp\UdpClient\UdpClient.csproj", "{672A0D86-85D2-4439-95E5-EA329F12419A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UdpClient", "Test\Udp\UdpClient\UdpClient.csproj", "{672A0D86-85D2-4439-95E5-EA329F12419A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdpServer", "Test\Udp\UdpServer\UdpServer.csproj", "{B06D3B73-70CA-41A7-AE8E-9C79B014657B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UdpServer", "Test\Udp\UdpServer\UdpServer.csproj", "{B06D3B73-70CA-41A7-AE8E-9C79B014657B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
