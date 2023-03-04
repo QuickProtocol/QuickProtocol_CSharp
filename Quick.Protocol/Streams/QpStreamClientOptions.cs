@@ -9,14 +9,14 @@ namespace Quick.Protocol.Streams
     {
         public Stream BaseStream { get; set; }
 
-        public override Type GetQpClientType()
+        public override QpClient CreateClient()
         {
-            return typeof(QpStreamClient);
+            return new QpStreamClient(this);
         }
 
         protected override string ToUriBasic(HashSet<string> ignorePropertyNames)
         {
-            return "stream://" + BaseStream.GetType().Name;
+            return "qp.stream://" + BaseStream.GetType().Name;
         }
     }
 }

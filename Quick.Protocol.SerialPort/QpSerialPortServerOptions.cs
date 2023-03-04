@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Quick.Protocol.SerialPort
 {
-    public class QpSerialPortServerOptions: QpServerOptions
+    public class QpSerialPortServerOptions : QpServerOptions
     {
         /// <summary>
         /// 端口名称
@@ -33,6 +33,11 @@ namespace Quick.Protocol.SerialPort
             base.Check();
             if (string.IsNullOrEmpty(PortName))
                 throw new ArgumentNullException(nameof(PortName));
+        }
+
+        public override QpServer CreateServer()
+        {
+            return new QpSerialPortServer(this);
         }
     }
 }

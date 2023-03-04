@@ -59,7 +59,7 @@ namespace QpTestClient
             ConnectionInfo = new TestConnectionInfo()
             {
                 Name = name,
-                QpClientTypeName = options.GetQpClientType().FullName,
+                QpClientTypeName = options.CreateClient().GetType().FullName,
                 QpClientOptions = options
             };
             DialogResult = DialogResult.OK;

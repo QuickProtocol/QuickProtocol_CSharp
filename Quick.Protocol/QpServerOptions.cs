@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Quick.Protocol
 {
-    public class QpServerOptions : QpChannelOptions
+    public abstract class QpServerOptions : QpChannelOptions
     {
         /// <summary>
         /// 缓存大小(默认128KB)
@@ -26,6 +26,15 @@ namespace Quick.Protocol
         /// </summary>
         [JsonIgnore]
         public Action<Stream,ArraySegment<byte>> ProtocolErrorHandler { get; set; }
+
+        /// <summary>
+        /// 创建客户端实例
+        /// </summary>
+        /// <returns></returns>
+        public virtual QpServer CreateServer()
+        {
+            throw new NotImplementedException();
+        }
 
         public virtual QpServerOptions Clone()
         {

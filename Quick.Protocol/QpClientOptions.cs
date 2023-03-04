@@ -58,17 +58,12 @@ namespace Quick.Protocol
         }
 
         /// <summary>
-        /// 获取客户端类型
-        /// </summary>
-        /// <returns></returns>
-        public abstract Type GetQpClientType();
-        /// <summary>
         /// 创建客户端实例
         /// </summary>
         /// <returns></returns>
         public virtual QpClient CreateClient()
         {
-            return (QpClient)Activator.CreateInstance(GetQpClientType(), new object[] { this });
+            throw new NotImplementedException();
         }
 
         protected virtual void LoadFromUri(Uri uri)

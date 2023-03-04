@@ -30,5 +30,10 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 _Path = "/" + value;
             }
         }
+
+        public override QpServer CreateServer()
+        {
+            return new QpWebSocketServer(this);
+        }
     }
 }

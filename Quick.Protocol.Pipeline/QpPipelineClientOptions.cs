@@ -24,8 +24,11 @@ namespace Quick.Protocol.Pipeline
                 throw new ArgumentNullException(nameof(PipeName));
         }
 
-        public override Type GetQpClientType() => typeof(QpPipelineClient);
-        
+        public override QpClient CreateClient()
+        {
+            return new QpPipelineClient(this);
+        }
+
         protected override void LoadFromUri(Uri uri)
         {
             ServerName =uri.Host;

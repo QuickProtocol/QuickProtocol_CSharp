@@ -47,8 +47,11 @@ namespace Quick.Protocol.SerialPort
                 throw new ArgumentNullException(nameof(PortName));
         }
 
-        public override Type GetQpClientType() => typeof(QpSerialPortClient);
-        
+        public override QpClient CreateClient()
+        {
+            return new QpSerialPortClient(this);
+        }
+
         protected override void LoadFromUri(Uri uri)
         {
             PortName = uri.Host;

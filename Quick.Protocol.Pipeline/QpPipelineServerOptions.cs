@@ -14,5 +14,10 @@ namespace Quick.Protocol.Pipeline
             if (string.IsNullOrEmpty(PipeName))
                 throw new ArgumentNullException(nameof(PipeName));
         }
+
+        public override QpServer CreateServer()
+        {
+            return new QpPipelineServer(this);
+        }
     }
 }

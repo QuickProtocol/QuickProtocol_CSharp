@@ -42,7 +42,10 @@ namespace Quick.Protocol.Udp
                 throw new ArgumentException("Port must between 0 and 65535", nameof(Port));
         }
 
-        public override Type GetQpClientType() => typeof(QpUdpClient);
+        public override QpClient CreateClient()
+        {
+            return new QpUdpClient(this);
+        }
 
         protected override void LoadFromUri(Uri uri)
         {
