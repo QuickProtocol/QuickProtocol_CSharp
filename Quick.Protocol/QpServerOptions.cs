@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Quick.Protocol
 {
-    public abstract class QpServerOptions : QpChannelOptions
+    public class QpServerOptions : QpChannelOptions
     {
         /// <summary>
         /// 缓存大小(默认128KB)
