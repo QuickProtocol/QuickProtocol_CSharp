@@ -910,12 +910,12 @@ namespace Quick.Protocol
             }
             catch (CommandException ex)
             {
-                string errorMessage = ExceptionUtils.GetExceptionString(ex);
+                string errorMessage = ExceptionUtils.GetExceptionMessage(ex);
                 SendCommandResponsePackage(commandId, ex.Code, errorMessage, null, null);
             }
             catch (Exception ex)
             {
-                string errorMessage = ExceptionUtils.GetExceptionString(ex);
+                string errorMessage = ExceptionUtils.GetExceptionMessage(ex);
                 SendCommandResponsePackage(commandId, 255, errorMessage, null, null);
             }
         }
