@@ -86,6 +86,10 @@ namespace Quick.Protocol
         /// 通道名称
         /// </summary>
         public abstract string ChannelName { get; }
+        /// <summary>
+        /// 认证问题
+        /// </summary>
+        public string AuthenticateQuestion { get; protected set; }
 
         //长整型数字的一半，统计大于这个数时，统计计数归零，防止溢出
         private long LONG_HALF_MAX_VALUE = long.MaxValue / 2;

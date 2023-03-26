@@ -16,7 +16,6 @@ namespace Quick.Protocol
         private CancellationTokenSource cts;
         private QpServerOptions options;
         private string channelName;
-        private string question;
         //通过认证后，才允许使用的命令执行管理器列表
         private List<CommandExecuterManager> authedCommandExecuterManagerList = null;
         //通过认证后，才允许使用的通知处理器管理器列表
@@ -97,18 +96,17 @@ namespace Quick.Protocol
                         throw new CommandException(255, $"Unknown instruction: {id}");
                 }
             }
-
-            question = Guid.NewGuid().ToString("N");
+            AuthenticateQuestion = Guid.NewGuid().ToString("N");
             return new Commands.Connect.Response()
             {
                 BufferSize = options.BufferSize,
-                Question = question
+                Question = AuthenticateQuestion
             };
         }
 
         private Commands.Authenticate.Response authenticate(QpChannel handler, Commands.Authenticate.Request request)
         {
-            if (Utils.CryptographyUtils.ComputeMD5Hash(question + options.Password) != request.Answer)
+            if (Utils.CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + options.Password) != request.Answer)
             {
                 Task.Delay(1000).ContinueWith(t =>
                 {
