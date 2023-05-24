@@ -1041,8 +1041,8 @@ namespace Quick.Protocol
 
                                     if (LogUtils.LogCommand)
                                         LogUtils.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-
-                                    OnCommandRequestReceived(commandId, typeName, content);
+                                    //异步执行命令请求事件处理器
+                                    Task.Run(() => OnCommandRequestReceived(commandId, typeName, content));
                                     break;
                                 }
                             case QpPackageType.CommandResponse:
