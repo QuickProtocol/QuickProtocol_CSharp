@@ -25,8 +25,7 @@ namespace Quick.Protocol
         /// <summary>
         /// 心跳间隔，为发送或接收超时中小的值的三分一
         /// </summary>
-        [Category("高级")]
-        [DisplayName("心跳间隔")]
+        [Browsable(false)]
         public int HeartBeatInterval => InternalTransportTimeout / 3;
 
         /// <summary>
