@@ -37,7 +37,7 @@ namespace QpTestClient
             var qpClientTypeInfo = QpClientTypeManager.Instance.Get(ConnectionInfo.QpClientTypeName);
             if (qpClientTypeInfo == null)
                 throw new ApplicationException($"未找到类型为[{ConnectionInfo.QpClientTypeName}]的QP客户端类型！");
-            QpClient = (QpClient)Activator.CreateInstance(qpClientTypeInfo.QpClientType, ConnectionInfo.QpClientOptions);
+            QpClient = ConnectionInfo.QpClientOptions.CreateClient();
             QpClient.Disconnected += QpClient_Disconnected;
             try
             {
