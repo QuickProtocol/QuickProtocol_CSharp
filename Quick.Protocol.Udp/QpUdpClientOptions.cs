@@ -63,7 +63,7 @@ namespace Quick.Protocol.Udp
 
         public static void RegisterUriSchema()
         {
-            RegisterUriSchema(URI_SCHEMA, typeof(QpUdpClientOptions));
+            RegisterUriSchema(URI_SCHEMA, () => new QpUdpClientOptions());
         }
     }
 }

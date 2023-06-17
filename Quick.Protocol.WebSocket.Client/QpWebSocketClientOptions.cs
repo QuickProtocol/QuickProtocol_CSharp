@@ -45,8 +45,8 @@ namespace Quick.Protocol.WebSocket.Client
 
         public static void RegisterUriSchema()
         {
-            RegisterUriSchema(URI_SCHEMA_WS, typeof(QpWebSocketClientOptions));
-            RegisterUriSchema(URI_SCHEMA_WSS, typeof(QpWebSocketClientOptions));
+            RegisterUriSchema(URI_SCHEMA_WS, () => new QpWebSocketClientOptions());
+            RegisterUriSchema(URI_SCHEMA_WSS, () => new QpWebSocketClientOptions());
         }
     }
 }

@@ -63,7 +63,7 @@ namespace Quick.Protocol.Tcp
 
         public static void RegisterUriSchema()
         {
-            RegisterUriSchema(URI_SCHEMA, typeof(QpTcpClientOptions));
+            RegisterUriSchema(URI_SCHEMA, () => new QpTcpClientOptions());
         }
     }
 }

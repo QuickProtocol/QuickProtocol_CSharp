@@ -45,7 +45,7 @@ namespace Quick.Protocol.Pipeline
 
         public static void RegisterUriSchema()
         {
-            RegisterUriSchema(URI_SCHEMA, typeof(QpPipelineClientOptions));
+            RegisterUriSchema(URI_SCHEMA, () => new QpPipelineClientOptions());
         }
     }
 }

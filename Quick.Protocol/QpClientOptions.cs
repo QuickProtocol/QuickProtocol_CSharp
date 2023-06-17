@@ -120,27 +120,19 @@ namespace Quick.Protocol
 
         public override string ToString() => ToUri().ToString();
 
-        private static Dictionary<string, Type> schemaQpClientOptionsTypeDict = new Dictionary<string, Type>();
+        private static Dictionary<string, Func<QpClientOptions>> schemaQpClientOptionsFactoryDict = new Dictionary<string, Func<QpClientOptions>>();
 
-        public static void RegisterUriSchema<T>(string schema)
-            where T : QpClientOptions
+        public static void RegisterUriSchema(string schema, Func<QpClientOptions> optionsFactory)
         {
-            RegisterUriSchema(schema, typeof(T));
-        }
-
-        public static void RegisterUriSchema(string schema, Type type)
-        {
-            if (!type.IsSubclassOf(typeof(QpClientOptions)))
-                throw new ArgumentException("Parameter 'type' muse be subclass of QpClientOptions", nameof(type));
-            schemaQpClientOptionsTypeDict[schema] = type;
+            schemaQpClientOptionsFactoryDict[schema] = optionsFactory;
         }
 
         public static QpClientOptions Parse(Uri uri)
         {
-            if (!schemaQpClientOptionsTypeDict.ContainsKey(uri.Scheme))
+            if (!schemaQpClientOptionsFactoryDict.ContainsKey(uri.Scheme))
                 throw new ArgumentException($"Unknown uri schema [{uri.Scheme}],you muse register uri schema before use it.", nameof(uri));
-            var qpClientOptionsType = schemaQpClientOptionsTypeDict[uri.Scheme];
-            var qpClientOptions = (QpClientOptions)Activator.CreateInstance(qpClientOptionsType);
+            var optionsFactory = schemaQpClientOptionsFactoryDict[uri.Scheme];
+            var qpClientOptions = optionsFactory.Invoke();
             qpClientOptions.LoadFromUri(uri);
             return qpClientOptions;
         }

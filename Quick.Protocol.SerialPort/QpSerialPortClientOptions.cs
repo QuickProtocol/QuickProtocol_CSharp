@@ -66,7 +66,7 @@ namespace Quick.Protocol.SerialPort
 
         public static void RegisterUriSchema()
         {
-            RegisterUriSchema(URI_SCHEMA, typeof(QpSerialPortClientOptions));
+            RegisterUriSchema(URI_SCHEMA, () => new QpSerialPortClientOptions());
         }
     }
 }
