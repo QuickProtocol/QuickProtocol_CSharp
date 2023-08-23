@@ -30,7 +30,7 @@ namespace Quick.Protocol.Tcp
                 tcpClient = new TcpClient();
             else
                 tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(options.LocalHost), options.LocalPort));
-            await TaskUtils.TaskWait(tcpClient.ConnectAsync(options.Host, options.Port), options.ConnectionTimeout);
+            await TaskUtils.TaskWait(tcpClient.ConnectAsync(options.Host, options.Port), options.ConnectionTimeout).ConfigureAwait(false);
 
             if (!tcpClient.Connected)
                 throw new IOException($"Failed to connect to {options.Host}:{options.Port}.");

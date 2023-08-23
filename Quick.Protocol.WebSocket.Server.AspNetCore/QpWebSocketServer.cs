@@ -75,7 +75,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
             //如果当前没有WebSocket连接，则等待0.1秒后再返回
             if (webSocketContexts == null || webSocketContexts.Length==0)
             {
-                await Task.Delay(100);
+                await Task.Delay(100).ConfigureAwait(false);
                 return;
             }
             foreach (var context in webSocketContexts)
@@ -90,7 +90,9 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 {
                     if (LogUtils.LogConnection)
                         LogUtils.Log("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
-                    try { await context.WebSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, ex.Message, CancellationToken.None); }
+                    try { await context.WebSocket
+                            .CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, ex.Message, CancellationToken.None)
+                            .ConfigureAwait(false); }
                     catch { }
                 }
             }

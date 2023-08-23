@@ -39,7 +39,8 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
+            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken)
+                .ConfigureAwait(false);
             return result.Count;
         }
 

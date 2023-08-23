@@ -23,8 +23,8 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {
-                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                        await innerServer.OnNewConnection(webSocket, context.Connection);
+                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
+                        await innerServer.OnNewConnection(webSocket, context.Connection).ConfigureAwait(false);
                         return;
                     }
                     else
@@ -50,12 +50,12 @@ namespace Microsoft.AspNetCore.Builder
                         var rep = context.Response;
                         rep.ContentType = "text/html; charset=utf-8";
                         rep.ContentLength = Encoding.UTF8.GetByteCount(message);
-                        await context.Response.WriteAsync(message, Encoding.UTF8);
+                        await context.Response.WriteAsync(message, Encoding.UTF8).ConfigureAwait(false);
                     }
                 }
                 else
                 {
-                    await next();
+                    await next().ConfigureAwait(false);
                 }
             }));
             return app;

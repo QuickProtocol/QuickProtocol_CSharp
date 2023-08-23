@@ -310,7 +310,8 @@ namespace Quick.Protocol
                         for (var i = 0; i < PACKAGE_TOTAL_LENGTH_LENGTH; i++)
                             ms.WriteByte(0);
                         using (var gzStream = new GZipStream(ms, CompressionMode.Compress, true))
-                            await gzStream.WriteAsync(packageBuffer.Array, packageBuffer.Offset + PACKAGE_TOTAL_LENGTH_LENGTH, packageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH);
+                            await gzStream.WriteAsync(packageBuffer.Array, packageBuffer.Offset + PACKAGE_TOTAL_LENGTH_LENGTH, packageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH)
+                                .ConfigureAwait(false);
                         var packageTotalLength = Convert.ToInt32(ms.Position);
                         writePackageTotalLengthToBuffer(currentBuffer, 0, packageTotalLength);
                         packageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
@@ -334,7 +335,7 @@ namespace Quick.Protocol
 
             //发送包内容
             var writeTask = stream.WriteAsync(packageBuffer.Array, packageBuffer.Offset, packageBuffer.Count);
-            await await TaskUtils.TaskWait(writeTask, options.InternalTransportTimeout);
+            await await TaskUtils.TaskWait(writeTask, options.InternalTransportTimeout).ConfigureAwait(false);
 
             if (writeTask.IsCanceled)
                 return;
@@ -356,7 +357,7 @@ namespace Quick.Protocol
                     LogUtils.LogContent ?
                         BitConverter.ToString(packageBuffer.Array, packageBuffer.Offset, packageBuffer.Count)
                         : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-            await stream.FlushAsync();
+            await stream.FlushAsync().ConfigureAwait(false);
         }
 
         private void writePackageTotalLengthToBuffer(byte[] buffer, int offset, int packageTotalLength)
@@ -408,7 +409,7 @@ namespace Quick.Protocol
                 {
                     await writePackageBuffer(stream,
                         new ArraySegment<byte>(packageBuffer, 0, packageTotalLength),
-                        afterSendHandler);
+                        afterSendHandler).ConfigureAwait(false);
                 }
                 //否则，拆分为多个包发送
                 else
@@ -436,7 +437,7 @@ namespace Quick.Protocol
                         await writePackageBuffer(
                             stream,
                             new ArraySegment<byte>(sendBuffer, 0, PACKAGE_HEAD_LENGTH + takeLength),
-                            afterSendHandler);
+                            afterSendHandler).ConfigureAwait(false);
                         currentIndex += takeLength;
                     }
                 }
@@ -517,7 +518,7 @@ namespace Quick.Protocol
             var requestType = request.GetType();
             var typeName = requestType.FullName;
             var requestContent = JsonConvert.SerializeObject(request);
-            await SendCommandRequestPackage(CommandContext.GenerateNewId(), typeName, requestContent);
+            await SendCommandRequestPackage(CommandContext.GenerateNewId(), typeName, requestContent).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -644,7 +645,7 @@ namespace Quick.Protocol
                 if (cancellationToken.IsCancellationRequested)
                     break;
                 var readTask = stream.ReadAsync(buffer, count + startIndex, totalCount - count, cancellationToken);
-                ret = await await TaskUtils.TaskWait(readTask, options.InternalTransportTimeout);
+                ret = await await TaskUtils.TaskWait(readTask, options.InternalTransportTimeout).ConfigureAwait(false);
                 if (readTask.IsCanceled || ret == 0)
                     break;
                 if (ret < 0)
@@ -685,7 +686,7 @@ namespace Quick.Protocol
 
                 var currentRecvBuffer = recvBuffer;
                 //读取包头
-                var ret = await readData(stream, currentRecvBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH, token);                
+                var ret = await readData(stream, currentRecvBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH, token).ConfigureAwait(false);                
                 if (ret == 0)
                     throw new IOException("未读取到数据！");
                 if (ret < PACKAGE_TOTAL_LENGTH_LENGTH)
@@ -709,7 +710,7 @@ namespace Quick.Protocol
                 if (token.IsCancellationRequested)
                     return nullArraySegment;
                 //读取包体
-                ret = await readData(stream, recvBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, packageBodyLength, token);
+                ret = await readData(stream, recvBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, packageBodyLength, token).ConfigureAwait(false);
                 
                 if (ret < packageBodyLength)
                     throw new ProtocolException(new ArraySegment<byte>(recvBuffer, 0, PACKAGE_HEAD_LENGTH + ret), $"包体读取错误！包体长度：{packageBodyLength}，读取数据长度：{ret}");
@@ -763,7 +764,7 @@ namespace Quick.Protocol
                         splitMs = new MemoryStream(splitMsCapacity);
                         isReadingSplitPackage = true;
                     }
-                    await splitMs.WriteAsync(currentPackageBuffer.Array, currentPackageBuffer.Offset + PACKAGE_HEAD_LENGTH, currentPackageBuffer.Count - PACKAGE_HEAD_LENGTH);
+                    await splitMs.WriteAsync(currentPackageBuffer.Array, currentPackageBuffer.Offset + PACKAGE_HEAD_LENGTH, currentPackageBuffer.Count - PACKAGE_HEAD_LENGTH).ConfigureAwait(false);
 
                     //如果拆分包已经读取完成
                     if (splitMs.Position >= splitMsCapacity)
@@ -1118,15 +1119,15 @@ namespace Quick.Protocol
 
             if (timeout <= 0)
             {
-                await SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, afterSendHandler);
-                return await commandContext.ResponseTask;
+                await SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, afterSendHandler).ConfigureAwait(false);
+                return await commandContext.ResponseTask.ConfigureAwait(false);
             }
             //如果设置了超时
             else
             {
                 try
                 {
-                    await TaskUtils.TaskWait(Task.Run(() => SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, afterSendHandler)), timeout);
+                    await TaskUtils.TaskWait(Task.Run(() => SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, afterSendHandler)), timeout).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -1139,7 +1140,7 @@ namespace Quick.Protocol
                         commandDict.TryRemove(commandContext.Id, out _);
                     }
                 }
-                return await await TaskUtils.TaskWait(commandContext.ResponseTask, timeout);
+                return await await TaskUtils.TaskWait(commandContext.ResponseTask, timeout).ConfigureAwait(false);
             }
         }
 
@@ -1155,15 +1156,15 @@ namespace Quick.Protocol
             CommandResponseTypeNameAndContent ret = null;
             if (timeout <= 0)
             {
-                await SendCommandRequestPackage(commandContext.Id, typeName, requestContent, afterSendHandler);
-                ret = await commandContext.ResponseTask;
+                await SendCommandRequestPackage(commandContext.Id, typeName, requestContent, afterSendHandler).ConfigureAwait(false);
+                ret = await commandContext.ResponseTask.ConfigureAwait(false);
             }
             //如果设置了超时
             else
             {
                 try
                 {
-                    await TaskUtils.TaskWait(Task.Run(() => SendCommandRequestPackage(commandContext.Id, typeName, requestContent, afterSendHandler)), timeout);
+                    await TaskUtils.TaskWait(Task.Run(() => SendCommandRequestPackage(commandContext.Id, typeName, requestContent, afterSendHandler)), timeout).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -1176,7 +1177,7 @@ namespace Quick.Protocol
                         commandDict.TryRemove(commandContext.Id, out _);
                     }
                 }
-                ret = await await TaskUtils.TaskWait(commandContext.ResponseTask, timeout);
+                ret = await await TaskUtils.TaskWait(commandContext.ResponseTask, timeout).ConfigureAwait(false);
             }
             return JsonConvert.DeserializeObject<TCmdResponse>(ret.Content);
         }

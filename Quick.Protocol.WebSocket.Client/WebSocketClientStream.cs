@@ -51,7 +51,8 @@ namespace Quick.Protocol.WebSocket.Client
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), CancellationToken.None);
+            var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), CancellationToken.None)
+                .ConfigureAwait(false);
             return result.Count;
         }
 

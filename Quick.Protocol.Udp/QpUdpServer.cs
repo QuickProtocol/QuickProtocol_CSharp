@@ -35,7 +35,7 @@ namespace Quick.Protocol.Udp
 
         protected override async Task InnerAcceptAsync(CancellationToken token)
         {
-            var udpAsTcpClient = await udpAsTcpListener.AcceptClientAsync();
+            var udpAsTcpClient = await udpAsTcpListener.AcceptClientAsync().ConfigureAwait(false);
 
             if (udpAsTcpClient == null)
                 return;

@@ -11,7 +11,8 @@ namespace Quick.Protocol.Utils
         public static async Task<Task> TaskWait(Task task, int timeout)
         {
             var timeoutTask = Task.Delay(timeout);
-            var retTask = await Task.WhenAny(task, timeoutTask);
+            var retTask = await Task.WhenAny(task, timeoutTask)
+                .ConfigureAwait(false);
             if (retTask == timeoutTask)
                 throw new TimeoutException();
             return retTask;
@@ -28,7 +29,8 @@ namespace Quick.Protocol.Utils
         public static async Task<Task<T>> TaskWait<T>(Task<T> task, int timeout)
         {
             var timeoutTask = Task.Delay(timeout).ContinueWith(t => default(T));
-            var retTask = await Task.WhenAny(task, timeoutTask);
+            var retTask = await Task.WhenAny(task, timeoutTask)
+                .ConfigureAwait(false);
             if (retTask == timeoutTask)
                 throw new TimeoutException();
             return retTask;

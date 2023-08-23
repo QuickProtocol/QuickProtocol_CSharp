@@ -33,7 +33,7 @@ namespace Quick.Protocol
             cts = new CancellationTokenSource();
             var token = cts.Token;
 
-            var stream = await InnerConnectAsync();
+            var stream = await InnerConnectAsync().ConfigureAwait(false);
             //初始化网络
             InitQpPackageHandler_Stream(stream);
 
@@ -45,7 +45,7 @@ namespace Quick.Protocol
             var repConnect = await SendCommand(new Commands.Connect.Request()
             {
                 InstructionIds = Options.InstructionSet.Select(t => t.Id).ToArray()
-            });
+            }).ConfigureAwait(false);
             AuthenticateQuestion = repConnect.Question;
 
             //如果服务端使用的缓存大小与客户端不同，则设置缓存大小为与服务端同样的大小
@@ -55,7 +55,7 @@ namespace Quick.Protocol
             var repAuth = await SendCommand(new Commands.Authenticate.Request()
             {
                 Answer = CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password)
-            });
+            }).ConfigureAwait(false);
 
             var repHandShake = await SendCommand(new Commands.HandShake.Request()
             {
@@ -66,7 +66,7 @@ namespace Quick.Protocol
             {
                 Options.OnAuthPassed();
                 IsConnected = true;
-            });
+            }).ConfigureAwait(false);
 
             //开始心跳
             if (Options.HeartBeatInterval > 0)
