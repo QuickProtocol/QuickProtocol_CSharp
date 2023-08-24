@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Quick.Protocol.Tcp
@@ -30,8 +31,22 @@ namespace Quick.Protocol.Tcp
                 tcpClient = new TcpClient();
             else
                 tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(options.LocalHost), options.LocalPort));
-            await TaskUtils.TaskWait(tcpClient.ConnectAsync(options.Host, options.Port), options.ConnectionTimeout).ConfigureAwait(false);
 
+            CancellationTokenSource cts = new CancellationTokenSource();
+            var connectTask = tcpClient.ConnectAsync(Dns.GetHostAddresses(options.Host), options.Port, cts.Token).AsTask();
+            try
+            {
+                await TaskUtils.TaskWait(connectTask, options.ConnectionTimeout)
+                    .ConfigureAwait(false);
+            }
+            catch
+            {
+                cts.Cancel();
+                tcpClient.Dispose();
+                throw;
+            }
+            if (connectTask.IsFaulted)
+                throw new IOException($"Failed to connect to {options.Host}:{options.Port}.", connectTask.Exception.InnerException);
             if (!tcpClient.Connected)
                 throw new IOException($"Failed to connect to {options.Host}:{options.Port}.");
             return tcpClient.GetStream();

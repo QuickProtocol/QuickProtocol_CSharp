@@ -25,7 +25,17 @@ namespace Quick.Protocol.WebSocket.Client
             var url = options.Url;
             if (url.StartsWith("qp."))
                 url = url.Substring(3);
-            await client.ConnectAsync(new Uri(url), CancellationToken.None).ConfigureAwait(false);
+            var cts = new CancellationTokenSource();
+            try
+            {
+                await client.ConnectAsync(new Uri(url), cts.Token).ConfigureAwait(false);
+            }
+            catch
+            {
+                cts.Cancel();
+                client.Dispose();
+                throw;
+            }            
             return new WebSocketClientStream(client);
         }
     }

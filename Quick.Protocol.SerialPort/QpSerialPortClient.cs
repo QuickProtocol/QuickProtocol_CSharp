@@ -27,7 +27,15 @@ namespace Quick.Protocol.SerialPort
                                                             options.Parity,
                                                             options.DataBits,
                                                             options.StopBits);
-            await Task.Run(() => serialPort.Open()).ConfigureAwait(false);
+            try
+            {
+                await Task.Run(() => serialPort.Open()).ConfigureAwait(false);
+            }
+            catch
+            {
+                serialPort.Dispose();
+                throw;
+            }
             if (LogUtils.LogConnection)
                 LogUtils.Log($"SerialPort[{options.PortName}] open success.");
             serialPort.WriteTimeout = options.TransportTimeout;
