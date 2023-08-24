@@ -31,7 +31,9 @@ namespace Quick.Protocol.Udp
                 udpAsTcpClient = new UdpAsTcpClient();
             else
                 udpAsTcpClient = new UdpAsTcpClient(new IPEndPoint(IPAddress.Parse(options.LocalHost), options.LocalPort));
-            await TaskUtils.TaskWait(Task.Run(() => udpAsTcpClient.Connect(options.Host, options.Port)), options.ConnectionTimeout).ConfigureAwait(false);
+            await Task.Run(() => udpAsTcpClient.Connect(options.Host, options.Port))
+                .WaitAsync(TimeSpan.FromMilliseconds(options.ConnectionTimeout))
+                .ConfigureAwait(false);
 
             if (!udpAsTcpClient.Connected)
                 throw new IOException($"Failed to connect to {options.Host}:{options.Port}.");

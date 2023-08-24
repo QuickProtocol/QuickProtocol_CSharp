@@ -36,7 +36,8 @@ namespace Quick.Protocol.Tcp
             var connectTask = tcpClient.ConnectAsync(Dns.GetHostAddresses(options.Host), options.Port, cts.Token).AsTask();
             try
             {
-                await TaskUtils.TaskWait(connectTask, options.ConnectionTimeout)
+                await connectTask
+                    .WaitAsync(TimeSpan.FromMilliseconds(options.ConnectionTimeout))
                     .ConfigureAwait(false);
             }
             catch

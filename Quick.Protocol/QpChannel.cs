@@ -335,7 +335,9 @@ namespace Quick.Protocol
 
             //发送包内容
             var writeTask = stream.WriteAsync(packageBuffer.Array, packageBuffer.Offset, packageBuffer.Count);
-            await await TaskUtils.TaskWait(writeTask, options.InternalTransportTimeout).ConfigureAwait(false);
+            await writeTask
+                .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
+                .ConfigureAwait(false);
 
             if (writeTask.IsCanceled)
                 return;
@@ -645,7 +647,10 @@ namespace Quick.Protocol
                 if (cancellationToken.IsCancellationRequested)
                     break;
                 var readTask = stream.ReadAsync(buffer, count + startIndex, totalCount - count, cancellationToken);
-                ret = await await TaskUtils.TaskWait(readTask, options.InternalTransportTimeout).ConfigureAwait(false);
+                ret = await readTask
+                    .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
+                    .ConfigureAwait(false);
+
                 if (readTask.IsCanceled || ret == 0)
                     break;
                 if (ret < 0)
@@ -1127,7 +1132,9 @@ namespace Quick.Protocol
             {
                 try
                 {
-                    await TaskUtils.TaskWait(Task.Run(() => SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, afterSendHandler)), timeout).ConfigureAwait(false);
+                    await Task.Run(() => SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, afterSendHandler))
+                        .WaitAsync(TimeSpan.FromMilliseconds(timeout))
+                        .ConfigureAwait(false);
                 }
                 catch
                 {
@@ -1140,7 +1147,9 @@ namespace Quick.Protocol
                         commandDict.TryRemove(commandContext.Id, out _);
                     }
                 }
-                return await await TaskUtils.TaskWait(commandContext.ResponseTask, timeout).ConfigureAwait(false);
+                return await commandContext.ResponseTask
+                    .WaitAsync(TimeSpan.FromMilliseconds(timeout))
+                    .ConfigureAwait(false);
             }
         }
 
@@ -1164,7 +1173,9 @@ namespace Quick.Protocol
             {
                 try
                 {
-                    await TaskUtils.TaskWait(Task.Run(() => SendCommandRequestPackage(commandContext.Id, typeName, requestContent, afterSendHandler)), timeout).ConfigureAwait(false);
+                    await Task.Run(() => SendCommandRequestPackage(commandContext.Id, typeName, requestContent, afterSendHandler))
+                        .WaitAsync(TimeSpan.FromMilliseconds(timeout))
+                        .ConfigureAwait(false);
                 }
                 catch
                 {
@@ -1177,7 +1188,9 @@ namespace Quick.Protocol
                         commandDict.TryRemove(commandContext.Id, out _);
                     }
                 }
-                ret = await await TaskUtils.TaskWait(commandContext.ResponseTask, timeout).ConfigureAwait(false);
+                ret = await commandContext.ResponseTask
+                    .WaitAsync(TimeSpan.FromMilliseconds(timeout))
+                    .ConfigureAwait(false);
             }
             return JsonConvert.DeserializeObject<TCmdResponse>(ret.Content);
         }
