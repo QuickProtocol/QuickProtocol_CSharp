@@ -5,7 +5,7 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
-		<Version>2.2.12</Version>
+		<Version>2.2.13</Version>
 		<Authors>scbeta</Authors>
 		<Company />
 		<Product>Quick.Protocol</Product>
