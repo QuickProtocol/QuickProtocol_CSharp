@@ -25,7 +25,6 @@ namespace QpTestClient.Controls
                 sb.AppendLine(item.Description);
             }
             txtBasic.Text = sb.ToString();
-            txtSchema.Text = item.NoticeTypeSchema;
             txtSchemaSample.Text = item.NoticeTypeSchemaSample;
         }
     }

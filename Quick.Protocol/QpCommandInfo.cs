@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using NJsonSchema.Annotations;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -32,13 +31,6 @@ namespace Quick.Protocol
         [ReadOnly(true)]
         public string RequestTypeName { get; set; }
         /// <summary>
-        /// 请求定义
-        /// </summary>
-        /// <returns></returns>
-        [DisplayName("请求定义")]
-        [ReadOnly(true)]
-        public string RequestTypeSchema { get; set; }
-        /// <summary>
         /// 请求示例
         /// </summary>
         [DisplayName("请求示例")]
@@ -51,13 +43,6 @@ namespace Quick.Protocol
         [ReadOnly(true)]
         public string ResponseTypeName { get; set; }
         /// <summary>
-        /// 响应定义
-        /// </summary>
-        /// <returns></returns>
-        [DisplayName("响应定义")]
-        [ReadOnly(true)]
-        public string ResponseTypeSchema { get; set; }
-        /// <summary>
         /// 响应示例
         /// </summary>
         [DisplayName("响应示例")]
@@ -69,34 +54,32 @@ namespace Quick.Protocol
         private Type responseType;
 
         public QpCommandInfo() { }
-        public QpCommandInfo(string name, string description, Type requestType, Type responseType)
+        public QpCommandInfo(string name, string description,
+            Type requestType, Type responseType,
+            object defaultRequestTypeInstance, object defaultResponseTypeInstance)
         {
             Name = name;
             Description = description;
 
             this.requestType = requestType;
             RequestTypeName = requestType.FullName;
-            var requestTypeSchema = NJsonSchema.JsonSchema.FromType(requestType);
-            RequestTypeSchema = requestTypeSchema.ToJson(Formatting.Indented);
-            RequestTypeSchemaSample = JsonConvert.SerializeObject(requestTypeSchema.ToSampleJson(), Formatting.Indented);
+            RequestTypeSchemaSample = JsonConvert.SerializeObject(defaultRequestTypeInstance, Formatting.Indented);
 
             this.responseType = responseType;
             ResponseTypeName = responseType.FullName;
-            var responseTypeSchema = NJsonSchema.JsonSchema.FromType(responseType);
-            ResponseTypeSchema = responseTypeSchema.ToJson(Formatting.Indented);
-            ResponseTypeSchemaSample = JsonConvert.SerializeObject(responseTypeSchema.ToSampleJson(), Formatting.Indented);
+            ResponseTypeSchemaSample = JsonConvert.SerializeObject(defaultResponseTypeInstance, Formatting.Indented);
         }
 
         /// <summary>
         /// 获取命令请求类型
         /// </summary>
         /// <returns></returns>
-        public Type GetRequestType() => requestType ?? Type.GetType(RequestTypeName);
+        public Type GetRequestType() => requestType;
         /// <summary>
         /// 获取命令响应类型
         /// </summary>
         /// <returns></returns>
-        public Type GetResponseType() => responseType ?? Type.GetType(ResponseTypeName);
+        public Type GetResponseType() => responseType;
 
         /// <summary>
         /// 创建命令信息实例
@@ -107,14 +90,13 @@ namespace Quick.Protocol
             where TResponse : class, new()
         {
             var requestType = request.GetType();
+            var responseType = typeof(TResponse);
             string name = null;
             if (name == null)
                 name = requestType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
             if (name == null)
-                name = requestType.GetCustomAttribute<JsonSchemaAttribute>()?.Name;
-            if (name == null)
                 name = requestType.FullName;
-            return new QpCommandInfo(name, requestType.GetCustomAttribute<DescriptionAttribute>()?.Description, requestType, typeof(TResponse));
+            return new QpCommandInfo(name, requestType.GetCustomAttribute<DescriptionAttribute>()?.Description, requestType, responseType, request, new TResponse());
         }
     }
 }

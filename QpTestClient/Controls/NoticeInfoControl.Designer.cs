@@ -29,121 +29,96 @@ namespace QpTestClient.Controls
         /// </summary>
         private void InitializeComponent()
         {
-            this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tpBasic = new System.Windows.Forms.TabPage();
-            this.txtBasic = new System.Windows.Forms.TextBox();
-            this.tpSchema = new System.Windows.Forms.TabPage();
-            this.txtSchema = new System.Windows.Forms.TextBox();
-            this.tpSchemaSample = new System.Windows.Forms.TabPage();
-            this.txtSchemaSample = new System.Windows.Forms.TextBox();
-            this.tabControl1.SuspendLayout();
-            this.tpBasic.SuspendLayout();
-            this.tpSchema.SuspendLayout();
-            this.tpSchemaSample.SuspendLayout();
-            this.SuspendLayout();
+            tabControl1 = new System.Windows.Forms.TabControl();
+            tpBasic = new System.Windows.Forms.TabPage();
+            txtBasic = new System.Windows.Forms.TextBox();
+            tpSchemaSample = new System.Windows.Forms.TabPage();
+            txtSchemaSample = new System.Windows.Forms.TextBox();
+            tabControl1.SuspendLayout();
+            tpBasic.SuspendLayout();
+            tpSchemaSample.SuspendLayout();
+            SuspendLayout();
             // 
             // tabControl1
             // 
-            this.tabControl1.Controls.Add(this.tpBasic);
-            this.tabControl1.Controls.Add(this.tpSchema);
-            this.tabControl1.Controls.Add(this.tpSchemaSample);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(533, 426);
-            this.tabControl1.TabIndex = 0;
+            tabControl1.Controls.Add(tpBasic);
+            tabControl1.Controls.Add(tpSchemaSample);
+            tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            tabControl1.Location = new System.Drawing.Point(0, 0);
+            tabControl1.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tabControl1.Name = "tabControl1";
+            tabControl1.SelectedIndex = 0;
+            tabControl1.Size = new System.Drawing.Size(829, 660);
+            tabControl1.TabIndex = 0;
             // 
             // tpBasic
             // 
-            this.tpBasic.Controls.Add(this.txtBasic);
-            this.tpBasic.Location = new System.Drawing.Point(4, 29);
-            this.tpBasic.Name = "tpBasic";
-            this.tpBasic.Padding = new System.Windows.Forms.Padding(3);
-            this.tpBasic.Size = new System.Drawing.Size(525, 393);
-            this.tpBasic.TabIndex = 0;
-            this.tpBasic.Text = "基本";
-            this.tpBasic.UseVisualStyleBackColor = true;
+            tpBasic.Controls.Add(txtBasic);
+            tpBasic.Location = new System.Drawing.Point(8, 45);
+            tpBasic.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tpBasic.Name = "tpBasic";
+            tpBasic.Padding = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tpBasic.Size = new System.Drawing.Size(813, 607);
+            tpBasic.TabIndex = 0;
+            tpBasic.Text = "基本";
+            tpBasic.UseVisualStyleBackColor = true;
             // 
             // txtBasic
             // 
-            this.txtBasic.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtBasic.Location = new System.Drawing.Point(3, 3);
-            this.txtBasic.Multiline = true;
-            this.txtBasic.Name = "txtBasic";
-            this.txtBasic.ReadOnly = true;
-            this.txtBasic.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtBasic.Size = new System.Drawing.Size(519, 387);
-            this.txtBasic.TabIndex = 1;
-            // 
-            // tpSchema
-            // 
-            this.tpSchema.Controls.Add(this.txtSchema);
-            this.tpSchema.Location = new System.Drawing.Point(4, 29);
-            this.tpSchema.Name = "tpSchema";
-            this.tpSchema.Padding = new System.Windows.Forms.Padding(3);
-            this.tpSchema.Size = new System.Drawing.Size(525, 393);
-            this.tpSchema.TabIndex = 1;
-            this.tpSchema.Text = "定义";
-            this.tpSchema.UseVisualStyleBackColor = true;
-            // 
-            // txtSchema
-            // 
-            this.txtSchema.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtSchema.Location = new System.Drawing.Point(3, 3);
-            this.txtSchema.Multiline = true;
-            this.txtSchema.Name = "txtSchema";
-            this.txtSchema.ReadOnly = true;
-            this.txtSchema.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtSchema.Size = new System.Drawing.Size(519, 387);
-            this.txtSchema.TabIndex = 0;
+            txtBasic.Dock = System.Windows.Forms.DockStyle.Fill;
+            txtBasic.Location = new System.Drawing.Point(5, 5);
+            txtBasic.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            txtBasic.Multiline = true;
+            txtBasic.Name = "txtBasic";
+            txtBasic.ReadOnly = true;
+            txtBasic.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            txtBasic.Size = new System.Drawing.Size(803, 597);
+            txtBasic.TabIndex = 1;
             // 
             // tpSchemaSample
             // 
-            this.tpSchemaSample.Controls.Add(this.txtSchemaSample);
-            this.tpSchemaSample.Location = new System.Drawing.Point(4, 29);
-            this.tpSchemaSample.Name = "tpSchemaSample";
-            this.tpSchemaSample.Padding = new System.Windows.Forms.Padding(3);
-            this.tpSchemaSample.Size = new System.Drawing.Size(525, 393);
-            this.tpSchemaSample.TabIndex = 2;
-            this.tpSchemaSample.Text = "示例";
-            this.tpSchemaSample.UseVisualStyleBackColor = true;
+            tpSchemaSample.Controls.Add(txtSchemaSample);
+            tpSchemaSample.Location = new System.Drawing.Point(8, 45);
+            tpSchemaSample.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tpSchemaSample.Name = "tpSchemaSample";
+            tpSchemaSample.Padding = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tpSchemaSample.Size = new System.Drawing.Size(813, 607);
+            tpSchemaSample.TabIndex = 2;
+            tpSchemaSample.Text = "示例";
+            tpSchemaSample.UseVisualStyleBackColor = true;
             // 
             // txtSchemaSample
             // 
-            this.txtSchemaSample.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtSchemaSample.Location = new System.Drawing.Point(3, 3);
-            this.txtSchemaSample.Multiline = true;
-            this.txtSchemaSample.Name = "txtSchemaSample";
-            this.txtSchemaSample.ReadOnly = true;
-            this.txtSchemaSample.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtSchemaSample.Size = new System.Drawing.Size(519, 387);
-            this.txtSchemaSample.TabIndex = 1;
+            txtSchemaSample.Dock = System.Windows.Forms.DockStyle.Fill;
+            txtSchemaSample.Location = new System.Drawing.Point(5, 5);
+            txtSchemaSample.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            txtSchemaSample.Multiline = true;
+            txtSchemaSample.Name = "txtSchemaSample";
+            txtSchemaSample.ReadOnly = true;
+            txtSchemaSample.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            txtSchemaSample.Size = new System.Drawing.Size(803, 597);
+            txtSchemaSample.TabIndex = 1;
             // 
             // NoticeInfoControl
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.tabControl1);
-            this.Name = "NoticeInfoControl";
-            this.Size = new System.Drawing.Size(533, 426);
-            this.tabControl1.ResumeLayout(false);
-            this.tpBasic.ResumeLayout(false);
-            this.tpBasic.PerformLayout();
-            this.tpSchema.ResumeLayout(false);
-            this.tpSchema.PerformLayout();
-            this.tpSchemaSample.ResumeLayout(false);
-            this.tpSchemaSample.PerformLayout();
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            Controls.Add(tabControl1);
+            Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            Name = "NoticeInfoControl";
+            Size = new System.Drawing.Size(829, 660);
+            tabControl1.ResumeLayout(false);
+            tpBasic.ResumeLayout(false);
+            tpBasic.PerformLayout();
+            tpSchemaSample.ResumeLayout(false);
+            tpSchemaSample.PerformLayout();
+            ResumeLayout(false);
         }
 
         #endregion
 
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tpBasic;
-        private System.Windows.Forms.TabPage tpSchema;
-        private System.Windows.Forms.TextBox txtSchema;
         private System.Windows.Forms.TabPage tpSchemaSample;
         private System.Windows.Forms.TextBox txtSchemaSample;
         private System.Windows.Forms.TextBox txtBasic;

@@ -29,169 +29,120 @@ namespace QpTestClient.Controls
         /// </summary>
         private void InitializeComponent()
         {
-            this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tpBasic = new System.Windows.Forms.TabPage();
-            this.txtBasic = new System.Windows.Forms.TextBox();
-            this.tpRequestSchema = new System.Windows.Forms.TabPage();
-            this.txtRequestSchema = new System.Windows.Forms.TextBox();
-            this.tpRequestSchemaSample = new System.Windows.Forms.TabPage();
-            this.txtRequestSchemaSample = new System.Windows.Forms.TextBox();
-            this.tpResponseSchema = new System.Windows.Forms.TabPage();
-            this.txtResponseSchema = new System.Windows.Forms.TextBox();
-            this.tpResponseSchemaSample = new System.Windows.Forms.TabPage();
-            this.txtResponseSchemaSample = new System.Windows.Forms.TextBox();
-            this.tabControl1.SuspendLayout();
-            this.tpBasic.SuspendLayout();
-            this.tpRequestSchema.SuspendLayout();
-            this.tpRequestSchemaSample.SuspendLayout();
-            this.tpResponseSchema.SuspendLayout();
-            this.tpResponseSchemaSample.SuspendLayout();
-            this.SuspendLayout();
+            tabControl1 = new System.Windows.Forms.TabControl();
+            tpBasic = new System.Windows.Forms.TabPage();
+            txtBasic = new System.Windows.Forms.TextBox();
+            tpRequestSchemaSample = new System.Windows.Forms.TabPage();
+            txtRequestSchemaSample = new System.Windows.Forms.TextBox();
+            tpResponseSchemaSample = new System.Windows.Forms.TabPage();
+            txtResponseSchemaSample = new System.Windows.Forms.TextBox();
+            tabControl1.SuspendLayout();
+            tpBasic.SuspendLayout();
+            tpRequestSchemaSample.SuspendLayout();
+            tpResponseSchemaSample.SuspendLayout();
+            SuspendLayout();
             // 
             // tabControl1
             // 
-            this.tabControl1.Controls.Add(this.tpBasic);
-            this.tabControl1.Controls.Add(this.tpRequestSchema);
-            this.tabControl1.Controls.Add(this.tpRequestSchemaSample);
-            this.tabControl1.Controls.Add(this.tpResponseSchema);
-            this.tabControl1.Controls.Add(this.tpResponseSchemaSample);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(432, 437);
-            this.tabControl1.TabIndex = 1;
+            tabControl1.Controls.Add(tpBasic);
+            tabControl1.Controls.Add(tpRequestSchemaSample);
+            tabControl1.Controls.Add(tpResponseSchemaSample);
+            tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            tabControl1.Location = new System.Drawing.Point(0, 0);
+            tabControl1.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tabControl1.Name = "tabControl1";
+            tabControl1.SelectedIndex = 0;
+            tabControl1.Size = new System.Drawing.Size(672, 677);
+            tabControl1.TabIndex = 1;
             // 
             // tpBasic
             // 
-            this.tpBasic.Controls.Add(this.txtBasic);
-            this.tpBasic.Location = new System.Drawing.Point(4, 29);
-            this.tpBasic.Name = "tpBasic";
-            this.tpBasic.Padding = new System.Windows.Forms.Padding(3);
-            this.tpBasic.Size = new System.Drawing.Size(424, 404);
-            this.tpBasic.TabIndex = 0;
-            this.tpBasic.Text = "基本";
-            this.tpBasic.UseVisualStyleBackColor = true;
+            tpBasic.Controls.Add(txtBasic);
+            tpBasic.Location = new System.Drawing.Point(8, 45);
+            tpBasic.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tpBasic.Name = "tpBasic";
+            tpBasic.Padding = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tpBasic.Size = new System.Drawing.Size(656, 624);
+            tpBasic.TabIndex = 0;
+            tpBasic.Text = "基本";
+            tpBasic.UseVisualStyleBackColor = true;
             // 
             // txtBasic
             // 
-            this.txtBasic.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtBasic.Location = new System.Drawing.Point(3, 3);
-            this.txtBasic.Multiline = true;
-            this.txtBasic.Name = "txtBasic";
-            this.txtBasic.ReadOnly = true;
-            this.txtBasic.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtBasic.Size = new System.Drawing.Size(418, 398);
-            this.txtBasic.TabIndex = 1;
-            // 
-            // tpRequestSchema
-            // 
-            this.tpRequestSchema.Controls.Add(this.txtRequestSchema);
-            this.tpRequestSchema.Location = new System.Drawing.Point(4, 29);
-            this.tpRequestSchema.Name = "tpRequestSchema";
-            this.tpRequestSchema.Padding = new System.Windows.Forms.Padding(3);
-            this.tpRequestSchema.Size = new System.Drawing.Size(424, 404);
-            this.tpRequestSchema.TabIndex = 1;
-            this.tpRequestSchema.Text = "请求定义";
-            this.tpRequestSchema.UseVisualStyleBackColor = true;
-            // 
-            // txtRequestSchema
-            // 
-            this.txtRequestSchema.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtRequestSchema.Location = new System.Drawing.Point(3, 3);
-            this.txtRequestSchema.Multiline = true;
-            this.txtRequestSchema.Name = "txtRequestSchema";
-            this.txtRequestSchema.ReadOnly = true;
-            this.txtRequestSchema.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtRequestSchema.Size = new System.Drawing.Size(418, 398);
-            this.txtRequestSchema.TabIndex = 0;
+            txtBasic.Dock = System.Windows.Forms.DockStyle.Fill;
+            txtBasic.Location = new System.Drawing.Point(5, 5);
+            txtBasic.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            txtBasic.Multiline = true;
+            txtBasic.Name = "txtBasic";
+            txtBasic.ReadOnly = true;
+            txtBasic.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            txtBasic.Size = new System.Drawing.Size(646, 614);
+            txtBasic.TabIndex = 1;
             // 
             // tpRequestSchemaSample
             // 
-            this.tpRequestSchemaSample.Controls.Add(this.txtRequestSchemaSample);
-            this.tpRequestSchemaSample.Location = new System.Drawing.Point(4, 29);
-            this.tpRequestSchemaSample.Name = "tpRequestSchemaSample";
-            this.tpRequestSchemaSample.Padding = new System.Windows.Forms.Padding(3);
-            this.tpRequestSchemaSample.Size = new System.Drawing.Size(424, 404);
-            this.tpRequestSchemaSample.TabIndex = 2;
-            this.tpRequestSchemaSample.Text = "请求示例";
-            this.tpRequestSchemaSample.UseVisualStyleBackColor = true;
+            tpRequestSchemaSample.Controls.Add(txtRequestSchemaSample);
+            tpRequestSchemaSample.Location = new System.Drawing.Point(8, 45);
+            tpRequestSchemaSample.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tpRequestSchemaSample.Name = "tpRequestSchemaSample";
+            tpRequestSchemaSample.Padding = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tpRequestSchemaSample.Size = new System.Drawing.Size(656, 624);
+            tpRequestSchemaSample.TabIndex = 2;
+            tpRequestSchemaSample.Text = "请求示例";
+            tpRequestSchemaSample.UseVisualStyleBackColor = true;
             // 
             // txtRequestSchemaSample
             // 
-            this.txtRequestSchemaSample.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtRequestSchemaSample.Location = new System.Drawing.Point(3, 3);
-            this.txtRequestSchemaSample.Multiline = true;
-            this.txtRequestSchemaSample.Name = "txtRequestSchemaSample";
-            this.txtRequestSchemaSample.ReadOnly = true;
-            this.txtRequestSchemaSample.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtRequestSchemaSample.Size = new System.Drawing.Size(418, 398);
-            this.txtRequestSchemaSample.TabIndex = 1;
-            // 
-            // tpResponseSchema
-            // 
-            this.tpResponseSchema.Controls.Add(this.txtResponseSchema);
-            this.tpResponseSchema.Location = new System.Drawing.Point(4, 29);
-            this.tpResponseSchema.Name = "tpResponseSchema";
-            this.tpResponseSchema.Padding = new System.Windows.Forms.Padding(3);
-            this.tpResponseSchema.Size = new System.Drawing.Size(424, 404);
-            this.tpResponseSchema.TabIndex = 3;
-            this.tpResponseSchema.Text = "响应定义";
-            this.tpResponseSchema.UseVisualStyleBackColor = true;
-            // 
-            // txtResponseSchema
-            // 
-            this.txtResponseSchema.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtResponseSchema.Location = new System.Drawing.Point(3, 3);
-            this.txtResponseSchema.Multiline = true;
-            this.txtResponseSchema.Name = "txtResponseSchema";
-            this.txtResponseSchema.ReadOnly = true;
-            this.txtResponseSchema.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtResponseSchema.Size = new System.Drawing.Size(418, 398);
-            this.txtResponseSchema.TabIndex = 1;
+            txtRequestSchemaSample.Dock = System.Windows.Forms.DockStyle.Fill;
+            txtRequestSchemaSample.Location = new System.Drawing.Point(5, 5);
+            txtRequestSchemaSample.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            txtRequestSchemaSample.Multiline = true;
+            txtRequestSchemaSample.Name = "txtRequestSchemaSample";
+            txtRequestSchemaSample.ReadOnly = true;
+            txtRequestSchemaSample.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            txtRequestSchemaSample.Size = new System.Drawing.Size(646, 614);
+            txtRequestSchemaSample.TabIndex = 1;
             // 
             // tpResponseSchemaSample
             // 
-            this.tpResponseSchemaSample.Controls.Add(this.txtResponseSchemaSample);
-            this.tpResponseSchemaSample.Location = new System.Drawing.Point(4, 29);
-            this.tpResponseSchemaSample.Name = "tpResponseSchemaSample";
-            this.tpResponseSchemaSample.Padding = new System.Windows.Forms.Padding(3);
-            this.tpResponseSchemaSample.Size = new System.Drawing.Size(424, 404);
-            this.tpResponseSchemaSample.TabIndex = 4;
-            this.tpResponseSchemaSample.Text = "响应示例";
-            this.tpResponseSchemaSample.UseVisualStyleBackColor = true;
+            tpResponseSchemaSample.Controls.Add(txtResponseSchemaSample);
+            tpResponseSchemaSample.Location = new System.Drawing.Point(8, 45);
+            tpResponseSchemaSample.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tpResponseSchemaSample.Name = "tpResponseSchemaSample";
+            tpResponseSchemaSample.Padding = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            tpResponseSchemaSample.Size = new System.Drawing.Size(656, 624);
+            tpResponseSchemaSample.TabIndex = 4;
+            tpResponseSchemaSample.Text = "响应示例";
+            tpResponseSchemaSample.UseVisualStyleBackColor = true;
             // 
             // txtResponseSchemaSample
             // 
-            this.txtResponseSchemaSample.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtResponseSchemaSample.Location = new System.Drawing.Point(3, 3);
-            this.txtResponseSchemaSample.Multiline = true;
-            this.txtResponseSchemaSample.Name = "txtResponseSchemaSample";
-            this.txtResponseSchemaSample.ReadOnly = true;
-            this.txtResponseSchemaSample.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtResponseSchemaSample.Size = new System.Drawing.Size(418, 398);
-            this.txtResponseSchemaSample.TabIndex = 1;
+            txtResponseSchemaSample.Dock = System.Windows.Forms.DockStyle.Fill;
+            txtResponseSchemaSample.Location = new System.Drawing.Point(5, 5);
+            txtResponseSchemaSample.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            txtResponseSchemaSample.Multiline = true;
+            txtResponseSchemaSample.Name = "txtResponseSchemaSample";
+            txtResponseSchemaSample.ReadOnly = true;
+            txtResponseSchemaSample.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            txtResponseSchemaSample.Size = new System.Drawing.Size(646, 614);
+            txtResponseSchemaSample.TabIndex = 1;
             // 
             // CommandInfoControl
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.tabControl1);
-            this.Name = "CommandInfoControl";
-            this.Size = new System.Drawing.Size(432, 437);
-            this.tabControl1.ResumeLayout(false);
-            this.tpBasic.ResumeLayout(false);
-            this.tpBasic.PerformLayout();
-            this.tpRequestSchema.ResumeLayout(false);
-            this.tpRequestSchema.PerformLayout();
-            this.tpRequestSchemaSample.ResumeLayout(false);
-            this.tpRequestSchemaSample.PerformLayout();
-            this.tpResponseSchema.ResumeLayout(false);
-            this.tpResponseSchema.PerformLayout();
-            this.tpResponseSchemaSample.ResumeLayout(false);
-            this.tpResponseSchemaSample.PerformLayout();
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            Controls.Add(tabControl1);
+            Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            Name = "CommandInfoControl";
+            Size = new System.Drawing.Size(672, 677);
+            tabControl1.ResumeLayout(false);
+            tpBasic.ResumeLayout(false);
+            tpBasic.PerformLayout();
+            tpRequestSchemaSample.ResumeLayout(false);
+            tpRequestSchemaSample.PerformLayout();
+            tpResponseSchemaSample.ResumeLayout(false);
+            tpResponseSchemaSample.PerformLayout();
+            ResumeLayout(false);
         }
 
         #endregion
@@ -199,13 +150,9 @@ namespace QpTestClient.Controls
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tpBasic;
         private System.Windows.Forms.TextBox txtBasic;
-        private System.Windows.Forms.TabPage tpRequestSchema;
-        private System.Windows.Forms.TextBox txtRequestSchema;
         private System.Windows.Forms.TabPage tpRequestSchemaSample;
         private System.Windows.Forms.TextBox txtRequestSchemaSample;
-        private System.Windows.Forms.TabPage tpResponseSchema;
         private System.Windows.Forms.TabPage tpResponseSchemaSample;
-        private System.Windows.Forms.TextBox txtResponseSchema;
         private System.Windows.Forms.TextBox txtResponseSchemaSample;
     }
 }

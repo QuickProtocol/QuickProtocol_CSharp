@@ -29,9 +29,7 @@ namespace QpTestClient.Controls
                 sb.AppendLine(item.Description);
             }
             txtBasic.Text = sb.ToString();
-            txtRequestSchema.Text = item.RequestTypeSchema;
             txtRequestSchemaSample.Text = item.RequestTypeSchemaSample;
-            txtResponseSchema.Text = item.ResponseTypeSchema;
             txtResponseSchemaSample.Text = item.ResponseTypeSchemaSample;
         }
     }
