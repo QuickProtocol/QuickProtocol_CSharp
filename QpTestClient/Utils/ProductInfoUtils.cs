@@ -31,7 +31,7 @@ namespace QpTestClient.Utils
                 AssemblyInformationalVersionAttribute versionAttribute = (AssemblyInformationalVersionAttribute)attributes[0];
                 if (versionAttribute.InformationalVersion != "")
                 {
-                    return versionAttribute.InformationalVersion;
+                    return versionAttribute.InformationalVersion.Split('+')[0];
                 }
             }
             return Assembly.GetExecutingAssembly().GetName().Version.ToString();

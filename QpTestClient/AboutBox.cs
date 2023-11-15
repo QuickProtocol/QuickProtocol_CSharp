@@ -17,7 +17,7 @@ namespace QpTestClient
             InitializeComponent();
             this.Text = String.Format("关于 {0}", ProductInfoUtils.GetAssemblyTitle());
             this.labelProductName.Text = ProductInfoUtils.GetAssemblyProduct();
-            this.labelVersion.Text = String.Format("版本 {0}", ProductInfoUtils.GetAssemblyVersion());
+            this.labelVersion.Text = $"版本 {ProductInfoUtils.GetAssemblyVersion()}";
             this.labelCopyright.Text = ProductInfoUtils.GetAssemblyCopyright();
             this.labelCompanyName.Text = ProductInfoUtils.GetAssemblyCompany();
             this.textBoxDescription.Text = ProductInfoUtils.GetAssemblyDescription();
