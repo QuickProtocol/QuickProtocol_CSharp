@@ -7,7 +7,7 @@
 		<Copyright />
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Authors>scbeta</Authors>
-		<Version>2.2.14</Version>
+		<Version>2.2.15</Version>
 		<Company />
 		<Description>A simple protocol for TCP,Pipeline,SerialPort,WebSocket.</Description>
 		<PackageIcon>logo.png</PackageIcon>
