@@ -12,7 +12,7 @@ namespace Quick.Protocol
             Name = "基础指令集",
             NoticeInfos = new QpNoticeInfo[]
             {
-                QpNoticeInfo.Create(new Notices.PrivateNotice())
+                QpNoticeInfo.Create<Notices.PrivateNotice>()
             },
             CommandInfos = new QpCommandInfo[]
             {

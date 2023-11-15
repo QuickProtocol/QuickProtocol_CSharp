@@ -89,6 +89,12 @@ namespace Quick.Protocol
         public static QpCommandInfo Create<TResponse>(IQpCommandRequest<TResponse> request)
             where TResponse : class, new()
         {
+            return Create(request, new TResponse());
+        }
+
+        public static QpCommandInfo Create<TResponse>(IQpCommandRequest<TResponse> request, TResponse response)
+            where TResponse : class, new()
+        {
             var requestType = request.GetType();
             var responseType = typeof(TResponse);
             string name = null;
@@ -96,7 +102,7 @@ namespace Quick.Protocol
                 name = requestType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
             if (name == null)
                 name = requestType.FullName;
-            return new QpCommandInfo(name, requestType.GetCustomAttribute<DescriptionAttribute>()?.Description, requestType, responseType, request, new TResponse());
+            return new QpCommandInfo(name, requestType.GetCustomAttribute<DescriptionAttribute>()?.Description, requestType, responseType, request, response);
         }
     }
 }

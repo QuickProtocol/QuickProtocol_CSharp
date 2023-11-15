@@ -57,11 +57,22 @@ namespace Quick.Protocol
         /// <summary>
         /// 创建通知信息实例
         /// </summary>
-        /// <param name="instance"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static QpNoticeInfo Create<T>()
+            where T : new()
+        {
+            return Create<T>(new T());
+        }
+
+        /// <summary>
+        /// 创建通知信息实例
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public static QpNoticeInfo Create<T>(T instance)
         {
-            var type =typeof(T);
+            var type = typeof(T);
             string name = null;
             if (name == null)
                 name = type.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
