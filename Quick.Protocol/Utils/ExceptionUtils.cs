@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Text;
 
 namespace Quick.Protocol.Utils
@@ -15,9 +12,9 @@ namespace Quick.Protocol.Utils
             while (tmpEx != null)
             {
                 sb.AppendLine("------------------------------------------------------");
-                sb.AppendLine("异常类型：" + ex.GetType().FullName);
-                sb.AppendLine("异常消息：" + ex.Message);
-                sb.AppendLine("异常堆栈：" + ex.StackTrace);
+                sb.AppendLine("异常类型：" + tmpEx.GetType().FullName);
+                sb.AppendLine("异常消息：" + tmpEx.Message);
+                sb.AppendLine("异常堆栈：" + tmpEx.StackTrace);
                 tmpEx = tmpEx.InnerException;
             }
             return sb.ToString();
