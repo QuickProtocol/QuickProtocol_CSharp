@@ -37,6 +37,20 @@ namespace QpTestClient
             var qpClientTypeInfo = QpClientTypeManager.Instance.Get(ConnectionInfo.QpClientTypeName);
             if (qpClientTypeInfo == null)
                 throw new ApplicationException($"未找到类型为[{ConnectionInfo.QpClientTypeName}]的QP客户端类型！");
+
+            //替换基础架构
+            if (ConnectionInfo.QpClientOptions.InstructionSet != null)
+            {
+                for (var i = 0; i < ConnectionInfo.QpClientOptions.InstructionSet.Length; i++)
+                {
+                    var item = ConnectionInfo.QpClientOptions.InstructionSet[i];
+                    if (item.Id == Base.Instruction.Id)
+                    {
+                        ConnectionInfo.QpClientOptions.InstructionSet[i] = Base.Instruction;
+                        break;
+                    }
+                }
+            }
             QpClient = ConnectionInfo.QpClientOptions.CreateClient();
             QpClient.Disconnected += QpClient_Disconnected;
             try
