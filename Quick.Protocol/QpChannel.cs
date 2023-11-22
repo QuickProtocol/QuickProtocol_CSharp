@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol
 {
@@ -56,9 +57,9 @@ namespace Quick.Protocol
         //断开连接锁对象
         private object DISCONNECT_LOCK_OBJ = new object();
 
-        private Dictionary<string, Type> commandRequestTypeDict = new Dictionary<string, Type>();
-        private Dictionary<string, Type> commandResponseTypeDict = new Dictionary<string, Type>();
-        private Dictionary<Type, Type> commandRequestTypeResponseTypeDict = new Dictionary<Type, Type>();
+        private Dictionary<string, JsonTypeInfo> commandRequestTypeDict = new Dictionary<string, JsonTypeInfo>();
+        private Dictionary<string, JsonTypeInfo> commandResponseTypeDict = new Dictionary<string, JsonTypeInfo>();
+        private Dictionary<JsonTypeInfo, JsonTypeInfo> commandRequestTypeResponseTypeDict = new Dictionary<JsonTypeInfo, JsonTypeInfo>();
 
         private ConcurrentDictionary<string, CommandContext> commandDict = new ConcurrentDictionary<string, CommandContext>();
 
@@ -208,7 +209,7 @@ namespace Quick.Protocol
         /// </summary>
         public object Tag { get; set; }
 
-        private Dictionary<string, Type> noticeTypeDict = new Dictionary<string, Type>();
+        private Dictionary<string, JsonTypeInfo> noticeTypeDict = new Dictionary<string, JsonTypeInfo>();
 
         public QpChannel(QpChannelOptions options)
         {
@@ -229,7 +230,7 @@ namespace Quick.Protocol
                 {
                     foreach (var item in instructionSet.NoticeInfos)
                     {
-                        noticeTypeDict[item.NoticeTypeName] = item.GetNoticeType();
+                        noticeTypeDict[item.NoticeTypeName] = item.GetNoticeTypeInfo();
                     }
                 }
                 //添加命令数据包信息
@@ -237,14 +238,35 @@ namespace Quick.Protocol
                 {
                     foreach (var item in instructionSet.CommandInfos)
                     {
-                        var requestType = item.GetRequestType();
-                        var responseType = item.GetResponseType();
+                        var requestType = item.GetRequestTypeInfo();
+                        var responseType = item.GetResponseTypeInfo();
                         commandRequestTypeDict[item.RequestTypeName] = requestType;
                         commandResponseTypeDict[item.ResponseTypeName] = responseType;
                         commandRequestTypeResponseTypeDict[requestType] = responseType;
                     }
                 }
             }
+        }
+
+        private JsonTypeInfo GetNoticeTypeInfo(string typeName)
+        {
+            if (!noticeTypeDict.TryGetValue(typeName, out var noticeTypeInfo))
+                throw new ArgumentException($"Notice type[{typeName}] not found.");
+            return noticeTypeInfo;
+        }
+
+        private JsonTypeInfo GetCommandRequestTypeInfo(string typeName)
+        {
+            if (!commandRequestTypeDict.TryGetValue(typeName, out var requestTypeInfo))
+                throw new ArgumentException($"Command request type[{typeName}] not found.");
+            return requestTypeInfo;
+        }
+
+        private JsonTypeInfo GetCommandResponseTypeInfo(string typeName)
+        {
+            if (!commandResponseTypeDict.TryGetValue(typeName, out var responseTypeInfo))
+                throw new ArgumentException($"Command response type[{typeName}] not found.");
+            return responseTypeInfo;
         }
 
         protected void InitQpPackageHandler_Stream(Stream stream)
@@ -386,7 +408,7 @@ namespace Quick.Protocol
                 });
                 sendPackageTask.ContinueWith(t => Interlocked.Decrement(ref PackageSendQueueCount));
                 return sendPackageTask;
-            }            
+            }
         }
 
         private async Task writePackage(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler)
@@ -507,7 +529,8 @@ namespace Quick.Protocol
         /// </summary>
         public Task SendNoticePackage(object package)
         {
-            return SendNoticePackage(package.GetType().FullName, JsonSerializer.Serialize(package));
+            var typeName = package.GetType().FullName;
+            return SendNoticePackage(typeName, JsonSerializer.Serialize(package, GetNoticeTypeInfo(typeName)));
         }
 
         /// <summary>
@@ -519,7 +542,7 @@ namespace Quick.Protocol
         {
             var requestType = request.GetType();
             var typeName = requestType.FullName;
-            var requestContent = JsonSerializer.Serialize(request);
+            var requestContent = JsonSerializer.Serialize(request, GetCommandRequestTypeInfo(typeName));
             await SendCommandRequestPackage(CommandContext.GenerateNewId(), typeName, requestContent).ConfigureAwait(false);
         }
 
@@ -691,7 +714,7 @@ namespace Quick.Protocol
 
                 var currentRecvBuffer = recvBuffer;
                 //读取包头
-                var ret = await readData(stream, currentRecvBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH, token).ConfigureAwait(false);                
+                var ret = await readData(stream, currentRecvBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH, token).ConfigureAwait(false);
                 if (ret == 0)
                     throw new IOException("未读取到数据！");
                 if (ret < PACKAGE_TOTAL_LENGTH_LENGTH)
@@ -716,7 +739,7 @@ namespace Quick.Protocol
                     return nullArraySegment;
                 //读取包体
                 ret = await readData(stream, recvBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, packageBodyLength, token).ConfigureAwait(false);
-                
+
                 if (ret < packageBodyLength)
                     throw new ProtocolException(new ArraySegment<byte>(recvBuffer, 0, PACKAGE_HEAD_LENGTH + ret), $"包体读取错误！包体长度：{packageBodyLength}，读取数据长度：{ret}");
 
@@ -857,7 +880,7 @@ namespace Quick.Protocol
 
             //如果配置了触发NoticePackageReceived事件
             if (options.RaiseNoticePackageReceivedEvent)
-            {                
+            {
                 NoticePackageReceived?.Invoke(this, new NoticePackageReceivedEventArgs()
                 {
                     TypeName = typeName,
@@ -911,7 +934,7 @@ namespace Quick.Protocol
                         {
                             hasCommandExecuter = true;
                             var responseModel = commandExecuterManager.ExecuteCommand(this, typeName, contentModel);
-                            SendCommandResponsePackage(commandId, 0, null, cmdResponseType.FullName, JsonSerializer.Serialize(responseModel));
+                            SendCommandResponsePackage(commandId, 0, null, cmdResponseType.Type.FullName, JsonSerializer.Serialize(responseModel, cmdResponseType));
                             break;
                         }
                     }
@@ -957,7 +980,7 @@ namespace Quick.Protocol
             else
                 commandContext.SetResponse(new CommandException(code, message));
         }
-        
+
 
         protected void BeginNetstat(CancellationToken cancellationToken)
         {
@@ -1156,9 +1179,9 @@ namespace Quick.Protocol
         public async Task<TCmdResponse> SendCommand<TCmdRequest, TCmdResponse>(TCmdRequest request, int timeout = 30 * 1000, Action afterSendHandler = null)
             where TCmdRequest : IQpCommandRequest<TCmdResponse>
         {
-            var requestType = request.GetType();
-            var typeName = requestType.FullName;
-            var requestContent = JsonSerializer.Serialize(request);
+            var typeName = typeof(TCmdRequest).FullName;
+            var requestTypeInfo = GetCommandRequestTypeInfo(typeName);
+            var requestContent = JsonSerializer.Serialize(request, requestTypeInfo);
 
             var commandContext = new CommandContext(typeName);
             commandDict.TryAdd(commandContext.Id, commandContext);
@@ -1192,8 +1215,9 @@ namespace Quick.Protocol
                 ret = await commandContext.ResponseTask
                     .WaitAsync(TimeSpan.FromMilliseconds(timeout))
                     .ConfigureAwait(false);
-            }            
-            return JsonSerializer.Deserialize<TCmdResponse>(ret.Content);
+            }
+            var responseTypeInfo = GetCommandResponseTypeInfo(ret.TypeName);
+            return (TCmdResponse)JsonSerializer.Deserialize(ret.Content, responseTypeInfo);
         }
     }
 }

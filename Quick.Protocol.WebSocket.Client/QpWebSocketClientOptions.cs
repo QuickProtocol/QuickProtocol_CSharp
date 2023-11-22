@@ -2,14 +2,20 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.WebSocket.Client
 {
+    [JsonSerializable(typeof(QpWebSocketClientOptions))]
+    internal partial class QpWebSocketClientOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpWebSocketClientOptions : QpClientOptions
     {
         public const string URI_SCHEMA_WS = "qp.ws";
         public const string URI_SCHEMA_WSS = "qp.wss";
 
+        protected override JsonTypeInfo TypeInfo => QpWebSocketClientOptionsSerializerContext.Default.QpWebSocketClientOptions;
         /// <summary>
         /// WebSocket的URL地址
         /// </summary>

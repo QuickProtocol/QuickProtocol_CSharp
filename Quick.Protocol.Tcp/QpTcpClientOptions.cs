@@ -2,12 +2,18 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Tcp
 {
+    [JsonSerializable(typeof(QpTcpClientOptions))]
+    internal partial class QpTcpClientOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpTcpClientOptions : QpClientOptions
     {
         public const string URI_SCHEMA = "qp.tcp";
+        protected override JsonTypeInfo TypeInfo => QpTcpClientOptionsSerializerContext.Default.QpTcpClientOptions;
         /// <summary>
         /// 主机
         /// </summary>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol
 {
@@ -49,60 +50,66 @@ namespace Quick.Protocol
         [ReadOnly(true)]
         public string ResponseTypeSchemaSample { get; set; }
 
-        private Type requestType;
+        private JsonTypeInfo requestTypeInfo;
 
-        private Type responseType;
+        private JsonTypeInfo responseTypeInfo;
 
         public QpCommandInfo() { }
         public QpCommandInfo(string name, string description,
-            Type requestType, Type responseType,
+            JsonTypeInfo requestTypeInfo, JsonTypeInfo responseTypeInfo,
             object defaultRequestTypeInstance, object defaultResponseTypeInstance)
         {
             Name = name;
             Description = description;
 
-            this.requestType = requestType;
-            RequestTypeName = requestType.FullName;
-            RequestTypeSchemaSample = JsonSerializer.Serialize(defaultRequestTypeInstance);
+            this.requestTypeInfo = requestTypeInfo;
+            RequestTypeName = requestTypeInfo.Type.FullName;
+            RequestTypeSchemaSample = JsonSerializer.Serialize(defaultRequestTypeInstance, requestTypeInfo);
 
-            this.responseType = responseType;
-            ResponseTypeName = responseType.FullName;
-            ResponseTypeSchemaSample = JsonSerializer.Serialize(defaultResponseTypeInstance);
+            this.responseTypeInfo = responseTypeInfo;
+            ResponseTypeName = responseTypeInfo.Type.FullName;
+            ResponseTypeSchemaSample = JsonSerializer.Serialize(defaultResponseTypeInstance, responseTypeInfo);
         }
 
         /// <summary>
         /// 获取命令请求类型
         /// </summary>
         /// <returns></returns>
-        public Type GetRequestType() => requestType;
+        public JsonTypeInfo GetRequestTypeInfo() => requestTypeInfo;
         /// <summary>
         /// 获取命令响应类型
         /// </summary>
         /// <returns></returns>
-        public Type GetResponseType() => responseType;
+        public JsonTypeInfo GetResponseTypeInfo() => responseTypeInfo;
 
         /// <summary>
         /// 创建命令信息实例
         /// </summary>
         /// <typeparam name="TResponse"></typeparam>
         /// <returns></returns>
-        public static QpCommandInfo Create<TResponse>(IQpCommandRequest<TResponse> request)
+        public static QpCommandInfo Create<TRequest, TResponse>(JsonTypeInfo<TRequest> requestTypeInfo, JsonTypeInfo<TResponse> responseTypeInfo)
+            where TRequest : IQpCommandRequest<TResponse>, new()
             where TResponse : class, new()
         {
-            return Create(request, new TResponse());
+            return Create(requestTypeInfo, responseTypeInfo, new TRequest(), new TResponse());
         }
 
-        public static QpCommandInfo Create<TResponse>(IQpCommandRequest<TResponse> request, TResponse response)
+        public static QpCommandInfo Create<TRequest, TResponse>(JsonTypeInfo<TRequest> requestTypeInfo, JsonTypeInfo<TResponse> responseTypeInfo, TRequest request, TResponse response)
+            where TRequest : IQpCommandRequest<TResponse>, new()
             where TResponse : class, new()
         {
-            var requestType = request.GetType();
-            var responseType = typeof(TResponse);
+            var requestType = typeof(TRequest);
             string name = null;
             if (name == null)
                 name = requestType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
             if (name == null)
                 name = requestType.FullName;
-            return new QpCommandInfo(name, requestType.GetCustomAttribute<DescriptionAttribute>()?.Description, requestType, responseType, request, response);
+            return new QpCommandInfo(
+                name, requestType.GetCustomAttribute<DescriptionAttribute>()?.Description,
+                requestTypeInfo,
+                responseTypeInfo,
+                request,
+                response);
         }
     }
 }

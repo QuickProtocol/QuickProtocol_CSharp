@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol
 {
@@ -124,7 +125,7 @@ namespace Quick.Protocol
             {
                 StringBuilder sb = new StringBuilder(baseUrl);
                 int currentIndex = 0;
-                var jObj = JsonNode.Parse(JsonSerializer.Serialize(this)).AsObject();
+                var jObj = JsonNode.Parse(JsonSerializer.Serialize(this, TypeInfo)).AsObject();
                 foreach (var property in jObj)
                 {
                     var key = property.Key;

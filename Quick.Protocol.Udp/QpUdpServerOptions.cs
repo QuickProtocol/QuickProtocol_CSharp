@@ -1,13 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Udp
 {
+    [JsonSerializable(typeof(QpUdpServerOptions))]
+    internal partial class QpUdpServerOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpUdpServerOptions : QpServerOptions
     {
+        protected override JsonTypeInfo TypeInfo => QpUdpServerOptionsSerializerContext.Default.QpUdpServerOptions;
+
         /// <summary>
         /// IP地址
         /// </summary>

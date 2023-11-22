@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Quick.Protocol
 {
-    public class QpServerOptions : QpChannelOptions
+    public abstract class QpServerOptions : QpChannelOptions
     {
         /// <summary>
         /// 缓存大小(默认128KB)
@@ -24,7 +24,7 @@ namespace Quick.Protocol
         /// 协议错误处理器
         /// </summary>
         [JsonIgnore]
-        public Action<Stream,ArraySegment<byte>> ProtocolErrorHandler { get; set; }
+        public Action<Stream, ArraySegment<byte>> ProtocolErrorHandler { get; set; }
 
         /// <summary>
         /// 创建客户端实例
@@ -37,7 +37,7 @@ namespace Quick.Protocol
 
         public virtual QpServerOptions Clone()
         {
-            var ret = JsonSerializer.Deserialize<QpServerOptions>(JsonSerializer.Serialize(this));
+            var ret = (QpServerOptions)JsonSerializer.Deserialize(JsonSerializer.Serialize(this, TypeInfo), TypeInfo);
             ret.InstructionSet = InstructionSet;
             ret.CommandExecuterManagerList = CommandExecuterManagerList;
             ret.NoticeHandlerManagerList = NoticeHandlerManagerList;

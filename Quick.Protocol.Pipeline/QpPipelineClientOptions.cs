@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Pipeline
 {
+    [JsonSerializable(typeof(QpPipelineClientOptions))]
+    internal partial class QpPipelineClientOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpPipelineClientOptions : QpClientOptions
     {
         public const string URI_SCHEMA = "qp.pipe";
-
+        protected override JsonTypeInfo TypeInfo => QpPipelineClientOptionsSerializerContext.Default.QpPipelineClientOptions;
         [Category("常用")]
         [DisplayName("服务器名称")]
         public string ServerName { get; set; } = ".";

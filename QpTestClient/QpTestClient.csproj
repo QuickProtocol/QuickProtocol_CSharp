@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<RollForward>Major</RollForward>
-		<TargetFramework>net6.0-windows</TargetFramework>
+		<TargetFramework>net8.0-windows</TargetFramework>
 		<UseWindowsForms>true</UseWindowsForms>
 		<Product>[QuickProtocol]测试客户端</Product>
 		<AssemblyTitle>[QuickProtocol]测试客户端</AssemblyTitle>

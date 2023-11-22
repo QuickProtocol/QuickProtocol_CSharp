@@ -1,13 +1,15 @@
-﻿using System.Text.Json;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
+﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.WebSocket.Server.AspNetCore
 {
+    [JsonSerializable(typeof(QpWebSocketServerOptions))]
+    internal partial class QpWebSocketServerOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpWebSocketServerOptions : QpServerOptions
     {
+        protected override JsonTypeInfo TypeInfo => QpWebSocketServerOptionsSerializerContext.Default.QpWebSocketServerOptions;
+
         private string _Path;
         /// <summary>
         /// WebSocket的路径

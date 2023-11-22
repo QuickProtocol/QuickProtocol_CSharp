@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using System.Text;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol
 {
@@ -12,7 +12,7 @@ namespace Quick.Protocol
     /// </summary>
     public class QpNoticeInfo
     {
-        private Type noticeType;
+        private JsonTypeInfo noticeTypeInfo;
 
         /// <summary>
         /// 名称
@@ -34,19 +34,19 @@ namespace Quick.Protocol
         public string NoticeTypeName { get; set; }
 
         public QpNoticeInfo() { }
-        public QpNoticeInfo(string name, string description, Type noticeType, object defaultNoticeTypeInstance)
+        public QpNoticeInfo(string name, string description, JsonTypeInfo noticeTypeInfo, object defaultNoticeTypeInstance)
         {
             Name = name;
             Description = description;
-            this.noticeType = noticeType;
-            NoticeTypeName = noticeType.FullName;
-            NoticeTypeSchemaSample = JsonSerializer.Serialize(defaultNoticeTypeInstance);
+            NoticeTypeName = noticeTypeInfo.Type.FullName;
+            this.noticeTypeInfo = noticeTypeInfo;
+            NoticeTypeSchemaSample = JsonSerializer.Serialize(defaultNoticeTypeInstance, noticeTypeInfo);
         }
 
         /// <summary>
         /// 获取通知类型
         /// </summary>
-        public Type GetNoticeType() => noticeType;
+        public JsonTypeInfo GetNoticeTypeInfo() => noticeTypeInfo;
         /// <summary>
         /// 示例
         /// </summary>
@@ -59,10 +59,10 @@ namespace Quick.Protocol
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static QpNoticeInfo Create<T>()
+        public static QpNoticeInfo Create<T>(JsonTypeInfo<T> typeInfo)
             where T : new()
         {
-            return Create<T>(new T());
+            return Create<T>(new T(), typeInfo);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Quick.Protocol
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static QpNoticeInfo Create<T>(T instance)
+        public static QpNoticeInfo Create<T>(T instance, JsonTypeInfo<T> typeInfo)
         {
             var type = typeof(T);
             string name = null;
@@ -78,7 +78,7 @@ namespace Quick.Protocol
                 name = type.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
             if (name == null)
                 name = type.FullName;
-            return new QpNoticeInfo(name, type.GetCustomAttribute<DescriptionAttribute>()?.Description, type, instance);
+            return new QpNoticeInfo(name, type.GetCustomAttribute<DescriptionAttribute>()?.Description, typeInfo, instance);
         }
     }
 }

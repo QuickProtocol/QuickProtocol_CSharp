@@ -2,11 +2,17 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.SerialPort
 {
+    [JsonSerializable(typeof(QpSerialPortServerOptions))]
+    internal partial class QpSerialPortServerOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpSerialPortServerOptions : QpServerOptions
     {
+        protected override JsonTypeInfo TypeInfo => QpSerialPortServerOptionsSerializerContext.Default.QpSerialPortServerOptions;
         /// <summary>
         /// 端口名称
         /// </summary>

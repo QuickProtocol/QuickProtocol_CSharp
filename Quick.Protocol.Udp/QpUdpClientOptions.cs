@@ -2,12 +2,19 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Udp
 {
+    [JsonSerializable(typeof(QpUdpClientOptions))]
+    internal partial class QpUdpClientOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpUdpClientOptions : QpClientOptions
     {
         public const string URI_SCHEMA = "qp.udp";
+        protected override JsonTypeInfo TypeInfo => QpUdpClientOptionsSerializerContext.Default.QpUdpClientOptions;
+
         /// <summary>
         /// 主机
         /// </summary>

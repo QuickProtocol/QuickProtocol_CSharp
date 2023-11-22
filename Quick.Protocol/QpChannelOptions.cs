@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol
 {
     public abstract class QpChannelOptions
     {
+        /// <summary>
+        /// 类型信息
+        /// </summary>
+        protected abstract JsonTypeInfo TypeInfo { get; }
         /// <summary>
         /// 内部是否压缩
         /// </summary>

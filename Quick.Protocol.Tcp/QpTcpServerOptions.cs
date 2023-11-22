@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Net;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Tcp
 {
+    [JsonSerializable(typeof(QpTcpServerOptions))]
+    internal partial class DefaultSerializerContext : JsonSerializerContext { }
+
     public class QpTcpServerOptions : QpServerOptions
     {
+        protected override JsonTypeInfo TypeInfo => DefaultSerializerContext.Default.QpTcpServerOptions;
         /// <summary>
         /// IP地址
         /// </summary>
