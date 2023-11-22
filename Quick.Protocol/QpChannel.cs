@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using Quick.Protocol.Exceptions;
 using Quick.Protocol.Utils;
 using System;
@@ -507,7 +507,7 @@ namespace Quick.Protocol
         /// </summary>
         public Task SendNoticePackage(object package)
         {
-            return SendNoticePackage(package.GetType().FullName, JsonConvert.SerializeObject(package));
+            return SendNoticePackage(package.GetType().FullName, JsonSerializer.Serialize(package));
         }
 
         /// <summary>
@@ -519,7 +519,7 @@ namespace Quick.Protocol
         {
             var requestType = request.GetType();
             var typeName = requestType.FullName;
-            var requestContent = JsonConvert.SerializeObject(request);
+            var requestContent = JsonSerializer.Serialize(request);
             await SendCommandRequestPackage(CommandContext.GenerateNewId(), typeName, requestContent).ConfigureAwait(false);
         }
 
@@ -840,7 +840,7 @@ namespace Quick.Protocol
             //如果在字典中未找到此类型名称，则直接返回
             if (!noticeTypeDict.ContainsKey(typeName))
                 return;
-            var contentModel = JsonConvert.DeserializeObject(content, noticeTypeDict[typeName]);
+            var contentModel = JsonSerializer.Deserialize(content, noticeTypeDict[typeName]);
 
             //处理通知
             var hasNoticeHandler = false;
@@ -895,7 +895,7 @@ namespace Quick.Protocol
                 var cmdRequestType = commandRequestTypeDict[typeName];
                 var cmdResponseType = commandRequestTypeResponseTypeDict[cmdRequestType];
 
-                var contentModel = JsonConvert.DeserializeObject(content, cmdRequestType);
+                var contentModel = JsonSerializer.Deserialize(content, cmdRequestType);
                 CommandRequestPackageReceived?.Invoke(this, new CommandRequestPackageReceivedEventArgs()
                 {
                     CommandId = commandId,
@@ -911,7 +911,7 @@ namespace Quick.Protocol
                         {
                             hasCommandExecuter = true;
                             var responseModel = commandExecuterManager.ExecuteCommand(this, typeName, contentModel);
-                            SendCommandResponsePackage(commandId, 0, null, cmdResponseType.FullName, JsonConvert.SerializeObject(responseModel));
+                            SendCommandResponsePackage(commandId, 0, null, cmdResponseType.FullName, JsonSerializer.Serialize(responseModel));
                             break;
                         }
                     }
@@ -1153,11 +1153,12 @@ namespace Quick.Protocol
             }
         }
 
-        public async Task<TCmdResponse> SendCommand<TCmdResponse>(IQpCommandRequest<TCmdResponse> request, int timeout = 30 * 1000, Action afterSendHandler = null)
+        public async Task<TCmdResponse> SendCommand<TCmdRequest, TCmdResponse>(TCmdRequest request, int timeout = 30 * 1000, Action afterSendHandler = null)
+            where TCmdRequest : IQpCommandRequest<TCmdResponse>
         {
             var requestType = request.GetType();
             var typeName = requestType.FullName;
-            var requestContent = JsonConvert.SerializeObject(request);
+            var requestContent = JsonSerializer.Serialize(request);
 
             var commandContext = new CommandContext(typeName);
             commandDict.TryAdd(commandContext.Id, commandContext);
@@ -1191,8 +1192,8 @@ namespace Quick.Protocol
                 ret = await commandContext.ResponseTask
                     .WaitAsync(TimeSpan.FromMilliseconds(timeout))
                     .ConfigureAwait(false);
-            }
-            return JsonConvert.DeserializeObject<TCmdResponse>(ret.Content);
+            }            
+            return JsonSerializer.Deserialize<TCmdResponse>(ret.Content);
         }
     }
 }

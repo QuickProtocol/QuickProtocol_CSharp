@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
+using System.Text.Json;
 using Quick.Protocol;
 using Quick.Protocol.WebSocket.Server.AspNetCore;
 using System;

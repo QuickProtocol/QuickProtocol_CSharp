@@ -52,7 +52,8 @@ namespace QpTestClient
             //获取指令集信息
             try
             {
-                var rep = await QpClient.SendCommand(new Quick.Protocol.Commands.GetQpInstructions.Request());
+                var rep = await QpClient.SendCommand<Quick.Protocol.Commands.GetQpInstructions.Request, Quick.Protocol.Commands.GetQpInstructions.Response>
+                    (new Quick.Protocol.Commands.GetQpInstructions.Request());
                 ConnectionInfo.Instructions = rep.Data;
                 Connected = true;
             }

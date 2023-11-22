@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -63,11 +63,11 @@ namespace Quick.Protocol
 
             this.requestType = requestType;
             RequestTypeName = requestType.FullName;
-            RequestTypeSchemaSample = JsonConvert.SerializeObject(defaultRequestTypeInstance, Formatting.Indented);
+            RequestTypeSchemaSample = JsonSerializer.Serialize(defaultRequestTypeInstance);
 
             this.responseType = responseType;
             ResponseTypeName = responseType.FullName;
-            ResponseTypeSchemaSample = JsonConvert.SerializeObject(defaultResponseTypeInstance, Formatting.Indented);
+            ResponseTypeSchemaSample = JsonSerializer.Serialize(defaultResponseTypeInstance);
         }
 
         /// <summary>

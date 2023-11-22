@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using Quick.Protocol;
 using System;
 
@@ -28,7 +28,7 @@ namespace PipelineServer
             noticeHandlerManager.Register<Quick.Protocol.Notices.PrivateNotice>(
                 (handler, notice) =>
                 {
-                    Console.WriteLine($"收到PrivateNotice: {JsonConvert.SerializeObject(notice)}");
+                    Console.WriteLine($"收到PrivateNotice: {JsonSerializer.Serialize(notice)}");
                 });
             var serverOptions = new Quick.Protocol.Pipeline.QpPipelineServerOptions()
             {

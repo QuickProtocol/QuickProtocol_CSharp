@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using System;
 
 namespace PipelineClient
@@ -42,13 +42,13 @@ namespace PipelineClient
 
                 try
                 {
-                    var rep = await client.SendCommand(
+                    var rep = await client.SendCommand<Quick.Protocol.Commands.PrivateCommand.Request, Quick.Protocol.Commands.PrivateCommand.Response>(
                         new Quick.Protocol.Commands.PrivateCommand.Request()
                         {
                             Action = "Echo",
                             Content = DateTime.Now.ToString()
                         });
-                    Console.WriteLine("SendCommand Success.Rep:" + JsonConvert.SerializeObject(rep));
+                    Console.WriteLine("SendCommand Success.Rep:" + JsonSerializer.Serialize(rep));
                 }
                 catch (Exception ex)
                 {

@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Quick.Protocol
 {
@@ -71,12 +71,43 @@ namespace Quick.Protocol
             if (string.IsNullOrEmpty(uri.Query))
                 return;
             var queryString = System.Web.HttpUtility.ParseQueryString(uri.Query);
-            JObject jObj = new JObject();
+            var type = this.GetType();
             foreach (var key in queryString.AllKeys)
             {
-                jObj.Add(key, queryString[key]);
+                var pi = type.GetProperty(key);
+                if (pi == null)
+                    continue;
+                var propertyType = pi.PropertyType;
+                var stringValue = queryString[key];
+                object propertyValue = stringValue;
+                if (propertyType == typeof(bool))
+                    propertyValue = Convert.ToBoolean(stringValue);
+                else if (propertyType == typeof(byte))
+                    propertyValue = Convert.ToByte(stringValue);
+                else if (propertyType == typeof(sbyte))
+                    propertyValue = Convert.ToSByte(stringValue);
+                else if (propertyType == typeof(short))
+                    propertyValue = Convert.ToInt16(stringValue);
+                else if (propertyType == typeof(ushort))
+                    propertyValue = Convert.ToUInt16(stringValue);
+                else if (propertyType == typeof(int))
+                    propertyValue = Convert.ToInt32(stringValue);
+                else if (propertyType == typeof(uint))
+                    propertyValue = Convert.ToUInt32(stringValue);
+                else if (propertyType == typeof(long))
+                    propertyValue = Convert.ToInt64(stringValue);
+                else if (propertyType == typeof(ulong))
+                    propertyValue = Convert.ToUInt64(stringValue);
+                else if (propertyType == typeof(float))
+                    propertyValue = Convert.ToSingle(stringValue);
+                else if (propertyType == typeof(double))
+                    propertyValue = Convert.ToDouble(stringValue);
+                else if (propertyType == typeof(decimal))
+                    propertyValue = Convert.ToDecimal(stringValue);
+                else if (propertyType == typeof(DateTime))
+                    propertyValue = Convert.ToDateTime(stringValue);
+                pi.SetValue(this, propertyValue);
             }
-            JsonConvert.PopulateObject(jObj.ToString(), this);
         }
 
         protected abstract string ToUriBasic(HashSet<string> ignorePropertyNames);
@@ -93,23 +124,22 @@ namespace Quick.Protocol
             {
                 StringBuilder sb = new StringBuilder(baseUrl);
                 int currentIndex = 0;
-
-                var jObj = JObject.FromObject(this);
-                foreach (var property in jObj.Properties())
+                var jObj = JsonNode.Parse(JsonSerializer.Serialize(this)).AsObject();
+                foreach (var property in jObj)
                 {
-                    var key = property.Name;
+                    var key = property.Key;
                     if (ignorePropertyNames.Contains(key))
                         continue;
-                    if (!includeOtherProperty && key!=nameof(Password))
+                    if (!includeOtherProperty && key != nameof(Password))
                         continue;
-                    if (currentIndex==0)
+                    if (currentIndex == 0)
                         sb.Append("?");
-                    if (currentIndex>0)
+                    if (currentIndex > 0)
                         sb.Append("&");
                     currentIndex++;
 
                     var value = property.Value.ToString();
-                    value=System.Web.HttpUtility.UrlEncode(value);
+                    value = System.Web.HttpUtility.UrlEncode(value);
                     sb.Append($"{key}={value}");
                 }
                 baseUrl=sb.ToString();

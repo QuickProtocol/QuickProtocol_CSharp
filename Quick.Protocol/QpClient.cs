@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,31 +43,33 @@ namespace Quick.Protocol
             //开始统计网络数据
             BeginNetstat(token);
 
-            var repConnect = await SendCommand(new Commands.Connect.Request()
-            {
-                InstructionIds = Options.InstructionSet.Select(t => t.Id).ToArray()
-            }).ConfigureAwait(false);
+            var repConnect = await SendCommand<Commands.Connect.Request, Commands.Connect.Response>(
+                new Commands.Connect.Request()
+                {
+                    InstructionIds = Options.InstructionSet.Select(t => t.Id).ToArray()
+                }).ConfigureAwait(false);
             AuthenticateQuestion = repConnect.Question;
 
             //如果服务端使用的缓存大小与客户端不同，则设置缓存大小为与服务端同样的大小
             if (BufferSize != repConnect.BufferSize)
                 ChangeBufferSize(repConnect.BufferSize);
-            
-            var repAuth = await SendCommand(new Commands.Authenticate.Request()
-            {
-                Answer = CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password)
-            }).ConfigureAwait(false);
+            var repAuth = await SendCommand<Commands.Authenticate.Request, Commands.Authenticate.Response>(
+                new Commands.Authenticate.Request()
+                {
+                    Answer = CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password)
+                }).ConfigureAwait(false);
 
-            var repHandShake = await SendCommand(new Commands.HandShake.Request()
-            {
-                EnableCompress = Options.EnableCompress,
-                EnableEncrypt = Options.EnableEncrypt,
-                TransportTimeout = Options.TransportTimeout
-            }, 5000, () =>
-            {
-                Options.OnAuthPassed();
-                IsConnected = true;
-            }).ConfigureAwait(false);
+            var repHandShake = await SendCommand<Commands.HandShake.Request, Commands.HandShake.Response>(
+                new Commands.HandShake.Request()
+                {
+                    EnableCompress = Options.EnableCompress,
+                    EnableEncrypt = Options.EnableEncrypt,
+                    TransportTimeout = Options.TransportTimeout
+                }, 5000, () =>
+                {
+                    Options.OnAuthPassed();
+                    IsConnected = true;
+                }).ConfigureAwait(false);
 
             //开始心跳
             if (Options.HeartBeatInterval > 0)
