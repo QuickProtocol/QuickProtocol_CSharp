@@ -8,7 +8,7 @@
 		<Product>[QuickProtocol]测试客户端</Product>
 		<AssemblyTitle>[QuickProtocol]测试客户端</AssemblyTitle>
 		<Authors>scbeta</Authors>
-		<Version>2.3.0</Version>
+		<Version>2.3.1</Version>
 		<ApplicationIcon>logo.ico</ApplicationIcon>
 		<Description>用于测试连接到[QuickProtocol]服务端的客户端。
 项目地址：https://github.com/QuickProtocol</Description>
@@ -26,7 +26,6 @@
 		<ProjectReference Include="..\Quick.Protocol.Pipeline\Quick.Protocol.Pipeline.csproj" />
 		<ProjectReference Include="..\Quick.Protocol.SerialPort\Quick.Protocol.SerialPort.csproj" />
 		<ProjectReference Include="..\Quick.Protocol.Tcp\Quick.Protocol.Tcp.csproj" />
-		<ProjectReference Include="..\Quick.Protocol.Udp\Quick.Protocol.Udp.csproj" />
 		<ProjectReference Include="..\Quick.Protocol.WebSocket.Client\Quick.Protocol.WebSocket.Client.csproj" />
 		<ProjectReference Include="..\Quick.Protocol\Quick.Protocol.csproj" />
 	</ItemGroup>

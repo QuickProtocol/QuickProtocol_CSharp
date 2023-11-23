@@ -127,7 +127,7 @@
             textBox1.ReadOnly = true;
             textBox1.Size = new System.Drawing.Size(501, 203);
             textBox1.TabIndex = 102;
-            textBox1.Text = "TCP: qp.tcp://127.0.0.1:3000\r\nUDP: qp.udp://127.0.0.1:3000\r\nWebSocket: qp.ws://127.0.0.1:3000\r\n命名管道: qp.pipe://./Quick.Protocol\r\n串口: qp.serial://COM1";
+            textBox1.Text = "TCP: qp.tcp://127.0.0.1:3000\r\nWebSocket: qp.ws://127.0.0.1:3000\r\n命名管道: qp.pipe://./Quick.Protocol\r\n串口: qp.serial://COM1";
             // 
             // label3
             // 
