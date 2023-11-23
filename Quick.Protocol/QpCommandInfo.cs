@@ -88,14 +88,14 @@ namespace Quick.Protocol
         /// <typeparam name="TResponse"></typeparam>
         /// <returns></returns>
         public static QpCommandInfo Create<TRequest, TResponse>(JsonTypeInfo<TRequest> requestTypeInfo, JsonTypeInfo<TResponse> responseTypeInfo)
-            where TRequest : IQpCommandRequest<TResponse>, new()
+            where TRequest : class, new()
             where TResponse : class, new()
         {
             return Create(requestTypeInfo, responseTypeInfo, new TRequest(), new TResponse());
         }
 
         public static QpCommandInfo Create<TRequest, TResponse>(JsonTypeInfo<TRequest> requestTypeInfo, JsonTypeInfo<TResponse> responseTypeInfo, TRequest request, TResponse response)
-            where TRequest : IQpCommandRequest<TResponse>, new()
+            where TRequest : class, new()
             where TResponse : class, new()
         {
             var requestType = typeof(TRequest);

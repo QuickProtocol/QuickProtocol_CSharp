@@ -6,7 +6,7 @@ using System.Text;
 namespace Quick.Protocol.Commands.HandShake
 {
     [DisplayName("握手")]
-    public class Request : IQpCommandRequest<Response>
+    public class Request
     {
         /// <summary>
         /// 传输超时(默认15秒)

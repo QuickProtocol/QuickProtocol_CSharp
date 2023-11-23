@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
+﻿using System.ComponentModel;
 
 namespace Quick.Protocol.Commands.PrivateCommand
 {
@@ -9,7 +6,7 @@ namespace Quick.Protocol.Commands.PrivateCommand
     /// 私有命令请求
     /// </summary>
     [DisplayName("私有命令")]
-    public class Request : IQpCommandRequest<Response>
+    public class Request
     {
         /// <summary>
         /// 动作

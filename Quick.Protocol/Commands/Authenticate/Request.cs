@@ -6,7 +6,7 @@ using System.Text;
 namespace Quick.Protocol.Commands.Authenticate
 {
     [DisplayName("认证")]
-    public class Request : IQpCommandRequest<Response>
+    public class Request
     {
         /// <summary>
         /// 认证回答

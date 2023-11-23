@@ -1177,7 +1177,6 @@ namespace Quick.Protocol
         }
 
         public async Task<TCmdResponse> SendCommand<TCmdRequest, TCmdResponse>(TCmdRequest request, int timeout = 30 * 1000, Action afterSendHandler = null)
-            where TCmdRequest : IQpCommandRequest<TCmdResponse>
         {
             var typeName = typeof(TCmdRequest).FullName;
             var requestTypeInfo = GetCommandRequestTypeInfo(typeName);
