@@ -40,7 +40,6 @@ namespace QpTestClient
         {
             dict = new Dictionary<string, QpClientTypeInfo>();
             register<Quick.Protocol.Tcp.QpTcpClient>();
-            register<Quick.Protocol.Udp.QpUdpClient>();
             register<Quick.Protocol.Pipeline.QpPipelineClient>();
             register<Quick.Protocol.SerialPort.QpSerialPortClient>();
             register<Quick.Protocol.WebSocket.Client.QpWebSocketClient>();
