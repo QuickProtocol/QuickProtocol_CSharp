@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Quick.Protocol.Udp\Quick.Protocol.Udp.csproj" />
     <ProjectReference Include="..\..\..\Quick.Protocol\Quick.Protocol.csproj" />
   </ItemGroup>
 
