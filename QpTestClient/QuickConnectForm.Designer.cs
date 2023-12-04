@@ -38,6 +38,8 @@
             txtName = new System.Windows.Forms.TextBox();
             textBox1 = new System.Windows.Forms.TextBox();
             label3 = new System.Windows.Forms.Label();
+            pnlPassword = new System.Windows.Forms.Panel();
+            pnlPassword.SuspendLayout();
             SuspendLayout();
             // 
             // txtUrl
@@ -48,6 +50,7 @@
             txtUrl.Name = "txtUrl";
             txtUrl.Size = new System.Drawing.Size(638, 38);
             txtUrl.TabIndex = 4;
+            txtUrl.TextChanged += txtUrl_TextChanged;
             // 
             // label2
             // 
@@ -62,7 +65,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(70, 408);
+            label1.Location = new System.Drawing.Point(59, 8);
             label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label1.Name = "label1";
             label1.Size = new System.Drawing.Size(68, 31);
@@ -72,7 +75,7 @@
             // txtPassword
             // 
             txtPassword.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            txtPassword.Location = new System.Drawing.Point(148, 403);
+            txtPassword.Location = new System.Drawing.Point(138, 5);
             txtPassword.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             txtPassword.Name = "txtPassword";
             txtPassword.PasswordChar = '●';
@@ -81,7 +84,7 @@
             // 
             // btnCancel
             // 
-            btnCancel.Location = new System.Drawing.Point(302, 456);
+            btnCancel.Location = new System.Drawing.Point(304, 456);
             btnCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new System.Drawing.Size(146, 46);
@@ -92,7 +95,7 @@
             // 
             // btnOk
             // 
-            btnOk.Location = new System.Drawing.Point(148, 456);
+            btnOk.Location = new System.Drawing.Point(150, 456);
             btnOk.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             btnOk.Name = "btnOk";
             btnOk.Size = new System.Drawing.Size(146, 46);
@@ -142,17 +145,25 @@
             label3.TabIndex = 103;
             label3.Text = "示例:";
             // 
+            // pnlPassword
+            // 
+            pnlPassword.Controls.Add(txtPassword);
+            pnlPassword.Controls.Add(label1);
+            pnlPassword.Location = new System.Drawing.Point(12, 397);
+            pnlPassword.Name = "pnlPassword";
+            pnlPassword.Size = new System.Drawing.Size(791, 51);
+            pnlPassword.TabIndex = 104;
+            // 
             // QuickConnectForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(815, 536);
+            Controls.Add(pnlPassword);
             Controls.Add(label3);
             Controls.Add(textBox1);
             Controls.Add(btnCancel);
             Controls.Add(btnOk);
-            Controls.Add(txtPassword);
-            Controls.Add(label1);
             Controls.Add(txtName);
             Controls.Add(label4);
             Controls.Add(txtUrl);
@@ -162,6 +173,8 @@
             StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             Text = "快速添加连接";
             Load += QuickConnectForm_Load;
+            pnlPassword.ResumeLayout(false);
+            pnlPassword.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -178,5 +191,6 @@
         private System.Windows.Forms.TextBox txtName;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Panel pnlPassword;
     }
 }
