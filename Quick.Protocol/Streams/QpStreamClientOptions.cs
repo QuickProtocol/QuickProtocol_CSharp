@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Text.Json.Serialization;
 
@@ -9,8 +10,9 @@ namespace Quick.Protocol.Streams
 
     public class QpStreamClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext JsonSerializerContext => QpStreamClientOptionsSerializerContext.Default;
-
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpStreamClientOptionsSerializerContext.Default;
+        [Browsable(false)]
+        [JsonIgnore]
         public Stream BaseStream { get; set; }
 
         public override QpClient CreateClient()

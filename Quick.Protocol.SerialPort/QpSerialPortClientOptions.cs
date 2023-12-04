@@ -11,7 +11,7 @@ namespace Quick.Protocol.SerialPort
 
     public class QpSerialPortClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext JsonSerializerContext => QpSerialPortClientOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpSerialPortClientOptionsOptionsSerializerContext.Default;
 
         public const string URI_SCHEMA = "qp.serial";
         /// <summary>

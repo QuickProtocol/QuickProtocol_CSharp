@@ -11,7 +11,7 @@ namespace Quick.Protocol.Tcp
 
     public class QpTcpClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext JsonSerializerContext => QpTcpClientOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpTcpClientOptionsOptionsSerializerContext.Default;
 
         public const string URI_SCHEMA = "qp.tcp";
         /// <summary>

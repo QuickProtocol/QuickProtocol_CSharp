@@ -9,7 +9,7 @@ namespace Quick.Protocol.SerialPort
 
     public class QpSerialPortServerOptions : QpServerOptions
     {
-        protected override JsonSerializerContext JsonSerializerContext => QpSerialPortServerOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpSerialPortServerOptionsOptionsSerializerContext.Default;
 
         /// <summary>
         /// 端口名称

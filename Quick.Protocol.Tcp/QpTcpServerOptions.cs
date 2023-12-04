@@ -9,7 +9,7 @@ namespace Quick.Protocol.Tcp
 
     public class QpTcpServerOptions : QpServerOptions
     {
-        protected override JsonSerializerContext JsonSerializerContext => QpTcpServerOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpTcpServerOptionsOptionsSerializerContext.Default;
         /// <summary>
         /// IP地址
         /// </summary>

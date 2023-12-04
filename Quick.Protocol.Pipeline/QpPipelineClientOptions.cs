@@ -10,7 +10,7 @@ namespace Quick.Protocol.Pipeline
 
     public class QpPipelineClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext JsonSerializerContext => QpPipelineClientOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpPipelineClientOptionsOptionsSerializerContext.Default;
 
         public const string URI_SCHEMA = "qp.pipe";
 

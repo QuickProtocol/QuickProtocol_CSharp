@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.ComponentModel;
+using System.IO;
 using System.Text.Json.Serialization;
 using System.Threading;
 
@@ -9,7 +10,7 @@ namespace Quick.Protocol.Streams
 
     public class QpStreamServerOptions : QpServerOptions
     {
-        protected override JsonSerializerContext JsonSerializerContext => QpStreamServerOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpStreamServerOptionsSerializerContext.Default;
         public Stream BaseStream { get; set; }
         public string ChannelName { get; set; }
         public CancellationToken CancellationToken { get; set; }

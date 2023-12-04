@@ -39,7 +39,7 @@ namespace Quick.Protocol
         {
             var type = this.GetType();
             var ret = (QpServerOptions)JsonSerializer.Deserialize(
-                JsonSerializer.Serialize(this, type, JsonSerializerContext), type, JsonSerializerContext);
+                JsonSerializer.Serialize(this, type, GetJsonSerializerContext()), type, GetJsonSerializerContext());
             ret.InstructionSet = InstructionSet;
             ret.CommandExecuterManagerList = CommandExecuterManagerList;
             ret.NoticeHandlerManagerList = NoticeHandlerManagerList;

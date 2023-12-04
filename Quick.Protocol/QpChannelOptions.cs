@@ -11,7 +11,7 @@ namespace Quick.Protocol
         /// <summary>
         /// 类型信息
         /// </summary>
-        protected abstract JsonSerializerContext JsonSerializerContext { get; }
+        protected abstract JsonSerializerContext GetJsonSerializerContext();
         /// <summary>
         /// 内部是否压缩
         /// </summary>

@@ -8,7 +8,7 @@ namespace Quick.Protocol.Pipeline
 
     public class QpPipelineServerOptions : QpServerOptions
     {
-        protected override JsonSerializerContext JsonSerializerContext => QpPipelineServerOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpPipelineServerOptionsOptionsSerializerContext.Default;
 
         public string PipeName { get; set; }
 

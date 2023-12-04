@@ -7,7 +7,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
     public class QpWebSocketServerOptions : QpServerOptions
     {
-        protected override JsonSerializerContext JsonSerializerContext => QpWebSocketServerOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpWebSocketServerOptionsSerializerContext.Default;
 
         private string _Path;
         /// <summary>

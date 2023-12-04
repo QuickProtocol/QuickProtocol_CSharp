@@ -11,7 +11,7 @@ namespace Quick.Protocol.WebSocket.Client
 
     public class QpWebSocketClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext JsonSerializerContext => QpWebSocketClientOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpWebSocketClientOptionsSerializerContext.Default;
 
         public const string URI_SCHEMA_WS = "qp.ws";
         public const string URI_SCHEMA_WSS = "qp.wss";

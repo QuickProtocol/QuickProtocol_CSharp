@@ -125,7 +125,7 @@ namespace Quick.Protocol
             {
                 StringBuilder sb = new StringBuilder(baseUrl);
                 int currentIndex = 0;
-                var jObj = JsonNode.Parse(JsonSerializer.Serialize(this,this.GetType(), JsonSerializerContext)).AsObject();
+                var jObj = JsonNode.Parse(JsonSerializer.Serialize(this,this.GetType(), GetJsonSerializerContext())).AsObject();
                 foreach (var property in jObj)
                 {
                     var key = property.Key;

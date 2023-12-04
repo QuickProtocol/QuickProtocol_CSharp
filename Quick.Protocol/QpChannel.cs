@@ -239,7 +239,7 @@ namespace Quick.Protocol
                     foreach (var item in instructionSet.NoticeInfos)
                     {
                         noticeTypeDict[item.NoticeTypeName] = item.GetNoticeType();
-                        typeSerializerContextDict[item.GetNoticeType()] = item.JsonSerializerContext;
+                        typeSerializerContextDict[item.GetNoticeType()] = item.GetJsonSerializerContext();
                     }
                 }
                 //添加命令数据包信息
@@ -252,8 +252,8 @@ namespace Quick.Protocol
                         commandRequestTypeDict[item.RequestTypeName] = requestType;
                         commandResponseTypeDict[item.ResponseTypeName] = responseType;
                         commandRequestTypeResponseTypeDict[requestType] = responseType;
-                        typeSerializerContextDict[item.GetRequestType()] = item.JsonSerializerContext;
-                        typeSerializerContextDict[item.GetResponseType()] = item.JsonSerializerContext;
+                        typeSerializerContextDict[item.GetRequestType()] = item.GetJsonSerializerContext();
+                        typeSerializerContextDict[item.GetResponseType()] = item.GetJsonSerializerContext();
                     }
                 }
             }

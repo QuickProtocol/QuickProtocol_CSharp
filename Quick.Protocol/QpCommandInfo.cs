@@ -48,9 +48,8 @@ namespace Quick.Protocol
         [DisplayName("响应示例")]
         [ReadOnly(true)]
         public string ResponseTypeSchemaSample { get; set; }
-        [JsonIgnore]
-        [Browsable(false)]
-        public JsonSerializerContext JsonSerializerContext { get; set; }
+        private JsonSerializerContext jsonSerializerContext;
+        public JsonSerializerContext GetJsonSerializerContext() => jsonSerializerContext;
 
         private Type requestType;
 
@@ -64,7 +63,7 @@ namespace Quick.Protocol
         {
             Name = name;
             Description = description;
-            JsonSerializerContext = jsonSerializerContext;
+            this.jsonSerializerContext = jsonSerializerContext;
 
             this.requestType = requestType;
             RequestTypeName = requestType.FullName;

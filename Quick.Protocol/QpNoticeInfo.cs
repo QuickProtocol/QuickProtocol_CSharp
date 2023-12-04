@@ -34,10 +34,10 @@ namespace Quick.Protocol
         [DisplayName("类型")]
         [ReadOnly(true)]
         public string NoticeTypeName { get; set; }
-        [JsonIgnore]
-        [Browsable(false)]
-        public JsonSerializerContext JsonSerializerContext { get; set; }
 
+        private JsonSerializerContext jsonSerializerContext;
+        public JsonSerializerContext GetJsonSerializerContext() => jsonSerializerContext;
+        
         public QpNoticeInfo() { }
         public QpNoticeInfo(string name, string description, Type noticeType, object defaultNoticeTypeInstance, JsonSerializerContext jsonSerializerContext)
         {
@@ -45,7 +45,7 @@ namespace Quick.Protocol
             Description = description;
             this.noticeType = noticeType;
             NoticeTypeName = noticeType.FullName;
-            JsonSerializerContext = jsonSerializerContext;
+            this.jsonSerializerContext = jsonSerializerContext;
             NoticeTypeSchemaSample = JsonNode.Parse(JsonSerializer.Serialize(defaultNoticeTypeInstance, noticeType, jsonSerializerContext)).ToString();
         }
 
