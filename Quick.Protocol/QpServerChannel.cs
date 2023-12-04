@@ -11,14 +11,14 @@ namespace Quick.Protocol
 {
     public class QpServerChannel : QpChannel
     {
-        private Stream stream;
-        private CancellationTokenSource cts;
-        private QpServerOptions options;
-        private string channelName;
+        private readonly Stream stream;
+        private readonly CancellationTokenSource cts;
+        private readonly QpServerOptions options;
+        private readonly string channelName;
         //通过认证后，才允许使用的命令执行管理器列表
-        private List<CommandExecuterManager> authedCommandExecuterManagerList = null;
+        private readonly List<CommandExecuterManager> authedCommandExecuterManagerList = null;
         //通过认证后，才允许使用的通知处理器管理器列表
-        private List<NoticeHandlerManager> authedNoticeHandlerManagerList = null;
+        private readonly List<NoticeHandlerManager> authedNoticeHandlerManagerList = null;
 
         public override string ChannelName => channelName;
 

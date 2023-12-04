@@ -37,7 +37,7 @@ namespace Quick.Protocol.Tcp
         /// </summary>
         [DisplayName("本地端口")]
         [Category("高级")]
-        public int LocalPort { get; set; } = 0;
+        public int? LocalPort { get; set; }
 
         public override void Check()
         {
@@ -51,6 +51,22 @@ namespace Quick.Protocol.Tcp
         public override QpClient CreateClient()
         {
             return new QpTcpClient(this);
+        }
+
+        protected override void LoadFromQueryString(string key, string value)
+        {
+            switch (key)
+            {
+                case nameof(LocalHost):
+                    LocalHost = value;
+                    break;
+                case nameof(LocalPort):
+                    LocalPort = int.Parse(value);
+                    break;
+                default:
+                    base.LoadFromQueryString(key, value);
+                    break;
+            }
         }
 
         protected override void LoadFromUri(Uri uri)

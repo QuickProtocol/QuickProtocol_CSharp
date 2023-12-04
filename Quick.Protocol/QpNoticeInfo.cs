@@ -14,7 +14,7 @@ namespace Quick.Protocol
     /// </summary>
     public class QpNoticeInfo
     {
-        private Type noticeType;
+        private readonly Type noticeType;
 
         /// <summary>
         /// 名称
@@ -35,7 +35,7 @@ namespace Quick.Protocol
         [ReadOnly(true)]
         public string NoticeTypeName { get; set; }
 
-        private JsonSerializerContext jsonSerializerContext;
+        private readonly JsonSerializerContext jsonSerializerContext;
         public JsonSerializerContext GetJsonSerializerContext() => jsonSerializerContext;
         
         public QpNoticeInfo() { }

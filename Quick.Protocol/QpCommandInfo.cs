@@ -48,12 +48,12 @@ namespace Quick.Protocol
         [DisplayName("响应示例")]
         [ReadOnly(true)]
         public string ResponseTypeSchemaSample { get; set; }
-        private JsonSerializerContext jsonSerializerContext;
+        private readonly JsonSerializerContext jsonSerializerContext;
         public JsonSerializerContext GetJsonSerializerContext() => jsonSerializerContext;
 
-        private Type requestType;
+        private readonly Type requestType;
 
-        private Type responseType;
+        private readonly Type responseType;
 
         public QpCommandInfo() { }
         public QpCommandInfo(string name, string description,

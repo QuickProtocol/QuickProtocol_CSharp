@@ -12,7 +12,7 @@ namespace Quick.Protocol.Pipeline
     [DisplayName("命名管道")]
     public class QpPipelineClient : QpClient
     {
-        private QpPipelineClientOptions options;
+        private readonly QpPipelineClientOptions options;
         private NamedPipeClientStream pipeClientStream;
         public QpPipelineClient(QpPipelineClientOptions options) : base(options)
         {

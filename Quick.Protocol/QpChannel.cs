@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
+using System.Collections.ObjectModel;
 
 namespace Quick.Protocol
 {
@@ -33,8 +34,8 @@ namespace Quick.Protocol
         /// <summary>
         /// 心跳包
         /// </summary>
-        private static byte[] HEARTBEAT_PACKAGHE = new byte[] { 0, 0, 0, 5, 0 };
-        private static ArraySegment<byte> nullArraySegment = new ArraySegment<byte>();
+        private static readonly byte[] HEARTBEAT_PACKAGHE = new byte[] { 0, 0, 0, 5, 0 };
+        private static readonly ArraySegment<byte> nullArraySegment = new ArraySegment<byte>();
         //接收缓存
         private byte[] recvBuffer;
         private byte[] recvBuffer2;
@@ -43,26 +44,26 @@ namespace Quick.Protocol
         private byte[] sendBuffer2;
 
         private Stream QpPackageHandler_Stream;
-        private QpChannelOptions options;
+        private readonly QpChannelOptions options;
         private DateTime lastSendPackageTime = DateTime.MinValue;
 
-        private byte[] passwordMd5Buffer;
-        private ICryptoTransform enc;
-        private ICryptoTransform dec;
-        private Encoding encoding = Encoding.UTF8;
+        private readonly byte[] passwordMd5Buffer;
+        private readonly ICryptoTransform enc;
+        private readonly ICryptoTransform dec;
+        private readonly Encoding encoding = Encoding.UTF8;
 
         private Task sendPackageTask = Task.CompletedTask;
         //发送包锁对象
-        private object SEND_PACKAGE_LOCK_OBJ = new object();
+        private readonly object SEND_PACKAGE_LOCK_OBJ = new object();
         //断开连接锁对象
-        private object DISCONNECT_LOCK_OBJ = new object();
+        private readonly object DISCONNECT_LOCK_OBJ = new object();
 
-        private Dictionary<Type, JsonSerializerContext> typeSerializerContextDict = new Dictionary<Type, JsonSerializerContext>();
-        private Dictionary<string, Type> commandRequestTypeDict = new Dictionary<string, Type>();
-        private Dictionary<string, Type> commandResponseTypeDict = new Dictionary<string, Type>();
-        private Dictionary<Type, Type> commandRequestTypeResponseTypeDict = new Dictionary<Type, Type>();
+        private readonly Dictionary<Type, JsonSerializerContext> typeSerializerContextDict = new Dictionary<Type, JsonSerializerContext>();
+        private readonly Dictionary<string, Type> commandRequestTypeDict = new Dictionary<string, Type>();
+        private readonly Dictionary<string, Type> commandResponseTypeDict = new Dictionary<string, Type>();
+        private readonly Dictionary<Type, Type> commandRequestTypeResponseTypeDict = new Dictionary<Type, Type>();
 
-        private ConcurrentDictionary<string, CommandContext> commandDict = new ConcurrentDictionary<string, CommandContext>();
+        private readonly ConcurrentDictionary<string, CommandContext> commandDict = new ConcurrentDictionary<string, CommandContext>();
 
         private bool _IsConnected = false;
         /// <summary>
@@ -94,7 +95,7 @@ namespace Quick.Protocol
         public string AuthenticateQuestion { get; protected set; }
 
         //长整型数字的一半，统计大于这个数时，统计计数归零，防止溢出
-        private long LONG_HALF_MAX_VALUE = long.MaxValue / 2;
+        private readonly long LONG_HALF_MAX_VALUE = long.MaxValue / 2;
         /// <summary>
         /// 总共接收到的字节数量
         /// </summary>
@@ -217,7 +218,7 @@ namespace Quick.Protocol
         /// </summary>
         public object Tag { get; set; }
 
-        private Dictionary<string, Type> noticeTypeDict = new Dictionary<string, Type>();
+        private readonly Dictionary<string, Type> noticeTypeDict = new Dictionary<string, Type>();
 
         public QpChannel(QpChannelOptions options)
         {
@@ -295,7 +296,7 @@ namespace Quick.Protocol
         }
 
         //获取空闲的缓存
-        private byte[] getFreeBuffer(byte[] usingBuffer, params byte[][] bufferArray)
+        private static byte[] getFreeBuffer(byte[] usingBuffer, params byte[][] bufferArray)
         {
             foreach (var buffer in bufferArray)
             {
@@ -374,7 +375,7 @@ namespace Quick.Protocol
             await stream.FlushAsync().ConfigureAwait(false);
         }
 
-        private void writePackageTotalLengthToBuffer(byte[] buffer, int offset, int packageTotalLength)
+        private static void writePackageTotalLengthToBuffer(byte[] buffer, int offset, int packageTotalLength)
         {
             //构造包头
             var ret = BitConverter.GetBytes(packageTotalLength);

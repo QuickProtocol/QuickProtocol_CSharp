@@ -15,7 +15,7 @@ namespace Quick.Protocol.Tcp
     public class QpTcpClient : QpClient
     {
         private TcpClient tcpClient;
-        private QpTcpClientOptions options;
+        private readonly QpTcpClientOptions options;
 
         public QpTcpClient(QpTcpClientOptions options) : base(options)
         {
@@ -27,10 +27,10 @@ namespace Quick.Protocol.Tcp
             if (tcpClient != null)
                 Close();
             //开始连接
-            if (string.IsNullOrEmpty(options.LocalHost))
-                tcpClient = new TcpClient();
+            if (!string.IsNullOrEmpty(options.LocalHost) && options.LocalPort != null)
+                tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(options.LocalHost), options.LocalPort.Value));
             else
-                tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(options.LocalHost), options.LocalPort));
+                tcpClient = new TcpClient();
 
             CancellationTokenSource cts = new CancellationTokenSource();
             var connectTask = tcpClient.ConnectAsync(Dns.GetHostAddresses(options.Host), options.Port, cts.Token).AsTask();

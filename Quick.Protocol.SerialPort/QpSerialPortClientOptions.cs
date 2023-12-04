@@ -57,6 +57,28 @@ namespace Quick.Protocol.SerialPort
             return new QpSerialPortClient(this);
         }
 
+        protected override void LoadFromQueryString(string key, string value)
+        {
+            switch (key)
+            {
+                case nameof(BaudRate):
+                    BaudRate = int.Parse(value);
+                    break;
+                case nameof(Parity):
+                    Parity = Enum.Parse<Parity>(value);
+                    break;
+                case nameof(DataBits):
+                    DataBits = int.Parse(value);
+                    break;
+                case nameof(StopBits):
+                    StopBits = Enum.Parse<StopBits>(value);
+                    break;
+                default:
+                    base.LoadFromQueryString(key, value);
+                    break;
+            }
+        }
+
         protected override void LoadFromUri(Uri uri)
         {
             PortName = uri.Host;
