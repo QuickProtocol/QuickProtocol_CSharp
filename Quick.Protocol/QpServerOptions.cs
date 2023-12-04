@@ -1,8 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Quick.Protocol
 {
@@ -38,7 +37,7 @@ namespace Quick.Protocol
 
         public virtual QpServerOptions Clone()
         {
-            var ret = JsonConvert.DeserializeObject<QpServerOptions>(JsonConvert.SerializeObject(this));
+            var ret = JsonSerializer.Deserialize<QpServerOptions>(JsonSerializer.Serialize(this));
             ret.InstructionSet = InstructionSet;
             ret.CommandExecuterManagerList = CommandExecuterManagerList;
             ret.NoticeHandlerManagerList = NoticeHandlerManagerList;

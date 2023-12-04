@@ -1,8 +1,6 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Net;
-using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.Tcp
 {

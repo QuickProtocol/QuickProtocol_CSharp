@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -40,7 +40,7 @@ namespace Quick.Protocol
             Description = description;
             this.noticeType = noticeType;
             NoticeTypeName = noticeType.FullName;
-            NoticeTypeSchemaSample = JsonConvert.SerializeObject(defaultNoticeTypeInstance, Formatting.Indented);
+            NoticeTypeSchemaSample = JsonSerializer.Serialize(defaultNoticeTypeInstance, new JsonSerializerOptions() { WriteIndented = true });
         }
 
         /// <summary>

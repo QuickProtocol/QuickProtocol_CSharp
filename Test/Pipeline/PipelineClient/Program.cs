@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using System;
 
 namespace PipelineClient
@@ -48,7 +48,7 @@ namespace PipelineClient
                             Action = "Echo",
                             Content = DateTime.Now.ToString()
                         });
-                    Console.WriteLine("SendCommand Success.Rep:" + JsonConvert.SerializeObject(rep));
+                    Console.WriteLine("SendCommand Success.Rep:" + JsonSerializer.Serialize(rep));
                 }
                 catch (Exception ex)
                 {

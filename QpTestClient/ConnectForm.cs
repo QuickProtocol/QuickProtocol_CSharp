@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using Quick.Protocol;
 using Quick.Protocol.Utils;
 using Quick.Xml;
@@ -58,8 +58,8 @@ namespace QpTestClient
             QpClientOptions options = null;
             if (ConnectionInfo != null && qpClientTypeInfo.QpClientType.FullName == ConnectionInfo.QpClientTypeName)
             {
-                options = (QpClientOptions)JsonConvert.DeserializeObject(
-                    JsonConvert.SerializeObject(ConnectionInfo.QpClientOptions),
+                options = (QpClientOptions)JsonSerializer.Deserialize(
+                    JsonSerializer.Serialize(ConnectionInfo.QpClientOptions),
                     qpClientTypeInfo.QpClientOptionsType);
             }
             else
