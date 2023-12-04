@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.Streams
 {
+    [JsonSerializable(typeof(QpStreamClientOptions))]
+    internal partial class QpStreamClientOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpStreamClientOptions : QpClientOptions
     {
+        protected override JsonSerializerContext JsonSerializerContext => QpStreamClientOptionsSerializerContext.Default;
+
         public Stream BaseStream { get; set; }
 
         public override QpClient CreateClient()

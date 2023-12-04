@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace Quick.Protocol
 {
@@ -32,15 +34,19 @@ namespace Quick.Protocol
         [DisplayName("类型")]
         [ReadOnly(true)]
         public string NoticeTypeName { get; set; }
+        [JsonIgnore]
+        [Browsable(false)]
+        public JsonSerializerContext JsonSerializerContext { get; set; }
 
         public QpNoticeInfo() { }
-        public QpNoticeInfo(string name, string description, Type noticeType, object defaultNoticeTypeInstance)
+        public QpNoticeInfo(string name, string description, Type noticeType, object defaultNoticeTypeInstance, JsonSerializerContext jsonSerializerContext)
         {
             Name = name;
             Description = description;
             this.noticeType = noticeType;
             NoticeTypeName = noticeType.FullName;
-            NoticeTypeSchemaSample = JsonSerializer.Serialize(defaultNoticeTypeInstance, new JsonSerializerOptions() { WriteIndented = true });
+            JsonSerializerContext = jsonSerializerContext;
+            NoticeTypeSchemaSample = JsonNode.Parse(JsonSerializer.Serialize(defaultNoticeTypeInstance, noticeType, jsonSerializerContext)).ToString();
         }
 
         /// <summary>
@@ -59,10 +65,10 @@ namespace Quick.Protocol
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static QpNoticeInfo Create<T>()
+        public static QpNoticeInfo Create<T>(JsonSerializerContext jsonSerializerContext)
             where T : new()
         {
-            return Create<T>(new T());
+            return Create<T>(new T(), jsonSerializerContext);
         }
 
         /// <summary>
@@ -70,7 +76,7 @@ namespace Quick.Protocol
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static QpNoticeInfo Create<T>(T instance)
+        public static QpNoticeInfo Create<T>(T instance, JsonSerializerContext jsonSerializerContext)
         {
             var type = typeof(T);
             string name = null;
@@ -78,7 +84,7 @@ namespace Quick.Protocol
                 name = type.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
             if (name == null)
                 name = type.FullName;
-            return new QpNoticeInfo(name, type.GetCustomAttribute<DescriptionAttribute>()?.Description, type, instance);
+            return new QpNoticeInfo(name, type.GetCustomAttribute<DescriptionAttribute>()?.Description, type, instance, jsonSerializerContext);
         }
     }
 }

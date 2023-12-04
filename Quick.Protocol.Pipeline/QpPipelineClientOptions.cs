@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.Pipeline
 {
+    [JsonSerializable(typeof(QpPipelineClientOptions))]
+    internal partial class QpPipelineClientOptionsOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpPipelineClientOptions : QpClientOptions
     {
+        protected override JsonSerializerContext JsonSerializerContext => QpPipelineClientOptionsOptionsSerializerContext.Default;
+
         public const string URI_SCHEMA = "qp.pipe";
 
         [Category("常用")]

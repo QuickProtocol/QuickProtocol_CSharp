@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace Quick.Protocol
 {
@@ -56,6 +57,7 @@ namespace Quick.Protocol
         //断开连接锁对象
         private object DISCONNECT_LOCK_OBJ = new object();
 
+        private Dictionary<Type, JsonSerializerContext> typeSerializerContextDict = new Dictionary<Type, JsonSerializerContext>();
         private Dictionary<string, Type> commandRequestTypeDict = new Dictionary<string, Type>();
         private Dictionary<string, Type> commandResponseTypeDict = new Dictionary<string, Type>();
         private Dictionary<Type, Type> commandRequestTypeResponseTypeDict = new Dictionary<Type, Type>();
@@ -203,6 +205,13 @@ namespace Quick.Protocol
             }
         }
 
+        private JsonSerializerContext getTypeSerializerContext(Type type)
+        {
+            if (typeSerializerContextDict.TryGetValue(type, out var ret))
+                return ret;
+            return null;
+        }
+
         /// <summary>
         /// 增加Tag属性，用于引用与处理器相关的对象
         /// </summary>
@@ -230,6 +239,7 @@ namespace Quick.Protocol
                     foreach (var item in instructionSet.NoticeInfos)
                     {
                         noticeTypeDict[item.NoticeTypeName] = item.GetNoticeType();
+                        typeSerializerContextDict[item.GetNoticeType()] = item.JsonSerializerContext;
                     }
                 }
                 //添加命令数据包信息
@@ -242,6 +252,8 @@ namespace Quick.Protocol
                         commandRequestTypeDict[item.RequestTypeName] = requestType;
                         commandResponseTypeDict[item.ResponseTypeName] = responseType;
                         commandRequestTypeResponseTypeDict[requestType] = responseType;
+                        typeSerializerContextDict[item.GetRequestType()] = item.JsonSerializerContext;
+                        typeSerializerContextDict[item.GetResponseType()] = item.JsonSerializerContext;
                     }
                 }
             }
@@ -386,7 +398,7 @@ namespace Quick.Protocol
                 });
                 sendPackageTask.ContinueWith(t => Interlocked.Decrement(ref PackageSendQueueCount));
                 return sendPackageTask;
-            }            
+            }
         }
 
         private async Task writePackage(Func<byte[], ArraySegment<byte>> getPackagePayloadFunc, Action afterSendHandler)
@@ -507,7 +519,8 @@ namespace Quick.Protocol
         /// </summary>
         public Task SendNoticePackage(object package)
         {
-            return SendNoticePackage(package.GetType().FullName, JsonSerializer.Serialize(package));
+            var type = package.GetType();
+            return SendNoticePackage(type.FullName, JsonSerializer.Serialize(package, type, getTypeSerializerContext(type)));
         }
 
         /// <summary>
@@ -519,7 +532,7 @@ namespace Quick.Protocol
         {
             var requestType = request.GetType();
             var typeName = requestType.FullName;
-            var requestContent = JsonSerializer.Serialize(request);
+            var requestContent = JsonSerializer.Serialize(request, requestType, getTypeSerializerContext(requestType));
             await SendCommandRequestPackage(CommandContext.GenerateNewId(), typeName, requestContent).ConfigureAwait(false);
         }
 
@@ -691,7 +704,7 @@ namespace Quick.Protocol
 
                 var currentRecvBuffer = recvBuffer;
                 //读取包头
-                var ret = await readData(stream, currentRecvBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH, token).ConfigureAwait(false);                
+                var ret = await readData(stream, currentRecvBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH, token).ConfigureAwait(false);
                 if (ret == 0)
                     throw new IOException("未读取到数据！");
                 if (ret < PACKAGE_TOTAL_LENGTH_LENGTH)
@@ -716,7 +729,7 @@ namespace Quick.Protocol
                     return nullArraySegment;
                 //读取包体
                 ret = await readData(stream, recvBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, packageBodyLength, token).ConfigureAwait(false);
-                
+
                 if (ret < packageBodyLength)
                     throw new ProtocolException(new ArraySegment<byte>(recvBuffer, 0, PACKAGE_HEAD_LENGTH + ret), $"包体读取错误！包体长度：{packageBodyLength}，读取数据长度：{ret}");
 
@@ -840,7 +853,8 @@ namespace Quick.Protocol
             //如果在字典中未找到此类型名称，则直接返回
             if (!noticeTypeDict.ContainsKey(typeName))
                 return;
-            var contentModel = JsonSerializer.Deserialize(content, noticeTypeDict[typeName]);
+            var noticeType = noticeTypeDict[typeName];
+            var contentModel = JsonSerializer.Deserialize(content, noticeType, getTypeSerializerContext(noticeType));
 
             //处理通知
             var hasNoticeHandler = false;
@@ -857,7 +871,7 @@ namespace Quick.Protocol
 
             //如果配置了触发NoticePackageReceived事件
             if (options.RaiseNoticePackageReceivedEvent)
-            {                
+            {
                 NoticePackageReceived?.Invoke(this, new NoticePackageReceivedEventArgs()
                 {
                     TypeName = typeName,
@@ -895,7 +909,7 @@ namespace Quick.Protocol
                 var cmdRequestType = commandRequestTypeDict[typeName];
                 var cmdResponseType = commandRequestTypeResponseTypeDict[cmdRequestType];
 
-                var contentModel = JsonSerializer.Deserialize(content, cmdRequestType);
+                var contentModel = JsonSerializer.Deserialize(content, cmdRequestType, getTypeSerializerContext(cmdRequestType));
                 CommandRequestPackageReceived?.Invoke(this, new CommandRequestPackageReceivedEventArgs()
                 {
                     CommandId = commandId,
@@ -911,7 +925,9 @@ namespace Quick.Protocol
                         {
                             hasCommandExecuter = true;
                             var responseModel = commandExecuterManager.ExecuteCommand(this, typeName, contentModel);
-                            SendCommandResponsePackage(commandId, 0, null, cmdResponseType.FullName, JsonSerializer.Serialize(responseModel));
+                            SendCommandResponsePackage(commandId, 0, null,
+                                cmdResponseType.FullName,
+                                JsonSerializer.Serialize(responseModel, cmdResponseType, getTypeSerializerContext(cmdResponseType)));
                             break;
                         }
                     }
@@ -957,7 +973,7 @@ namespace Quick.Protocol
             else
                 commandContext.SetResponse(new CommandException(code, message));
         }
-        
+
 
         protected void BeginNetstat(CancellationToken cancellationToken)
         {
@@ -1157,7 +1173,7 @@ namespace Quick.Protocol
         {
             var requestType = request.GetType();
             var typeName = requestType.FullName;
-            var requestContent = JsonSerializer.Serialize(request, requestType);
+            var requestContent = JsonSerializer.Serialize(request, requestType, getTypeSerializerContext(requestType));
 
             var commandContext = new CommandContext(typeName);
             commandDict.TryAdd(commandContext.Id, commandContext);
@@ -1192,7 +1208,8 @@ namespace Quick.Protocol
                     .WaitAsync(TimeSpan.FromMilliseconds(timeout))
                     .ConfigureAwait(false);
             }
-            return JsonSerializer.Deserialize<TCmdResponse>(ret.Content);
+            var responseType = typeof(TCmdResponse);
+            return (TCmdResponse)JsonSerializer.Deserialize(ret.Content, responseType, getTypeSerializerContext(responseType));
         }
     }
 }

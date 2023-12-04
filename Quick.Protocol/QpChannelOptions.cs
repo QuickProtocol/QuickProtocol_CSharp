@@ -9,6 +9,10 @@ namespace Quick.Protocol
     public abstract class QpChannelOptions
     {
         /// <summary>
+        /// 类型信息
+        /// </summary>
+        protected abstract JsonSerializerContext JsonSerializerContext { get; }
+        /// <summary>
         /// 内部是否压缩
         /// </summary>
         internal virtual bool InternalCompress { get; set; } = false;

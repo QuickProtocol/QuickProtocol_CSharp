@@ -4,8 +4,12 @@ using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.Tcp
 {
+    [JsonSerializable(typeof(QpTcpServerOptions))]
+    internal partial class QpTcpServerOptionsOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpTcpServerOptions : QpServerOptions
     {
+        protected override JsonSerializerContext JsonSerializerContext => QpTcpServerOptionsOptionsSerializerContext.Default;
         /// <summary>
         /// IP地址
         /// </summary>

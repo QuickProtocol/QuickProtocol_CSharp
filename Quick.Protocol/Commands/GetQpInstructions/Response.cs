@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Quick.Protocol.Commands.GetQpInstructions
+﻿namespace Quick.Protocol.Commands.GetQpInstructions
 {
     /// <summary>
     /// 获取全部指令集信息响应

@@ -2,11 +2,17 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.WebSocket.Client
 {
+    [JsonSerializable(typeof(QpWebSocketClientOptions))]
+    internal partial class QpWebSocketClientOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpWebSocketClientOptions : QpClientOptions
     {
+        protected override JsonSerializerContext JsonSerializerContext => QpWebSocketClientOptionsSerializerContext.Default;
+
         public const string URI_SCHEMA_WS = "qp.ws";
         public const string URI_SCHEMA_WSS = "qp.wss";
 

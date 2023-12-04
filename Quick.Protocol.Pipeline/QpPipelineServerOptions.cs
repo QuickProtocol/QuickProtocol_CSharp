@@ -1,11 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.Pipeline
 {
+    [JsonSerializable(typeof(QpPipelineServerOptions))]
+    internal partial class QpPipelineServerOptionsOptionsSerializerContext : JsonSerializerContext { }
+
     public class QpPipelineServerOptions : QpServerOptions
     {
+        protected override JsonSerializerContext JsonSerializerContext => QpPipelineServerOptionsOptionsSerializerContext.Default;
+
         public string PipeName { get; set; }
 
         public override void Check()
