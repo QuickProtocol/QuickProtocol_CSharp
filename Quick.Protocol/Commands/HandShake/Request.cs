@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Quick.Protocol.Model;
 using System.ComponentModel;
-using System.Text;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Commands.HandShake
 {
     [DisplayName("握手")]
-    public class Request : IQpCommandRequest<Response>
+    public class Request : AbstractQpModel<Request>, IQpCommandRequest<Response>
     {
+        protected override JsonTypeInfo<Request> TypeInfo => HandShakeCommandSerializerContext.Default.Request;
+
         /// <summary>
         /// 传输超时(默认15秒)
         /// </summary>

@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Quick.Protocol.Model;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Commands.Connect
 {
     /// <summary>
     /// 连接响应命令
     /// </summary>
-    public class Response
+    public class Response : AbstractQpModel<Response>
     {
+        protected override JsonTypeInfo<Response> TypeInfo => ConnectCommandSerializerContext.Default.Response;
+
         /// <summary>
         /// 缓存大小
         /// </summary>

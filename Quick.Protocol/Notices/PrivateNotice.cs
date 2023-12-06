@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Quick.Protocol.Model;
 using System.ComponentModel;
-using System.Text;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Notices
 {
     [DisplayName("私有通知")]
     [Description("用于传递私有协议通知。")]
-    public class PrivateNotice
+    public class PrivateNotice : AbstractQpModel<PrivateNotice>
     {
+        protected override JsonTypeInfo<PrivateNotice> TypeInfo => NoticesSerializerContext.Default.PrivateNotice;
+
         /// <summary>
         /// 动作
         /// </summary>
