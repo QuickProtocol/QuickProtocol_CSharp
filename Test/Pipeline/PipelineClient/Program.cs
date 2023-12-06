@@ -48,7 +48,7 @@ namespace PipelineClient
                             Action = "Echo",
                             Content = DateTime.Now.ToString()
                         });
-                    Console.WriteLine("SendCommand Success.Rep:" + JsonSerializer.Serialize(rep));
+                    Console.WriteLine("SendCommand Success.Rep:" + rep.Serialize(rep));
                 }
                 catch (Exception ex)
                 {

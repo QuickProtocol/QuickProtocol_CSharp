@@ -28,7 +28,7 @@ namespace PipelineServer
             noticeHandlerManager.Register<Quick.Protocol.Notices.PrivateNotice>(
                 (handler, notice) =>
                 {
-                    Console.WriteLine($"收到PrivateNotice: {JsonSerializer.Serialize(notice)}");
+                    Console.WriteLine($"收到PrivateNotice: {notice.Serialize(notice)}");
                 });
             var serverOptions = new Quick.Protocol.Pipeline.QpPipelineServerOptions()
             {

@@ -1,5 +1,4 @@
-﻿using Quick.Protocol.Model;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Commands.PrivateCommand
@@ -8,9 +7,9 @@ namespace Quick.Protocol.Commands.PrivateCommand
     /// 私有命令请求
     /// </summary>
     [DisplayName("私有命令")]
-    public class Request : AbstractQpModel<Request>, IQpCommandRequest<Response>
+    public class Request : AbstractQpSerializer<Request>, IQpCommandRequest<Request, Response>
     {
-        protected override JsonTypeInfo<Request> TypeInfo => PrivateCommandCommandSerializerContext.Default.Request;
+        protected override JsonTypeInfo<Request> GetTypeInfo() => PrivateCommandCommandSerializerContext.Default.Request;
         /// <summary>
         /// 动作
         /// </summary>

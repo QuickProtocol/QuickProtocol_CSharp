@@ -1,10 +1,9 @@
-﻿using Quick.Protocol.Model;
-using System.Text.Json.Serialization.Metadata;
+﻿using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Commands.HandShake
 {
-    public class Response : AbstractQpModel<Response>
+    public class Response : AbstractQpSerializer<Response>
     {
-        protected override JsonTypeInfo<Response> TypeInfo => HandShakeCommandSerializerContext.Default.Response;
+        protected override JsonTypeInfo<Response> GetTypeInfo() => HandShakeCommandSerializerContext.Default.Response;
     }
 }

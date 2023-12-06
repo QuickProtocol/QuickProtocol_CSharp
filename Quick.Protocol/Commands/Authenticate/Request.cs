@@ -1,13 +1,12 @@
-﻿using Quick.Protocol.Model;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Commands.Authenticate
 {
     [DisplayName("认证")]
-    public class Request : AbstractQpModel<Request>, IQpCommandRequest<Response>
+    public class Request : AbstractQpSerializer<Request>, IQpCommandRequest<Request, Response>
     {
-        protected override JsonTypeInfo<Request> TypeInfo => AuthenticateCommandSerializerContext.Default.Request;
+        protected override JsonTypeInfo<Request> GetTypeInfo() => AuthenticateCommandSerializerContext.Default.Request;
 
         /// 认证回答
         /// </summary>

@@ -1,8 +1,6 @@
-﻿using System.Text.Json;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Reflection;
-using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
 
 namespace Quick.Protocol
@@ -48,8 +46,10 @@ namespace Quick.Protocol
         [DisplayName("响应示例")]
         [ReadOnly(true)]
         public string ResponseTypeSchemaSample { get; set; }
-        private readonly JsonSerializerContext jsonSerializerContext;
-        public JsonSerializerContext GetJsonSerializerContext() => jsonSerializerContext;
+        private readonly IQpSerializer requestSerializer;
+        private readonly IQpSerializer responseSerializer;
+        public IQpSerializer GetRequestSeriliazer() => requestSerializer;
+        public IQpSerializer GetResponseSeriliazer() => responseSerializer;
 
         private readonly Type requestType;
 
@@ -59,19 +59,20 @@ namespace Quick.Protocol
         public QpCommandInfo(string name, string description,
             Type requestType, Type responseType,
             object defaultRequestTypeInstance, object defaultResponseTypeInstance,
-            JsonSerializerContext jsonSerializerContext)
+            IQpSerializer requestSerializer, IQpSerializer responseSerializer)
         {
             Name = name;
             Description = description;
-            this.jsonSerializerContext = jsonSerializerContext;
+            this.requestSerializer = requestSerializer;
+            this.responseSerializer = responseSerializer;
 
             this.requestType = requestType;
             RequestTypeName = requestType.FullName;
-            RequestTypeSchemaSample = JsonNode.Parse(JsonSerializer.Serialize(defaultRequestTypeInstance, requestType, jsonSerializerContext)).ToString();
+            RequestTypeSchemaSample = JsonNode.Parse(requestSerializer.Serialize(defaultRequestTypeInstance)).ToString();
 
             this.responseType = responseType;
             ResponseTypeName = responseType.FullName;
-            ResponseTypeSchemaSample = JsonNode.Parse(JsonSerializer.Serialize(defaultResponseTypeInstance, responseType, jsonSerializerContext)).ToString();
+            ResponseTypeSchemaSample = JsonNode.Parse(responseSerializer.Serialize(defaultResponseTypeInstance)).ToString();
         }
 
         /// <summary>
@@ -88,25 +89,32 @@ namespace Quick.Protocol
         /// <summary>
         /// 创建命令信息实例
         /// </summary>
+        /// <typeparam name="TRequest"></typeparam>
         /// <typeparam name="TResponse"></typeparam>
+        /// <param name="request"></param>
         /// <returns></returns>
-        public static QpCommandInfo Create<TResponse>(IQpCommandRequest<TResponse> request,JsonSerializerContext jsonSerializerContext)
-            where TResponse : class, new()
+        public static QpCommandInfo Create<TRequest, TResponse>(IQpCommandRequest<TRequest, TResponse> request)
+            where TRequest : IQpModel<TRequest>, IQpCommandRequest<TRequest, TResponse>, new()
+            where TResponse : IQpModel<TResponse>, new()
         {
-            return Create(request, new TResponse(), jsonSerializerContext);
+            return Create((TRequest)request, new TResponse());
         }
 
-        public static QpCommandInfo Create<TResponse>(IQpCommandRequest<TResponse> request, TResponse response, JsonSerializerContext jsonSerializerContext)
-            where TResponse : class, new()
+        public static QpCommandInfo Create<TRequest, TResponse>(TRequest request, TResponse response)
+            where TRequest : IQpModel<TRequest>, IQpCommandRequest<TRequest, TResponse>, new()
+            where TResponse : IQpModel<TResponse>, new()
         {
-            var requestType = request.GetType();
+            var requestType = typeof(TRequest);
             var responseType = typeof(TResponse);
             string name = null;
             if (name == null)
                 name = requestType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
             if (name == null)
                 name = requestType.FullName;
-            return new QpCommandInfo(name, requestType.GetCustomAttribute<DescriptionAttribute>()?.Description, requestType, responseType, request, response, jsonSerializerContext);
+            return new QpCommandInfo(name, requestType.GetCustomAttribute<DescriptionAttribute>()?.Description,
+                requestType, responseType,
+                request, response,
+                request, response);
         }
     }
 }

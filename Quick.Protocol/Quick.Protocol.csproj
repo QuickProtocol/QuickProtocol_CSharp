@@ -12,6 +12,7 @@
 		<Description>A simple protocol for TCP,Pipeline,SerialPort,WebSocket.</Description>
 		<PackageIcon>logo.png</PackageIcon>
 		<PackageTags>QuickProtocol</PackageTags>
+		<IsAotCompatible>true</IsAotCompatible>
 	</PropertyGroup>
 
 	<ItemGroup>

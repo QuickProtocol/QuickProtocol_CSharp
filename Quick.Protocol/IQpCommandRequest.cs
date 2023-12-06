@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Quick.Protocol
 {
-    public interface IQpCommandRequest<TResponse>
+    public interface IQpCommandRequest<TRequest, TResponse>
     {
     }
 }
