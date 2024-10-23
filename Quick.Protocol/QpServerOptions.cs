@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Text.Json.Serialization;
+using System.Buffers;
 
 namespace Quick.Protocol
 {
@@ -24,7 +25,7 @@ namespace Quick.Protocol
         /// 协议错误处理器
         /// </summary>
         [JsonIgnore]
-        public Action<Stream, ArraySegment<byte>> ProtocolErrorHandler { get; set; }
+        public Action<Stream, ReadOnlySequence<byte>> ProtocolErrorHandler { get; set; }
 
         /// <summary>
         /// 创建客户端实例
