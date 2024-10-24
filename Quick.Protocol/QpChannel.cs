@@ -51,9 +51,8 @@ namespace Quick.Protocol
         private readonly ICryptoTransform dec;
         private readonly Encoding encoding = Encoding.UTF8;
 
-        private Task sendPackageTask = Task.CompletedTask;
         //发送包锁对象
-        private readonly object SEND_PACKAGE_LOCK_OBJ = new object();
+        private readonly SemaphoreSlim sendLock = new SemaphoreSlim(1, 1);
         //断开连接锁对象
         private readonly object DISCONNECT_LOCK_OBJ = new object();
 
@@ -375,20 +374,23 @@ namespace Quick.Protocol
             Array.Copy(ret, 0, buffer, offset, sizeof(int));
         }
 
-        private Task writePackageAsync(Func<PipeWriter,Task<Tuple<QpPackageType, int>>> getPackagePayloadFunc, Action afterSendHandler)
+        
+
+        private async Task writePackageAsync(Func<PipeWriter,Task<Tuple<QpPackageType, int>>> getPackagePayloadFunc, Action afterSendHandler)
         {
-            Interlocked.Increment(ref PackageSendQueueCount);
-            lock (SEND_PACKAGE_LOCK_OBJ)
+            try
             {
-                _ = sendPackageTask = sendPackageTask.ContinueWith(t =>
-                {
-                    var stream = QpPackageHandler_Stream;
-                    if (stream == null)
-                        throw new IOException("Connection is disconnected.");
-                    writePackage(getPackagePayloadFunc, afterSendHandler).Wait();
-                });
-                _ = sendPackageTask.ContinueWith(t => Interlocked.Decrement(ref PackageSendQueueCount));
-                return sendPackageTask;
+                Interlocked.Increment(ref PackageSendQueueCount);
+                await sendLock.WaitAsync().ConfigureAwait(false);
+                var stream = QpPackageHandler_Stream;
+                if (stream == null)
+                    throw new IOException("Connection is disconnected.");
+                await writePackage(getPackagePayloadFunc, afterSendHandler).ConfigureAwait(false);
+            }
+            finally
+            {
+                sendLock.Release();
+                Interlocked.Decrement(ref PackageSendQueueCount);
             }
         }
 
