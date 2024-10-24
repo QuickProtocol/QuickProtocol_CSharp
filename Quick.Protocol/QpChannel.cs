@@ -275,17 +275,6 @@ namespace Quick.Protocol
             Disconnect();
         }
 
-        //获取空闲的缓存
-        private static byte[] getFreeBuffer(byte[] usingBuffer, params byte[][] bufferArray)
-        {
-            foreach (var buffer in bufferArray)
-            {
-                if (usingBuffer != buffer)
-                    return buffer;
-            }
-            return null;
-        }
-
         private async Task writePackageBuffer(Stream stream, QpPackageType packageType, ReadOnlySequence<byte> packageBodyBuffer, Action afterSendHandler)
         {
             /*
@@ -366,74 +355,59 @@ namespace Quick.Protocol
 
         private static void writePackageTotalLengthToBuffer(byte[] buffer, int offset, int packageTotalLength)
         {
-            //构造包头
-            var ret = BitConverter.GetBytes(packageTotalLength);
+            BitConverter.TryWriteBytes(new Span<byte>(buffer, offset, sizeof(int)), packageTotalLength);
             //如果是小端字节序，则交换
             if (BitConverter.IsLittleEndian)
-                Array.Reverse(ret);
-            Array.Copy(ret, 0, buffer, offset, sizeof(int));
+                Array.Reverse(buffer, offset, sizeof(int));
         }
 
-        
-
-        private async Task writePackageAsync(Func<PipeWriter,Task<Tuple<QpPackageType, int>>> getPackagePayloadFunc, Action afterSendHandler)
+        private async Task writePackageAsync(Func<PipeWriter, Task<Tuple<QpPackageType, int>>> getPackagePayloadFunc, Action afterSendHandler)
         {
             try
             {
-                Interlocked.Increment(ref PackageSendQueueCount);
+                if (options.EnableNetstat)
+                    Interlocked.Increment(ref PackageSendQueueCount);
                 await sendLock.WaitAsync().ConfigureAwait(false);
                 var stream = QpPackageHandler_Stream;
                 if (stream == null)
                     throw new IOException("Connection is disconnected.");
-                await writePackage(getPackagePayloadFunc, afterSendHandler).ConfigureAwait(false);
+
+                var ret = await getPackagePayloadFunc(sendPipe.Writer).ConfigureAwait(false);
+                var packageType = ret.Item1;
+                var packageBodyLength = ret.Item2;
+                var packageTotalLength = packageBodyLength + PACKAGE_HEAD_LENGTH;
+
+                if (packageTotalLength < PACKAGE_HEAD_LENGTH)
+                    throw new IOException($"包大小[{packageTotalLength}]小于包头长度[{PACKAGE_HEAD_LENGTH}]");
+                try
+                {
+                    ReadOnlySequence<byte> packageBuffer = default;
+                    if (packageBodyLength > 0)
+                    {
+                        var readRet = await sendPipe.Reader.ReadAtLeastAsync(packageBodyLength).ConfigureAwait(false);
+                        packageBuffer = readRet.Buffer;
+                    }
+                    await writePackageBuffer(stream,
+                        packageType,
+                        packageBuffer,
+                        afterSendHandler).ConfigureAwait(false);
+                    if (packageBodyLength > 0)
+                    {
+                        sendPipe.Reader.AdvanceTo(packageBuffer.End);
+                    }
+                    lastSendPackageTime = DateTime.Now;
+                }
+                catch (Exception ex)
+                {
+                    OnWriteError(ex);
+                    throw;
+                }
             }
             finally
             {
                 sendLock.Release();
-                Interlocked.Decrement(ref PackageSendQueueCount);
-            }
-        }
-
-        private async Task writePackage(Func<PipeWriter,Task<Tuple<QpPackageType, int>>> getPackagePayloadFunc, Action afterSendHandler)
-        {
-            var stream = QpPackageHandler_Stream;
-            if (stream == null)
-                throw new ArgumentNullException(nameof(QpPackageHandler_Stream));
-            var ret = await getPackagePayloadFunc(sendPipe.Writer).ConfigureAwait(false);
-            var packageType = ret.Item1;
-            var packageBodyLength = ret.Item2;
-            var packageTotalLength = packageBodyLength + PACKAGE_HEAD_LENGTH;
-
-            if (packageTotalLength < PACKAGE_HEAD_LENGTH)
-                throw new IOException($"包大小[{packageTotalLength}]小于包头长度[{PACKAGE_HEAD_LENGTH}]");
-            try
-            {
-                ReadOnlySequence<byte> packageBuffer = default;
-                if (packageBodyLength > 0)
-                {
-                    var readRet = await sendPipe.Reader.ReadAtLeastAsync(packageBodyLength).ConfigureAwait(false);
-                    packageBuffer = readRet.Buffer;
-
-                    await writePackageBuffer(stream,
-                        packageType,
-                        packageBuffer,
-                        afterSendHandler).ConfigureAwait(false);
-                    sendPipe.Reader.AdvanceTo(packageBuffer.End);
-                }
-                else
-                {
-                    await writePackageBuffer(stream,
-                        packageType,
-                        packageBuffer,
-                        afterSendHandler).ConfigureAwait(false);
-                }
-
-                lastSendPackageTime = DateTime.Now;
-            }
-            catch (Exception ex)
-            {
-                OnWriteError(ex);
-                throw;
+                if (options.EnableNetstat)
+                    Interlocked.Decrement(ref PackageSendQueueCount);
             }
         }
 
