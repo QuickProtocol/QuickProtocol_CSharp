@@ -275,29 +275,36 @@ namespace Quick.Protocol
             Disconnect();
         }
 
+        private Pipe writeCompressPipe = new Pipe();
+
         private async Task writePackageBuffer(Stream stream, QpPackageType packageType, ReadOnlySequence<byte> packageBodyBuffer, Action afterSendHandler)
         {
-            /*
+            Pipe currentPipe = null;
+            var packageTotalLength = 0;
+            Memory<byte> packageHeadMemory = default;
             //如果压缩或者加密
             if (options.InternalCompress || options.InternalEncrypt)
             {
                 //如果压缩
                 if (options.InternalCompress)
                 {
-                    var currentBuffer = getFreeBuffer(packageBuffer.Array, sendBuffer, sendBuffer2);
-                    using (var ms = new MemoryStream(currentBuffer))
+                    using (var inStream = packageBodyBuffer.AsStream())
+                    using (var outStream = writeCompressPipe.Writer.AsStream(true))
+                    using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))
                     {
-                        //写入包长度
-                        for (var i = 0; i < PACKAGE_TOTAL_LENGTH_LENGTH; i++)
-                            ms.WriteByte(0);
-                        using (var gzStream = new GZipStream(ms, CompressionMode.Compress, true))
-                            await gzStream.WriteAsync(packageBuffer.Array, packageBuffer.Offset + PACKAGE_TOTAL_LENGTH_LENGTH, packageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH)
-                                .ConfigureAwait(false);
-                        var packageTotalLength = Convert.ToInt32(ms.Position);
-                        writePackageTotalLengthToBuffer(currentBuffer, 0, packageTotalLength);
-                        packageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
+                        gzStream.WriteByte((byte)packageType);
+                        await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
                     }
+                    currentPipe = writeCompressPipe;
+                    var readRet = await writeCompressPipe.Reader.ReadAsync().ConfigureAwait(false);
+                    packageBodyBuffer = readRet.Buffer;
+                    var packageBodyLength = Convert.ToInt32(packageBodyBuffer.Length);
+                    //准备包头
+                    packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + packageBodyLength;
+                    writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
+                    packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
                 }
+                /*
                 //如果加密
                 if (options.InternalEncrypt)
                 {
@@ -309,18 +316,20 @@ namespace Quick.Protocol
                     Array.Copy(retBuffer, 0, currentBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, retBuffer.Length);
                     packageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
                 }
+                */
             }
-            */
-
+            else
+            {
+                //准备包头
+                packageTotalLength = PACKAGE_HEAD_LENGTH + Convert.ToInt32(packageBodyBuffer.Length);
+                writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
+                sendHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH] = (byte)packageType;
+                packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_HEAD_LENGTH);
+            }
             //执行AfterSendHandler
             afterSendHandler?.Invoke();
-
             //写入包头
-            var packageTotalLength = PACKAGE_HEAD_LENGTH + Convert.ToInt32(packageBodyBuffer.Length);
-            writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
-            sendHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH] = (byte)packageType;
-            await stream.WriteAsync(sendHeadBuffer).ConfigureAwait(false);
-
+            await stream.WriteAsync(packageHeadMemory).ConfigureAwait(false);
             //如果有包内容，写入包内容
             if (packageBodyBuffer.Length > 0)
             {
@@ -337,7 +346,7 @@ namespace Quick.Protocol
 
             if (options.EnableNetstat)
             {
-                BytesSent += packageBodyBuffer.Length;
+                BytesSent += packageHeadMemory.Length + packageBodyBuffer.Length;
                 if (BytesSent > LONG_HALF_MAX_VALUE)
                     BytesSent = 0;
             }
@@ -350,6 +359,8 @@ namespace Quick.Protocol
                     LogUtils.LogContent ?
                         BitConverter.ToString(sendHeadBuffer.Concat(packageBodyBuffer.ToArray()).ToArray())
                         : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+            if (currentPipe != null)
+                currentPipe.Reader.AdvanceTo(packageBodyBuffer.End);
             await stream.FlushAsync().ConfigureAwait(false);
         }
 
@@ -911,13 +922,18 @@ namespace Quick.Protocol
                             packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH;
 
                             //开始解压
-                            var compressedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH);                            
+                            var compressedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH);
                             using (var readMs = compressedBuffer.AsStream())
                             using (var gzStream = new GZipStream(readMs, CompressionMode.Decompress, true))
-                            {   
-                                var count = await gzStream.ReadAsync(decompressPipe.Writer.GetMemory(minimumBufferSize),token).ConfigureAwait(false);
-                                decompressPipe.Writer.Advance(count);
-                                packageTotalLength += count;
+                            {
+                                while (true)
+                                {
+                                    var count = await gzStream.ReadAsync(decompressPipe.Writer.GetMemory(minimumBufferSize), token).ConfigureAwait(false);
+                                    if (count <= 0)
+                                        break;
+                                    decompressPipe.Writer.Advance(count);
+                                    packageTotalLength += count;
+                                }
                             }
                             await decompressPipe.Writer.FlushAsync().ConfigureAwait(false);
                             //解压完成，释放缓存
