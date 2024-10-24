@@ -37,6 +37,7 @@ namespace Quick.Protocol
             Pipe currentPipe = null;
             var packageTotalLength = 0;
             Memory<byte> packageHeadMemory = default;
+
             //如果压缩或者加密
             if (options.InternalCompress || options.InternalEncrypt)
             {
@@ -45,17 +46,16 @@ namespace Quick.Protocol
                 {
                     using (var inStream = packageBodyBuffer.AsStream())
                     using (var outStream = writeCompressPipe.Writer.AsStream(true))
-                    using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))
-                    {
-                        gzStream.WriteByte((byte)packageType);
+                    using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))                    
                         await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
-                    }
+
                     currentPipe = writeCompressPipe;
                     var readRet = await writeCompressPipe.Reader.ReadAsync().ConfigureAwait(false);
                     packageBodyBuffer = readRet.Buffer;
                     var packageBodyLength = Convert.ToInt32(packageBodyBuffer.Length);
-                    //准备包头
+                    //包总长度
                     packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + packageBodyLength;
+                    //准备包头
                     writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
                     packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
                 }
@@ -75,16 +75,17 @@ namespace Quick.Protocol
             }
             else
             {
+                //包总长度
+                packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + Convert.ToInt32(packageBodyBuffer.Length);
                 //准备包头
-                packageTotalLength = PACKAGE_HEAD_LENGTH + Convert.ToInt32(packageBodyBuffer.Length);
                 writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
-                sendHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH] = (byte)packageType;
-                packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_HEAD_LENGTH);
+                packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
             }
             //执行AfterSendHandler
             afterSendHandler?.Invoke();
             //写入包头
             await stream.WriteAsync(packageHeadMemory).ConfigureAwait(false);
+
             //如果有包内容，写入包内容
             if (packageBodyBuffer.Length > 0)
             {
@@ -185,7 +186,10 @@ namespace Quick.Protocol
         {
             return writePackageAsync(writer =>
             {
-                return Task.FromResult(new Tuple<QpPackageType, int>(QpPackageType.Heartbeat, 0));
+                //写入包类型
+                writer.GetSpan(1)[0] = (byte)QpPackageType.Heartbeat;
+                writer.Advance(1);
+                return Task.FromResult(new Tuple<QpPackageType, int>(QpPackageType.Heartbeat, 1));
             }, null);
         }
 
@@ -193,9 +197,13 @@ namespace Quick.Protocol
         {
             return writePackageAsync(async writer =>
             {
+                //写入包类型
+                writer.GetSpan(1)[0] = (byte)QpPackageType.Notice;
+                writer.Advance(1);
+
                 var typeName = noticePackageTypeName;
                 var content = noticePackageContent;
-                var bodyLength = 0;
+                var bodyLength = 1;
                 //写入类名和长度
                 {
                     var typeNameByteLength = encoding.GetByteCount(typeName);
@@ -237,7 +245,11 @@ namespace Quick.Protocol
         {
             return writePackageAsync(async writer =>
             {
-                var bodyLength = 0;
+                //写入包类型
+                writer.GetSpan(1)[0] = (byte)QpPackageType.CommandRequest;
+                writer.Advance(1);
+
+                var bodyLength = 1;
                 //写入指令编号
                 {
                     var commandIdLength = commandId.Length / 2;
@@ -279,7 +291,11 @@ namespace Quick.Protocol
         {
             return writePackageAsync(async writer =>
             {
-                var bodyLength = 0;
+                //写入包类型
+                writer.GetSpan(1)[0] = (byte)QpPackageType.CommandResponse;
+                writer.Advance(1);
+
+                var bodyLength = 1;
                 //写入指令编号
                 {
                     var commandIdLength = commandId.Length / 2;

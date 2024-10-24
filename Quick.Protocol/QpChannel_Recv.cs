@@ -235,11 +235,14 @@ namespace Quick.Protocol
                                 decryptPipe.Writer.Advance(finalData.Length);
                                 packageTotalLength += finalData.Length;
                             }
-                            await decryptPipe.Writer.FlushAsync().ConfigureAwait(false);
+                            _ = Task.Run(async () =>
+                            {                                
+                                await decryptPipe.Writer.FlushAsync().ConfigureAwait(false);
+                            });
+                            ret = await decryptPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
                             //解密完成，释放缓存
                             currentReader.AdvanceTo(packageBuffer.End);
 
-                            ret = await decryptPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
                             packageBuffer = ret.Buffer;
                             currentReader = decryptPipe.Reader;
                         }
@@ -270,11 +273,13 @@ namespace Quick.Protocol
                                     packageTotalLength += count;
                                 }
                             }
-                            await decompressPipe.Writer.FlushAsync().ConfigureAwait(false);
+                            _ = Task.Run(async () =>
+                            {
+                                await decompressPipe.Writer.FlushAsync().ConfigureAwait(false);
+                            });
+                            ret = await decompressPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
                             //解压完成，释放缓存
                             currentReader.AdvanceTo(packageBuffer.End);
-
-                            ret = await decompressPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
                             packageBuffer = ret.Buffer;
                             currentReader = decompressPipe.Reader;
                         }
