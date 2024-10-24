@@ -23,7 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="System.IO.Pipelines" Version="8.0.0" />
+	  <PackageReference Include="Nerdbank.Streams" Version="2.11.79" />
 	</ItemGroup>
 
 </Project>

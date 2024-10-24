@@ -15,6 +15,7 @@ using System.Text.Json.Serialization;
 using System.IO.Pipelines;
 using System.Buffers;
 using System.Collections.ObjectModel;
+using Nerdbank.Streams;
 
 namespace Quick.Protocol
 {
@@ -894,7 +895,8 @@ namespace Quick.Protocol
             Pipe decryptPipe = null;
             byte[] decryptBuffer1 = null;
             byte[] decryptBuffer2 = null;
-            //Pipe decompressPipe = null;
+            //解压相关变量
+            Pipe decompressPipe = null;
             try
             {
                 while (!token.IsCancellationRequested)
@@ -918,9 +920,10 @@ namespace Quick.Protocol
                     //如果设置了压缩或者加密
                     if (options.InternalCompress || options.InternalEncrypt)
                     {
-                        //如果设置了加密，则先解密
+                        //如果设置了加密
                         if (options.InternalEncrypt)
                         {
+                            //准备管道
                             if (decryptPipe == null)
                             {
                                 decryptPipe = new Pipe();
@@ -960,30 +963,35 @@ namespace Quick.Protocol
                             currentReader = decryptPipe.Reader;
                         }
 
-                        /*
-                        //如果设置了压缩，则先解压
+                        //如果设置了压缩
                         if (options.InternalCompress)
                         {
-                            var retBuffer = getFreeBuffer(currentPackageBuffer.Array, recvBuffer, recvBuffer2);
-                            var count = 0;
-                            using (var readMs = new MemoryStream(currentPackageBuffer.Array, PACKAGE_TOTAL_LENGTH_LENGTH + currentPackageBuffer.Offset, currentPackageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH, false))
-                            using (var writeMs = new MemoryStream(retBuffer, 0, retBuffer.Length))
-                            {
-                                using (var gzStream = new GZipStream(readMs, CompressionMode.Decompress, true))
-                                    gzStream.CopyTo(writeMs);
-                                count = Convert.ToInt32(writeMs.Position);
-                            }
-                            var currentBuffer = getFreeBuffer(retBuffer, recvBuffer, recvBuffer2);
-                            packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + count;
-                            writePackageTotalLengthToBuffer(currentBuffer, 0, packageTotalLength);
-                            Array.Copy(retBuffer, 0, currentBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, count);
-                            currentPackageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
-                        }
-                        */
-                    }
-                    else
-                    {
+                            //准备管道
+                            if (decompressPipe == null)
+                                decompressPipe = new Pipe();
 
+                            //写入包头
+                            decompressPipe.Writer.GetMemory(PACKAGE_TOTAL_LENGTH_LENGTH);
+                            decompressPipe.Writer.Advance(PACKAGE_TOTAL_LENGTH_LENGTH);
+                            packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH;
+
+                            //开始解压
+                            var compressedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH);                            
+                            using (var readMs = compressedBuffer.AsStream())
+                            using (var gzStream = new GZipStream(readMs, CompressionMode.Decompress, true))
+                            {   
+                                var count = await gzStream.ReadAsync(decompressPipe.Writer.GetMemory(minimumBufferSize),token).ConfigureAwait(false);
+                                decompressPipe.Writer.Advance(count);
+                                packageTotalLength += count;
+                            }
+                            await decompressPipe.Writer.FlushAsync().ConfigureAwait(false);
+                            //解压完成，释放缓存
+                            currentReader.AdvanceTo(packageBuffer.End);
+
+                            ret = await decompressPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
+                            packageBuffer = ret.Buffer;
+                            currentReader = decompressPipe.Reader;
+                        }
                     }
 
                     //包类型
