@@ -22,7 +22,6 @@ namespace WebApplication1.Core
             app.UseQuickProtocol(new Quick.Protocol.WebSocket.Server.AspNetCore.QpWebSocketServerOptions()
             {
                 Path = "/qp_test",
-                BufferSize = 128,
                 Password = "HelloQP",
                 ServerProgram = nameof(WebApplication1) + " 1.0"
             }, out server);
