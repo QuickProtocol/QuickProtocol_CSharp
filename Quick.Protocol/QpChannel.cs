@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 using System.IO.Pipelines;
 using System.Buffers;
+using System.Collections.ObjectModel;
 
 namespace Quick.Protocol
 {
@@ -36,7 +37,6 @@ namespace Quick.Protocol
         /// 心跳包
         /// </summary>
         private static readonly byte[] HEARTBEAT_PACKAGHE = new byte[] { 0, 0, 0, 5, 0 };
-        private static readonly ArraySegment<byte> nullArraySegment = new ArraySegment<byte>();
         private const int minimumBufferSize = 1024;
 
         //发送缓存
@@ -854,115 +854,159 @@ namespace Quick.Protocol
 
         private async Task FillRecvPipeAsync(Stream stream, PipeWriter writer, CancellationToken token)
         {
-            while (!token.IsCancellationRequested)
+            try
             {
-                Memory<byte> memory = writer.GetMemory(minimumBufferSize);
-                try
+                while (!token.IsCancellationRequested)
                 {
+                    Memory<byte> memory = writer.GetMemory(minimumBufferSize);
                     int bytesRead = await stream.ReadAsync(memory, token);
                     if (bytesRead == 0)
                         break;
                     writer.Advance(bytesRead);
+                    await writer.FlushAsync(token);
                 }
-                catch (Exception ex)
-                {
-                    OnReadError(ex);
-                    break;
-                }
-                FlushResult result = await writer.FlushAsync(token);
-                if (result.IsCompleted)
-                    break;
             }
+            catch (Exception ex)
+            {
+                OnReadError(ex);
+            }
+        }
+
+        //解析包总长度
+        private int parsePackageTotalLength(ReadOnlySequence<byte> sequence, byte[] buffer)
+        {
+            sequence.Slice(0, PACKAGE_TOTAL_LENGTH_LENGTH).CopyTo(buffer);
+            var packageTotalLength = ByteUtils.B2I_BE(buffer, 0);
+            if (packageTotalLength < PACKAGE_HEAD_LENGTH)
+                throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]必须大于等于{PACKAGE_HEAD_LENGTH}！");
+            if (packageTotalLength > BufferSize)
+                throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"数据包总长度[{packageTotalLength}]大于缓存大小[{BufferSize}]");
+            return packageTotalLength;
         }
 
         private async Task ReadRecvPipeAsync(PipeReader recvReader, CancellationToken token)
         {
             //暂存包头缓存
             var packageHeadBuffer = new byte[PACKAGE_HEAD_LENGTH];
+            //包总长度
+            var packageTotalLength = 0;
+            //解密相关变量
             Pipe decryptPipe = null;
-            Pipe decompressPipe = null;
-
-            while (!token.IsCancellationRequested)
+            byte[] decryptBuffer1 = null;
+            byte[] decryptBuffer2 = null;
+            //Pipe decompressPipe = null;
+            try
             {
-                var currentReader = recvReader;
-                var ret = await currentReader.ReadAtLeastAsync(PACKAGE_HEAD_LENGTH, token).ConfigureAwait(false);
-                if(ret.IsCanceled)
-                    return;
-
-                ret.Buffer.Slice(0, PACKAGE_TOTAL_LENGTH_LENGTH).CopyTo(packageHeadBuffer);
-                currentReader.AdvanceTo(ret.Buffer.Start);
-
-                //包总长度
-                var packageTotalLength = ByteUtils.B2I_BE(packageHeadBuffer, 0);
-                if (packageTotalLength < PACKAGE_HEAD_LENGTH)
-                    throw new ProtocolException(new ReadOnlySequence<byte>(packageHeadBuffer), $"包长度[{packageTotalLength}]必须大于等于{PACKAGE_HEAD_LENGTH}！");
-                if (packageTotalLength > BufferSize)
-                    throw new ProtocolException(new ReadOnlySequence<byte>(packageHeadBuffer), $"数据包总长度[{packageTotalLength}]大于缓存大小[{BufferSize}]");
-
-                //读取完整包
-                ret = await recvReader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
-                if(ret.IsCanceled)
-                    return;
-                var packageBuffer = ret.Buffer.Slice(0, packageTotalLength);
-
-                //如果设置了压缩或者加密
-                if (options.InternalCompress || options.InternalEncrypt)
+                while (!token.IsCancellationRequested)
                 {
-                    /*
-                    //如果设置了加密，则先解密
-                    if (options.InternalEncrypt)
-                    {
-                        if(decryptPipe==null)
-                            decryptPipe=new Pipe();
+                    var currentReader = recvReader;
+                    var ret = await currentReader.ReadAtLeastAsync(PACKAGE_HEAD_LENGTH, token).ConfigureAwait(false);
+                    if (ret.IsCanceled)
+                        return;
+                    //解析包总长度
+                    packageTotalLength = parsePackageTotalLength(ret.Buffer, packageHeadBuffer);
+                    currentReader.AdvanceTo(ret.Buffer.Start);
 
-                        var retBuffer = dec.TransformFinalBlock(currentPackageBuffer.Array, PACKAGE_TOTAL_LENGTH_LENGTH + currentPackageBuffer.Offset, currentPackageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH);
-                        var currentBuffer = getFreeBuffer(currentPackageBuffer.Array, recvBuffer, recvBuffer2);
-                        packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + retBuffer.Length;
-                        writePackageTotalLengthToBuffer(currentBuffer, 0, packageTotalLength);
-                        Array.Copy(retBuffer, 0, currentBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, retBuffer.Length);
-                        currentPackageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
-                    }
-                    //如果设置了压缩，则先解压
-                    if (options.InternalCompress)
+                    //读取完整包
+                    ret = await recvReader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
+                    if (ret.IsCanceled)
+                        return;
+                    if (ret.Buffer.Length < packageTotalLength)
+                        throw new ProtocolException(ret.Buffer, $"包读取错误！包总长度：{packageTotalLength}，读取数据长度：{ret.Buffer.Length}");
+                    var packageBuffer = ret.Buffer.Slice(0, packageTotalLength);
+
+                    //如果设置了压缩或者加密
+                    if (options.InternalCompress || options.InternalEncrypt)
                     {
-                        var retBuffer = getFreeBuffer(currentPackageBuffer.Array, recvBuffer, recvBuffer2);
-                        var count = 0;
-                        using (var readMs = new MemoryStream(currentPackageBuffer.Array, PACKAGE_TOTAL_LENGTH_LENGTH + currentPackageBuffer.Offset, currentPackageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH, false))
-                        using (var writeMs = new MemoryStream(retBuffer, 0, retBuffer.Length))
+                        //如果设置了加密，则先解密
+                        if (options.InternalEncrypt)
                         {
-                            using (var gzStream = new GZipStream(readMs, CompressionMode.Decompress, true))
-                                gzStream.CopyTo(writeMs);
-                            count = Convert.ToInt32(writeMs.Position);
+                            if (decryptPipe == null)
+                            {
+                                decryptPipe = new Pipe();
+                                decryptBuffer1 = new byte[1024];
+                                decryptBuffer2 = new byte[1024];
+                            }
+
+                            //写入包头
+                            decryptPipe.Writer.GetMemory(PACKAGE_TOTAL_LENGTH_LENGTH);
+                            decryptPipe.Writer.Advance(PACKAGE_TOTAL_LENGTH_LENGTH);
+                            packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH;
+
+                            //开始解密
+                            var encryptedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH);
+                            while (encryptedBuffer.Length > 0)
+                            {
+                                var inLength = Math.Min(decryptBuffer1.Length, (int)encryptedBuffer.Length);
+                                encryptedBuffer.Slice(0, inLength).CopyTo(decryptBuffer1);
+                                var outLength = dec.TransformBlock(decryptBuffer1, 0, inLength, decryptBuffer2, 0);
+                                decryptBuffer2.CopyTo(decryptPipe.Writer.GetMemory(outLength));
+                                decryptPipe.Writer.Advance(outLength);
+                                encryptedBuffer = encryptedBuffer.Slice(inLength);
+                                packageTotalLength += outLength;
+                            }
+                            {
+                                var finalData = dec.TransformFinalBlock(decryptBuffer1, 0, 0);
+                                finalData.CopyTo(decryptPipe.Writer.GetMemory(finalData.Length));
+                                decryptPipe.Writer.Advance(finalData.Length);
+                                packageTotalLength += finalData.Length;
+                            }
+                            await decryptPipe.Writer.FlushAsync().ConfigureAwait(false);
+                            //解密完成，释放缓存
+                            currentReader.AdvanceTo(packageBuffer.End);
+
+                            ret = await decryptPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
+                            packageBuffer = ret.Buffer;
+                            currentReader = decryptPipe.Reader;
                         }
-                        var currentBuffer = getFreeBuffer(retBuffer, recvBuffer, recvBuffer2);
-                        packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + count;
-                        writePackageTotalLengthToBuffer(currentBuffer, 0, packageTotalLength);
-                        Array.Copy(retBuffer, 0, currentBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, count);
-                        currentPackageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
+
+                        /*
+                        //如果设置了压缩，则先解压
+                        if (options.InternalCompress)
+                        {
+                            var retBuffer = getFreeBuffer(currentPackageBuffer.Array, recvBuffer, recvBuffer2);
+                            var count = 0;
+                            using (var readMs = new MemoryStream(currentPackageBuffer.Array, PACKAGE_TOTAL_LENGTH_LENGTH + currentPackageBuffer.Offset, currentPackageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH, false))
+                            using (var writeMs = new MemoryStream(retBuffer, 0, retBuffer.Length))
+                            {
+                                using (var gzStream = new GZipStream(readMs, CompressionMode.Decompress, true))
+                                    gzStream.CopyTo(writeMs);
+                                count = Convert.ToInt32(writeMs.Position);
+                            }
+                            var currentBuffer = getFreeBuffer(retBuffer, recvBuffer, recvBuffer2);
+                            packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + count;
+                            writePackageTotalLengthToBuffer(currentBuffer, 0, packageTotalLength);
+                            Array.Copy(retBuffer, 0, currentBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, count);
+                            currentPackageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
+                        }
+                        */
                     }
-                    */
+                    else
+                    {
+
+                    }
+
+                    //包类型
+                    packageBuffer.Slice(0, PACKAGE_HEAD_LENGTH).CopyTo(packageHeadBuffer);
+                    var packageType = (QpPackageType)packageHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH];
+
+                    if (LogUtils.LogPackage)
+                        LogUtils.Log(
+                        "{0}: [Recv-Package]Length:{1}，Type:{2}，Content:{3}",
+                        DateTime.Now,
+                        packageTotalLength,
+                        packageType,
+                        LogUtils.LogContent ?
+                            BitConverter.ToString(packageBuffer.ToArray())
+                            : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                    HandlePackage(packageType, packageBuffer);
+                    currentReader.AdvanceTo(packageBuffer.End);
                 }
-                else
-                {
-
-                }
-
-                //包类型
-                packageBuffer.Slice(0,PACKAGE_HEAD_LENGTH).CopyTo(packageHeadBuffer);
-                var packageType = (QpPackageType)packageHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH];
-
-                if (LogUtils.LogPackage)
-                    LogUtils.Log(
-                    "{0}: [Recv-Package]Length:{1}，Type:{2}，Content:{3}",
-                    DateTime.Now,
-                    packageTotalLength,
-                    packageType,
-                    LogUtils.LogContent ?
-                        BitConverter.ToString(packageBuffer.ToArray())
-                        : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-                HandlePackage(packageType, packageBuffer);
-                currentReader.AdvanceTo(packageBuffer.End);
-           }
+            }
+            catch (Exception ex)
+            {
+                OnReadError(ex);
+            }
         }
 
         protected void HandlePackage(QpPackageType packageType, ReadOnlySequence<byte> packageBuffer)
@@ -1000,7 +1044,10 @@ namespace Quick.Protocol
 
                         var typeNameLength = bodyBuffer.First.Span[0];
                         bodyBuffer = bodyBuffer.Slice(1);
-
+                        if(bodyBuffer.Length<typeNameLength)
+                        {
+                            throw new IOException($"bodyBuffer.Length:{bodyBuffer.Length} < TypeNameLength: {typeNameLength}，Content:{encoding.GetString(bodyBuffer)}");
+                        }
                         var typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
                         bodyBuffer = bodyBuffer.Slice(typeNameLength);
 
@@ -1030,6 +1077,10 @@ namespace Quick.Protocol
                             var typeNameLength = bodyBuffer.First.Span[0];
                             bodyBuffer = bodyBuffer.Slice(1);
 
+                            if (bodyBuffer.Length < typeNameLength)
+                            {
+                                throw new IOException($"bodyBuffer.Length:{bodyBuffer.Length} < TypeNameLength: {typeNameLength}，Content:{encoding.GetString(bodyBuffer)}");
+                            }
                             typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
                             bodyBuffer = bodyBuffer.Slice(typeNameLength);
 
