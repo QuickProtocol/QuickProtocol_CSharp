@@ -16,6 +16,15 @@ namespace Quick.Protocol.Utils
             return buffer;
         }
 
+        public static void HexDecode(string data,Memory<byte> memory)
+        {
+            var span = memory.Span;
+            for (var i = 0; i < data.Length; i += 2)
+            {
+                span[i / 2] = byte.Parse(data.Substring(i, 2), System.Globalization.NumberStyles.HexNumber);
+            }
+        }
+
         /// <summary>
         /// 字节数组 -> 整型数字(4字节)(大端字节序)
         /// </summary>

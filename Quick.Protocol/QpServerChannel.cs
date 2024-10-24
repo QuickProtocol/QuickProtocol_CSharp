@@ -41,8 +41,6 @@ namespace Quick.Protocol
 
             cts = new CancellationTokenSource();
             cancellationToken.Register(() => Stop());
-            //修改缓存大小
-            ChangeBufferSize(options.BufferSize);
 
             //初始化连接相关指令处理器
             var connectAndAuthCommandExecuterManager = new CommandExecuterManager();
@@ -62,7 +60,7 @@ namespace Quick.Protocol
 
             //如果认证超时时间后没有通过认证，则断开连接
             if (options.AuthenticateTimeout > 0)
-                Task.Delay(options.AuthenticateTimeout, token).ContinueWith(t =>
+                _ = Task.Delay(options.AuthenticateTimeout, token).ContinueWith(t =>
                 {
                     //如果已经取消或者已经连接
                     if (t.IsCanceled
@@ -98,7 +96,6 @@ namespace Quick.Protocol
             AuthenticateQuestion = Guid.NewGuid().ToString("N");
             return new Commands.Connect.Response()
             {
-                BufferSize = options.BufferSize,
                 Question = AuthenticateQuestion
             };
         }
@@ -107,7 +104,7 @@ namespace Quick.Protocol
         {
             if (Utils.CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + options.Password) != request.Answer)
             {
-                Task.Delay(1000).ContinueWith(t =>
+                _ = Task.Delay(1000).ContinueWith(t =>
                 {
                     Stop();
                 });

@@ -48,10 +48,6 @@ namespace Quick.Protocol
             }).ConfigureAwait(false);
             AuthenticateQuestion = repConnect.Question;
 
-            //如果服务端使用的缓存大小与客户端不同，则设置缓存大小为与服务端同样的大小
-            if (BufferSize != repConnect.BufferSize)
-                ChangeBufferSize(repConnect.BufferSize);
-            
             var repAuth = await SendCommand(new Commands.Authenticate.Request()
             {
                 Answer = CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password)
