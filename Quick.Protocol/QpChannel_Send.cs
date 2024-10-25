@@ -58,9 +58,9 @@ namespace Quick.Protocol
 
                     var readRet = await writeCompressPipe.Reader.ReadAsync().ConfigureAwait(false);
                     packageBodyBuffer = readRet.Buffer;
-                    var packageBodyLength = Convert.ToInt32(packageBodyBuffer.Length);
+
                     //包总长度
-                    packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + packageBodyLength;
+                    packageTotalLength += PACKAGE_TOTAL_LENGTH_LENGTH;
                     //准备包头
                     writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
                     packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
@@ -105,21 +105,24 @@ namespace Quick.Protocol
                                 finnalInLength = 1;
                             }
                             var finalData = dec.TransformFinalBlock(encryptBuffer1, 0, finnalInLength);
-                            finalData.CopyTo(encryptPipe.Writer.GetMemory(finalData.Length));
-                            encryptPipe.Writer.Advance(finalData.Length);
-                            packageTotalLength += finalData.Length;
+                            if (finalData.Length > 0)
+                            {
+                                finalData.CopyTo(encryptPipe.Writer.GetMemory(finalData.Length));
+                                encryptPipe.Writer.Advance(finalData.Length);
+                                packageTotalLength += finalData.Length;
+                            }
                         }
                         _ = Task.Run(async () =>
                         {
-                            await encryptPipe.Writer.FlushAsync().ConfigureAwait(false);
-                            currentReader.AdvanceTo(packageBodyBuffer.End);
+                            await encryptPipe.Writer.FlushAsync().ConfigureAwait(false);                            
                         });
 
                         var readRet = await encryptPipe.Reader.ReadAtLeastAsync(packageTotalLength).ConfigureAwait(false);
+                        currentReader.AdvanceTo(packageBodyBuffer.End);
+
                         packageBodyBuffer = readRet.Buffer;
-                        var packageBodyLength = Convert.ToInt32(packageBodyBuffer.Length);
                         //包总长度
-                        packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + packageBodyLength;
+                        packageTotalLength += PACKAGE_TOTAL_LENGTH_LENGTH;
                         //准备包头
                         writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
                         packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
@@ -191,7 +194,7 @@ namespace Quick.Protocol
             {
                 if (options.EnableNetstat)
                     Interlocked.Increment(ref PackageSendQueueCount);
-                await sendLock.WaitAsync().ConfigureAwait(false);
+                await sendLock.WaitAsync(5000).ConfigureAwait(false);
                 var stream = QpPackageHandler_Stream;
                 if (stream == null)
                     throw new IOException("Connection is disconnected.");
@@ -203,22 +206,20 @@ namespace Quick.Protocol
 
                 if (packageTotalLength < PACKAGE_HEAD_LENGTH)
                     throw new IOException($"包大小[{packageTotalLength}]小于包头长度[{PACKAGE_HEAD_LENGTH}]");
-                try
-                {
-                    var readRet = await sendPipe.Reader.ReadAtLeastAsync(packageBodyLength).ConfigureAwait(false);
-                    var packageBuffer = readRet.Buffer;
-                    await writePackageBuffer(stream,
-                        sendPipe.Reader,
-                        packageType,
-                        packageBuffer,
-                        afterSendHandler).ConfigureAwait(false);
-                    lastSendPackageTime = DateTime.Now;
-                }
-                catch (Exception ex)
-                {
-                    OnWriteError(ex);
-                    throw;
-                }
+
+                var readRet = await sendPipe.Reader.ReadAtLeastAsync(packageBodyLength).ConfigureAwait(false);
+                var packageBuffer = readRet.Buffer;
+                await writePackageBuffer(stream,
+                    sendPipe.Reader,
+                    packageType,
+                    packageBuffer,
+                    afterSendHandler).ConfigureAwait(false);
+                lastSendPackageTime = DateTime.Now;
+            }
+            catch (Exception ex)
+            {
+                OnWriteError(ex);
+                throw;
             }
             finally
             {
