@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Nerdbank.Streams;
+using Quick.Protocol.Streams;
 
 namespace Quick.Protocol
 {
@@ -249,7 +249,7 @@ namespace Quick.Protocol
 
                             //开始解压
                             var compressedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH);
-                            using (var readMs = compressedBuffer.AsStream())
+                            using (var readMs = new ReadOnlySequenceByteStream(compressedBuffer))
                             using (var gzStream = new GZipStream(readMs, CompressionMode.Decompress, true))
                             {
                                 while (true)

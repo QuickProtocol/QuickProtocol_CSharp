@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Nerdbank.Streams;
 using Quick.Protocol.Streams;
 
 namespace Quick.Protocol
@@ -53,7 +52,7 @@ namespace Quick.Protocol
                 {
                     if (writeCompressPipe == null)
                         writeCompressPipe = new Pipe();
-                    using (var inStream = packageBodyBuffer.AsStream())
+                    using (var inStream = new ReadOnlySequenceByteStream(packageBodyBuffer))
                     using (var outStream = new PipeWriterStream(writeCompressPipe.Writer, true))
                     {
                         using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))
@@ -113,11 +112,13 @@ namespace Quick.Protocol
             }
             //写入包头
             await stream.WriteAsync(packageHeadMemory).ConfigureAwait(false);
-
+            
             //如果有包内容，写入包内容
             if (packageBodyBuffer.Length > 0)
             {
-                var writeTask = packageBodyBuffer.AsStream().CopyToAsync(stream);
+                Task writeTask = null;
+                using (var sequenceByteStream = new ReadOnlySequenceByteStream(packageBodyBuffer))
+                    writeTask = sequenceByteStream.CopyToAsync(stream);
                 await writeTask
                     .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
                     .ConfigureAwait(false);
@@ -141,7 +142,7 @@ namespace Quick.Protocol
                     packageTotalLength,
                     packageType,
                     LogUtils.LogContent ?
-                        BitConverter.ToString(packageHeadMemory.ToArray().Concat(packageBodyBuffer.ToArray()).ToArray())
+                        BitConverter.ToString(packageHeadMemory.ToArray()) + "-" + BitConverter.ToString(packageBodyBuffer.ToArray())
                         : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
             currentReader?.AdvanceTo(packageBodyBuffer.End);
             await stream.FlushAsync().ConfigureAwait(false);
