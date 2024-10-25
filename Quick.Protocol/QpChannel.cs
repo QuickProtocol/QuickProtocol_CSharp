@@ -338,14 +338,19 @@ namespace Quick.Protocol
             options.RegisterNoticeHandlerManager(noticeHandlerManager);
         }
 
-        public async Task<CommandResponseTypeNameAndContent> SendCommand(string requestTypeName, string requestContent, int timeout = 30 * 1000, Action afterSendHandler = null)
+        public Task<CommandResponseTypeNameAndContent> SendCommand(string requestTypeName, string requestContent, int timeout = 30 * 1000)
+        {
+            return SendCommand(requestTypeName, requestContent, timeout, false);
+        }
+
+        protected async Task<CommandResponseTypeNameAndContent> SendCommand(string requestTypeName, string requestContent, int timeout, bool ignoreCompressAndEncrypt)
         {
             var commandContext = new CommandContext(requestTypeName);
             commandDict.TryAdd(commandContext.Id, commandContext);
 
             if (timeout <= 0)
             {
-                await SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, afterSendHandler).ConfigureAwait(false);
+                await SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, ignoreCompressAndEncrypt).ConfigureAwait(false);
                 return await commandContext.ResponseTask.ConfigureAwait(false);
             }
             //如果设置了超时
@@ -353,7 +358,7 @@ namespace Quick.Protocol
             {
                 try
                 {
-                    await Task.Run(() => SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, afterSendHandler))
+                    await Task.Run(() => SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, ignoreCompressAndEncrypt))
                         .WaitAsync(TimeSpan.FromMilliseconds(timeout))
                         .ConfigureAwait(false);
                 }
@@ -374,7 +379,12 @@ namespace Quick.Protocol
             }
         }
 
-        public async Task<TCmdResponse> SendCommand<TCmdRequest, TCmdResponse>(IQpCommandRequest<TCmdRequest, TCmdResponse> request, int timeout = 30 * 1000, Action afterSendHandler = null)
+        public Task<TCmdResponse> SendCommand<TCmdRequest, TCmdResponse>(IQpCommandRequest<TCmdRequest, TCmdResponse> request, int timeout = 30 * 1000)
+        {
+            return SendCommand(request, timeout, false);
+        }
+
+        protected async Task<TCmdResponse> SendCommand<TCmdRequest, TCmdResponse>(IQpCommandRequest<TCmdRequest, TCmdResponse> request, int timeout, bool ignoreCompressAndEncrypt)
         {
             var requestType = request.GetType();
             var typeName = requestType.FullName;
@@ -387,7 +397,7 @@ namespace Quick.Protocol
             CommandResponseTypeNameAndContent ret = null;
             if (timeout <= 0)
             {
-                await SendCommandRequestPackage(commandContext.Id, typeName, requestContent, afterSendHandler).ConfigureAwait(false);
+                await SendCommandRequestPackage(commandContext.Id, typeName, requestContent, ignoreCompressAndEncrypt).ConfigureAwait(false);
                 ret = await commandContext.ResponseTask.ConfigureAwait(false);
             }
             //如果设置了超时
@@ -395,7 +405,7 @@ namespace Quick.Protocol
             {
                 try
                 {
-                    await Task.Run(() => SendCommandRequestPackage(commandContext.Id, typeName, requestContent, afterSendHandler))
+                    await Task.Run(() => SendCommandRequestPackage(commandContext.Id, typeName, requestContent, ignoreCompressAndEncrypt))
                         .WaitAsync(TimeSpan.FromMilliseconds(timeout))
                         .ConfigureAwait(false);
                 }

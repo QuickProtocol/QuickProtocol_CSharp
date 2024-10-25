@@ -48,21 +48,20 @@ namespace Quick.Protocol
             }).ConfigureAwait(false);
             AuthenticateQuestion = repConnect.Question;
 
+            Options.OnAuthPassed();
+            IsConnected = true;
+
             var repAuth = await SendCommand(new Commands.Authenticate.Request()
             {
                 Answer = CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password)
-            }).ConfigureAwait(false);
+            }, 30000, true).ConfigureAwait(false);
 
             var repHandShake = await SendCommand(new Commands.HandShake.Request()
             {
                 EnableCompress = Options.EnableCompress,
                 EnableEncrypt = Options.EnableEncrypt,
                 TransportTimeout = Options.TransportTimeout
-            }, 5000, () =>
-            {
-                Options.OnAuthPassed();
-                IsConnected = true;
-            }).ConfigureAwait(false);
+            }, 5000).ConfigureAwait(false);
 
             //开始心跳
             if (Options.HeartBeatInterval > 0)

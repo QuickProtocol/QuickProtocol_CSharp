@@ -36,13 +36,18 @@ namespace Quick.Protocol
         byte[] encryptBuffer1 = null;
         byte[] encryptBuffer2 = null;
 
-        private async Task writePackageBuffer(Stream stream,PipeReader currentReader, QpPackageType packageType, ReadOnlySequence<byte> packageBodyBuffer, Action afterSendHandler)
+        private async Task writePackageBuffer(PipeReader currentReader, QpPackageType packageType, int packageBodyLength, bool ignoreCompressAndEncrypt = false)
         {
+            var stream = QpPackageHandler_Stream;
+
+            var readRet = await currentReader.ReadAtLeastAsync(packageBodyLength);
+            var packageBodyBuffer = readRet.Buffer;
+
             var packageTotalLength = 0;
             Memory<byte> packageHeadMemory = default;
 
             //如果压缩或者加密
-            if (options.InternalCompress || options.InternalEncrypt)
+            if (!ignoreCompressAndEncrypt && (options.InternalCompress || options.InternalEncrypt))
             {
                 //如果压缩
                 if (options.InternalCompress)
@@ -51,12 +56,12 @@ namespace Quick.Protocol
                         writeCompressPipe = new Pipe();
                     using (var inStream = packageBodyBuffer.AsStream())
                     using (var outStream = writeCompressPipe.Writer.AsStream(true))
-                    using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))                    
+                    using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))
                         await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
 
                     currentReader.AdvanceTo(packageBodyBuffer.End);
 
-                    var readRet = await writeCompressPipe.Reader.ReadAsync().ConfigureAwait(false);
+                    readRet = await writeCompressPipe.Reader.ReadAsync().ConfigureAwait(false);
                     packageBodyBuffer = readRet.Buffer;
 
                     //包总长度
@@ -114,10 +119,10 @@ namespace Quick.Protocol
                         }
                         _ = Task.Run(async () =>
                         {
-                            await encryptPipe.Writer.FlushAsync().ConfigureAwait(false);                            
+                            await encryptPipe.Writer.FlushAsync().ConfigureAwait(false);
                         });
 
-                        var readRet = await encryptPipe.Reader.ReadAtLeastAsync(packageTotalLength).ConfigureAwait(false);
+                        readRet = await encryptPipe.Reader.ReadAtLeastAsync(packageTotalLength).ConfigureAwait(false);
                         currentReader.AdvanceTo(packageBodyBuffer.End);
 
                         packageBodyBuffer = readRet.Buffer;
@@ -128,7 +133,7 @@ namespace Quick.Protocol
                         packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
                         currentReader = encryptPipe.Reader;
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         throw new IOException("发送数据加密时出错", ex);
                     }
@@ -142,8 +147,6 @@ namespace Quick.Protocol
                 writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
                 packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
             }
-            //执行AfterSendHandler
-            afterSendHandler?.Invoke();
             //写入包头
             await stream.WriteAsync(packageHeadMemory).ConfigureAwait(false);
 
@@ -188,38 +191,19 @@ namespace Quick.Protocol
                 Array.Reverse(buffer, offset, sizeof(int));
         }
 
-        private async Task writePackageAsync(Func<PipeWriter, Task<Tuple<QpPackageType, int>>> getPackagePayloadFunc, Action afterSendHandler)
+        private async Task UseSendPipe(Func<Pipe, Task> handler)
         {
+            if (options.EnableNetstat)
+                Interlocked.Increment(ref PackageSendQueueCount);
+            await sendLock.WaitAsync(5000).ConfigureAwait(false);
             try
             {
-                if (options.EnableNetstat)
-                    Interlocked.Increment(ref PackageSendQueueCount);
-                await sendLock.WaitAsync(5000).ConfigureAwait(false);
-                var stream = QpPackageHandler_Stream;
-                if (stream == null)
-                    throw new IOException("Connection is disconnected.");
-
-                var ret = await getPackagePayloadFunc(sendPipe.Writer).ConfigureAwait(false);
-                var packageType = ret.Item1;
-                var packageBodyLength = ret.Item2;
-                var packageTotalLength = packageBodyLength + PACKAGE_TOTAL_LENGTH_LENGTH;
-
-                if (packageTotalLength < PACKAGE_HEAD_LENGTH)
-                    throw new IOException($"包大小[{packageTotalLength}]小于包头长度[{PACKAGE_HEAD_LENGTH}]");
-
-                var readRet = await sendPipe.Reader.ReadAtLeastAsync(packageBodyLength).ConfigureAwait(false);
-                var packageBuffer = readRet.Buffer;
-                await writePackageBuffer(stream,
-                    sendPipe.Reader,
-                    packageType,
-                    packageBuffer,
-                    afterSendHandler).ConfigureAwait(false);
-                lastSendPackageTime = DateTime.Now;
+                await handler(sendPipe);
             }
             catch (Exception ex)
             {
                 OnWriteError(ex);
-                throw;
+                throw new Exception("发送数据时出错", ex);
             }
             finally
             {
@@ -229,26 +213,29 @@ namespace Quick.Protocol
             }
         }
 
-
         /// <summary>
         /// 发送心跳包
         /// </summary>
-        public Task SendHeartbeatPackage()
+        public async Task SendHeartbeatPackage()
         {
-            return writePackageAsync(async writer =>
+            await UseSendPipe(async pipe =>
             {
+                var writer = pipe.Writer;
                 //写入包类型
                 writer.GetSpan(1)[0] = (byte)QpPackageType.Heartbeat;
                 writer.Advance(1);
-                await writer.FlushAsync().ConfigureAwait(false);
-                return new Tuple<QpPackageType, int>(QpPackageType.Heartbeat, 1);
-            }, null);
+                _ = writer.FlushAsync();
+                await writePackageBuffer(pipe.Reader,
+                        QpPackageType.Heartbeat,
+                        1).ConfigureAwait(false);
+            });
         }
 
-        public Task SendNoticePackage(string noticePackageTypeName, string noticePackageContent)
+        public async Task SendNoticePackage(string noticePackageTypeName, string noticePackageContent)
         {
-            return writePackageAsync(async writer =>
+            await UseSendPipe(async pipe =>
             {
+                var writer = pipe.Writer;
                 //写入包类型
                 writer.GetSpan(1)[0] = (byte)QpPackageType.Notice;
                 writer.Advance(1);
@@ -282,21 +269,28 @@ namespace Quick.Protocol
                         bodyLength += byteCount;
                     }
                 }
-                await writer.FlushAsync().ConfigureAwait(false);
+                _ = writer.FlushAsync();
                 if (LogUtils.LogNotice)
                     LogUtils.Log("{0}: [Send-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                await writePackageBuffer(pipe.Reader,
+                        QpPackageType.Heartbeat,
+                        1).ConfigureAwait(false);
+            });
+        }
 
-                return new Tuple<QpPackageType, int>(QpPackageType.Notice, bodyLength);
-            }, null);
+        public Task SendCommandRequestPackage(string commandId, string typeName, string content)
+        {
+            return SendCommandRequestPackage(commandId, typeName, content, false);
         }
 
         /// <summary>
         /// 发送命令请求包
         /// </summary>
-        public Task SendCommandRequestPackage(string commandId, string typeName, string content, Action afterSendHandler = null)
+        private async Task SendCommandRequestPackage(string commandId, string typeName, string content, bool ignoreCompressAndEncrypt)
         {
-            return writePackageAsync(async writer =>
+            await UseSendPipe(async pipe =>
             {
+                var writer = pipe.Writer;
                 //写入包类型
                 writer.GetSpan(1)[0] = (byte)QpPackageType.CommandRequest;
                 writer.Advance(1);
@@ -327,22 +321,26 @@ namespace Quick.Protocol
                     writer.Advance(contentLength);
                     bodyLength += contentLength;
                 }
-                await writer.FlushAsync().ConfigureAwait(false);
+                _ = writer.FlushAsync();
 
                 if (LogUtils.LogCommand)
                     LogUtils.Log("{0}: [Send-CommandRequestPackage]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandId, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
 
-                return new Tuple<QpPackageType, int>(QpPackageType.CommandRequest, bodyLength);
-            }, afterSendHandler);
+                await writePackageBuffer(pipe.Reader,
+                        QpPackageType.Heartbeat,
+                        1,
+                        ignoreCompressAndEncrypt).ConfigureAwait(false);
+            });
         }
 
         /// <summary>
         /// 发送命令响应包
         /// </summary>
-        public Task SendCommandResponsePackage(string commandId, byte code, string message, string typeName, string content)
+        public async Task SendCommandResponsePackage(string commandId, byte code, string message, string typeName, string content)
         {
-            return writePackageAsync(async writer =>
+            await UseSendPipe(async pipe =>
             {
+                var writer = pipe.Writer;
                 //写入包类型
                 writer.GetSpan(1)[0] = (byte)QpPackageType.CommandResponse;
                 writer.Advance(1);
@@ -400,9 +398,11 @@ namespace Quick.Protocol
                     if (LogUtils.LogNotice)
                         LogUtils.Log("{0}: [Send-CommandResponsePackage]CommandId:{1},Code:{2},Message:{3}", DateTime.Now, commandId, code, message);
                 }
-                await writer.FlushAsync().ConfigureAwait(false);
-                return new Tuple<QpPackageType, int>(QpPackageType.CommandResponse, bodyLength);
-            }, null);
+                _ = writer.FlushAsync();
+                await writePackageBuffer(pipe.Reader,
+                        QpPackageType.Heartbeat,
+                        1).ConfigureAwait(false);
+            });
         }
     }
 }
