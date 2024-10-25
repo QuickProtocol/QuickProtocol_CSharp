@@ -67,7 +67,8 @@ namespace Quick.Protocol
                         packageTotalLength = Convert.ToInt32(outStream.Length);
                         _ = writeCompressPipe.Writer.FlushAsync();
                     }
-                    currentReader.AdvanceTo(packageBodyBuffer.End);
+                    //压缩完成，释放资源
+                    currentReader?.AdvanceTo(packageBodyBuffer.End);
 
                     readRet = await writeCompressPipe.Reader.ReadAtLeastAsync(packageTotalLength).ConfigureAwait(false);
                     
@@ -93,6 +94,7 @@ namespace Quick.Protocol
                             encryptBuffer2 = new byte[enc.OutputBlockSize];
                         }
                         //开始加密
+                        /*
                         var toEncryptedBuffer = packageBodyBuffer;
                         var inLength = 0;
                         while (toEncryptedBuffer.Length > 0)
@@ -129,15 +131,20 @@ namespace Quick.Protocol
                         _ = encryptPipe.Writer.FlushAsync();
 
                         readRet = await encryptPipe.Reader.ReadAtLeastAsync(packageTotalLength).ConfigureAwait(false);
-                        currentReader.AdvanceTo(packageBodyBuffer.End);
+                        */
+                        var ret = enc.TransformFinalBlock(packageBodyBuffer.ToArray(), 0, (int)packageBodyBuffer.Length);
+                        //加密完成，释放资源
+                        currentReader?.AdvanceTo(packageBodyBuffer.End);
 
-                        packageBodyBuffer = readRet.Buffer;
+                        packageBodyBuffer = new ReadOnlySequence<byte>(ret);
+                        packageTotalLength = ret.Length;
+
                         //包总长度
                         packageTotalLength += PACKAGE_TOTAL_LENGTH_LENGTH;
                         //准备包头
                         writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
                         packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
-                        currentReader = encryptPipe.Reader;
+                        currentReader = null;
                     }
                     catch (Exception ex)
                     {
@@ -185,7 +192,7 @@ namespace Quick.Protocol
                     LogUtils.LogContent ?
                         BitConverter.ToString(packageHeadMemory.ToArray().Concat(packageBodyBuffer.ToArray()).ToArray())
                         : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-            currentReader.AdvanceTo(packageBodyBuffer.End);
+            currentReader?.AdvanceTo(packageBodyBuffer.End);
             await stream.FlushAsync().ConfigureAwait(false);
         }
 

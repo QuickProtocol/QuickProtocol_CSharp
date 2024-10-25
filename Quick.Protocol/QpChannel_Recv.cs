@@ -218,6 +218,10 @@ namespace Quick.Protocol
                             packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH;
 
                             //开始解密
+                            var encryptedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH).ToArray();
+                            var retBuffer = dec.TransformFinalBlock(encryptedBuffer, 0, encryptedBuffer.Length);
+                            packageTotalLength += retBuffer.Length;
+                            /*
                             var encryptedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH);
                             var inLength = 0;
                             while (encryptedBuffer.Length > 0)
@@ -240,7 +244,7 @@ namespace Quick.Protocol
                                 var finnalInLength = 0;
                                 if (inLength == dec.InputBlockSize)
                                 {
-                                    encryptBuffer1[0] = (byte)enc.InputBlockSize;
+                                    decryptBuffer1[0] = (byte)dec.InputBlockSize;
                                     finnalInLength = 1;
                                 }
                                 var finalData = dec.TransformFinalBlock(decryptBuffer1, 0, finnalInLength);
@@ -253,11 +257,14 @@ namespace Quick.Protocol
                             }
                             _ = decryptPipe.Writer.FlushAsync();                            
                             ret = await decryptPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
+                            */
                             //解密完成，释放缓存
-                            currentReader.AdvanceTo(packageBuffer.End);
+                            currentReader?.AdvanceTo(packageBuffer.End);
 
-                            packageBuffer = ret.Buffer;
-                            currentReader = decryptPipe.Reader;
+                            //packageBuffer = ret.Buffer;
+                            packageBuffer = new ReadOnlySequence<byte>(new byte[PACKAGE_TOTAL_LENGTH_LENGTH].Concat(retBuffer).ToArray());
+
+                            currentReader = null;//decryptPipe.Reader;
                         }
 
                         //如果设置了压缩
@@ -292,7 +299,7 @@ namespace Quick.Protocol
                             });
                             ret = await decompressPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
                             //解压完成，释放缓存
-                            currentReader.AdvanceTo(packageBuffer.End);
+                            currentReader?.AdvanceTo(packageBuffer.End);
                             packageBuffer = ret.Buffer;
                             currentReader = decompressPipe.Reader;
                         }
@@ -312,7 +319,7 @@ namespace Quick.Protocol
                             BitConverter.ToString(packageBuffer.ToArray())
                             : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
                     HandlePackage(packageType, packageBuffer);
-                    currentReader.AdvanceTo(packageBuffer.End);
+                    currentReader?.AdvanceTo(packageBuffer.End);
                 }
             }
             catch (Exception ex)
