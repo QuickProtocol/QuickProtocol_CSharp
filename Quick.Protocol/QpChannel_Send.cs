@@ -29,8 +29,12 @@ namespace Quick.Protocol
             Disconnect();
         }
 
-
-        private Pipe writeCompressPipe = new Pipe();
+        //压缩相关变量
+        private Pipe writeCompressPipe = null;
+        //加密相关变量
+        Pipe encryptPipe = null;
+        byte[] encryptBuffer1 = null;
+        byte[] encryptBuffer2 = null;
 
         private async Task writePackageBuffer(Stream stream, QpPackageType packageType, ReadOnlySequence<byte> packageBodyBuffer, Action afterSendHandler)
         {
@@ -44,12 +48,13 @@ namespace Quick.Protocol
                 //如果压缩
                 if (options.InternalCompress)
                 {
+                    if (writeCompressPipe == null)
+                        writeCompressPipe = new Pipe();
                     using (var inStream = packageBodyBuffer.AsStream())
                     using (var outStream = writeCompressPipe.Writer.AsStream(true))
                     using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))                    
                         await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
 
-                    currentPipe = writeCompressPipe;
                     var readRet = await writeCompressPipe.Reader.ReadAsync().ConfigureAwait(false);
                     packageBodyBuffer = readRet.Buffer;
                     var packageBodyLength = Convert.ToInt32(packageBodyBuffer.Length);
@@ -58,20 +63,71 @@ namespace Quick.Protocol
                     //准备包头
                     writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
                     packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
+                    currentPipe = writeCompressPipe;
                 }
-                /*
                 //如果加密
                 if (options.InternalEncrypt)
                 {
-                    var retBuffer = enc.TransformFinalBlock(packageBuffer.Array, packageBuffer.Offset + PACKAGE_TOTAL_LENGTH_LENGTH, packageBuffer.Count - PACKAGE_TOTAL_LENGTH_LENGTH);
-                    var packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + retBuffer.Length;
-                    var currentBuffer = getFreeBuffer(packageBuffer.Array, sendBuffer, sendBuffer2);
-                    //写入包长度
-                    writePackageTotalLengthToBuffer(currentBuffer, 0, packageTotalLength);
-                    Array.Copy(retBuffer, 0, currentBuffer, PACKAGE_TOTAL_LENGTH_LENGTH, retBuffer.Length);
-                    packageBuffer = new ArraySegment<byte>(currentBuffer, 0, packageTotalLength);
+                    try
+                    {
+                        //准备管道
+                        if (encryptPipe == null)
+                        {
+                            encryptPipe = new Pipe();
+                            encryptBuffer1 = new byte[enc.InputBlockSize];
+                            encryptBuffer2 = new byte[enc.InputBlockSize * 2];
+                        }
+                        //开始加密
+                        var toEncryptedBuffer = packageBodyBuffer;
+                        var inLength = 0;
+                        while (toEncryptedBuffer.Length > 0)
+                        {
+                            inLength = Math.Min(encryptBuffer1.Length, (int)toEncryptedBuffer.Length);
+                            toEncryptedBuffer.Slice(0, inLength).CopyTo(encryptBuffer1);
+                            toEncryptedBuffer = toEncryptedBuffer.Slice(inLength);
+                            if (inLength < enc.InputBlockSize)
+                            {
+                                var v = enc.InputBlockSize - inLength;
+                                Array.Fill(encryptBuffer1, (byte)v, inLength, v);
+                            }
+                            var outLength = enc.TransformBlock(encryptBuffer1, 0, Math.Max(inLength, enc.InputBlockSize), encryptBuffer2, 0);
+                            encryptBuffer2.CopyTo(encryptPipe.Writer.GetMemory(outLength));
+                            encryptPipe.Writer.Advance(outLength);
+
+                            packageTotalLength += outLength;
+                        }
+                        {
+                            var finnalInLength = 0;
+                            if (inLength == enc.InputBlockSize)
+                            {
+                                encryptBuffer1[0] = (byte)enc.InputBlockSize;
+                                finnalInLength = 1;
+                            }
+                            var finalData = dec.TransformFinalBlock(encryptBuffer1, 0, finnalInLength);
+                            finalData.CopyTo(encryptPipe.Writer.GetMemory(finalData.Length));
+                            encryptPipe.Writer.Advance(finalData.Length);
+                            packageTotalLength += finalData.Length;
+                        }
+                        _ = Task.Run(async () =>
+                        {
+                            await encryptPipe.Writer.FlushAsync().ConfigureAwait(false);
+                        });
+
+                        var readRet = await encryptPipe.Reader.ReadAtLeastAsync(packageTotalLength).ConfigureAwait(false);
+                        packageBodyBuffer = readRet.Buffer;
+                        var packageBodyLength = Convert.ToInt32(packageBodyBuffer.Length);
+                        //包总长度
+                        packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + packageBodyLength;
+                        //准备包头
+                        writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
+                        packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
+                        currentPipe = encryptPipe;
+                    }
+                    catch(Exception ex)
+                    {
+                        throw new IOException("发送数据加密时出错", ex);
+                    }
                 }
-                */
             }
             else
             {

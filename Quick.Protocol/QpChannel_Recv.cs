@@ -208,8 +208,8 @@ namespace Quick.Protocol
                             if (decryptPipe == null)
                             {
                                 decryptPipe = new Pipe();
-                                decryptBuffer1 = new byte[1024];
-                                decryptBuffer2 = new byte[1024];
+                                decryptBuffer1 = new byte[dec.InputBlockSize];
+                                decryptBuffer2 = new byte[dec.OutputBlockSize];
                             }
 
                             //写入包头
