@@ -219,26 +219,39 @@ namespace Quick.Protocol
 
                             //开始解密
                             var encryptedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH);
+                            var inLength = 0;
                             while (encryptedBuffer.Length > 0)
                             {
-                                var inLength = Math.Min(decryptBuffer1.Length, (int)encryptedBuffer.Length);
+                                inLength = Math.Min(decryptBuffer1.Length, (int)encryptedBuffer.Length);
                                 encryptedBuffer.Slice(0, inLength).CopyTo(decryptBuffer1);
+                                encryptedBuffer = encryptedBuffer.Slice(inLength);
+                                if (inLength < dec.InputBlockSize)
+                                {
+                                    var v = dec.InputBlockSize - inLength;
+                                    Array.Fill(decryptBuffer1, (byte)v, inLength, v);
+                                }
                                 var outLength = dec.TransformBlock(decryptBuffer1, 0, inLength, decryptBuffer2, 0);
                                 decryptBuffer2.CopyTo(decryptPipe.Writer.GetMemory(outLength));
                                 decryptPipe.Writer.Advance(outLength);
-                                encryptedBuffer = encryptedBuffer.Slice(inLength);
+
                                 packageTotalLength += outLength;
                             }
                             {
-                                var finalData = dec.TransformFinalBlock(decryptBuffer1, 0, 0);
-                                finalData.CopyTo(decryptPipe.Writer.GetMemory(finalData.Length));
-                                decryptPipe.Writer.Advance(finalData.Length);
-                                packageTotalLength += finalData.Length;
+                                var finnalInLength = 0;
+                                if (inLength == dec.InputBlockSize)
+                                {
+                                    encryptBuffer1[0] = (byte)enc.InputBlockSize;
+                                    finnalInLength = 1;
+                                }
+                                var finalData = dec.TransformFinalBlock(decryptBuffer1, 0, finnalInLength);
+                                if (finalData.Length > 0)
+                                {
+                                    finalData.CopyTo(decryptPipe.Writer.GetMemory(finalData.Length));
+                                    decryptPipe.Writer.Advance(finalData.Length);
+                                    packageTotalLength += finalData.Length;
+                                }
                             }
-                            _ = Task.Run(async () =>
-                            {                                
-                                await decryptPipe.Writer.FlushAsync().ConfigureAwait(false);
-                            });
+                            _ = decryptPipe.Writer.FlushAsync();                            
                             ret = await decryptPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
                             //解密完成，释放缓存
                             currentReader.AdvanceTo(packageBuffer.End);

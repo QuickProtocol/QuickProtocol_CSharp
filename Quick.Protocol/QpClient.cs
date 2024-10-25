@@ -47,21 +47,21 @@ namespace Quick.Protocol
                 InstructionIds = Options.InstructionSet.Select(t => t.Id).ToArray()
             }).ConfigureAwait(false);
             AuthenticateQuestion = repConnect.Question;
-
-            Options.OnAuthPassed();
-            IsConnected = true;
-
+            
             var repAuth = await SendCommand(new Commands.Authenticate.Request()
             {
                 Answer = CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password)
-            }, 30000, true).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+            Options.OnAuthPassed();
+            IsConnected = true;
 
             var repHandShake = await SendCommand(new Commands.HandShake.Request()
             {
                 EnableCompress = Options.EnableCompress,
                 EnableEncrypt = Options.EnableEncrypt,
                 TransportTimeout = Options.TransportTimeout
-            }, 5000).ConfigureAwait(false);
+            }, 5000, true).ConfigureAwait(false);
 
             //开始心跳
             if (Options.HeartBeatInterval > 0)

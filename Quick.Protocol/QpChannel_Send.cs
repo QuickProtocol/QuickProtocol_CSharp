@@ -57,12 +57,14 @@ namespace Quick.Protocol
                     using (var inStream = packageBodyBuffer.AsStream())
                     using (var outStream = writeCompressPipe.Writer.AsStream(true))
                     using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))
+                    {
                         await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
-
+                    }
                     currentReader.AdvanceTo(packageBodyBuffer.End);
-
+                    
                     readRet = await writeCompressPipe.Reader.ReadAsync().ConfigureAwait(false);
                     packageBodyBuffer = readRet.Buffer;
+                    packageTotalLength += Convert.ToInt32(packageBodyBuffer.Length);
 
                     //包总长度
                     packageTotalLength += PACKAGE_TOTAL_LENGTH_LENGTH;
@@ -109,7 +111,7 @@ namespace Quick.Protocol
                                 encryptBuffer1[0] = (byte)enc.InputBlockSize;
                                 finnalInLength = 1;
                             }
-                            var finalData = dec.TransformFinalBlock(encryptBuffer1, 0, finnalInLength);
+                            var finalData = enc.TransformFinalBlock(encryptBuffer1, 0, finnalInLength);
                             if (finalData.Length > 0)
                             {
                                 finalData.CopyTo(encryptPipe.Writer.GetMemory(finalData.Length));
@@ -117,10 +119,7 @@ namespace Quick.Protocol
                                 packageTotalLength += finalData.Length;
                             }
                         }
-                        _ = Task.Run(async () =>
-                        {
-                            await encryptPipe.Writer.FlushAsync().ConfigureAwait(false);
-                        });
+                        _ = encryptPipe.Writer.FlushAsync();
 
                         readRet = await encryptPipe.Reader.ReadAtLeastAsync(packageTotalLength).ConfigureAwait(false);
                         currentReader.AdvanceTo(packageBodyBuffer.End);
@@ -175,9 +174,9 @@ namespace Quick.Protocol
                     "{0}: [Send-Package]Length:{1}，Type:{2}，Content:{3}",
                     DateTime.Now,
                     packageTotalLength,
-                    (QpPackageType)packageType,
+                    packageType,
                     LogUtils.LogContent ?
-                        BitConverter.ToString(sendHeadBuffer.Concat(packageBodyBuffer.ToArray()).ToArray())
+                        BitConverter.ToString(packageHeadMemory.ToArray().Concat(packageBodyBuffer.ToArray()).ToArray())
                         : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
             currentReader.AdvanceTo(packageBodyBuffer.End);
             await stream.FlushAsync().ConfigureAwait(false);
@@ -224,10 +223,11 @@ namespace Quick.Protocol
                 //写入包类型
                 writer.GetSpan(1)[0] = (byte)QpPackageType.Heartbeat;
                 writer.Advance(1);
+                var bodyLength = 1;
                 _ = writer.FlushAsync();
                 await writePackageBuffer(pipe.Reader,
                         QpPackageType.Heartbeat,
-                        1).ConfigureAwait(false);
+                        bodyLength).ConfigureAwait(false);
             });
         }
 
@@ -273,8 +273,8 @@ namespace Quick.Protocol
                 if (LogUtils.LogNotice)
                     LogUtils.Log("{0}: [Send-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
                 await writePackageBuffer(pipe.Reader,
-                        QpPackageType.Heartbeat,
-                        1).ConfigureAwait(false);
+                        QpPackageType.Notice,
+                        bodyLength).ConfigureAwait(false);
             });
         }
 
@@ -327,8 +327,8 @@ namespace Quick.Protocol
                     LogUtils.Log("{0}: [Send-CommandRequestPackage]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandId, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
 
                 await writePackageBuffer(pipe.Reader,
-                        QpPackageType.Heartbeat,
-                        1,
+                        QpPackageType.CommandRequest,
+                        bodyLength,
                         ignoreCompressAndEncrypt).ConfigureAwait(false);
             });
         }
@@ -400,8 +400,8 @@ namespace Quick.Protocol
                 }
                 _ = writer.FlushAsync();
                 await writePackageBuffer(pipe.Reader,
-                        QpPackageType.Heartbeat,
-                        1).ConfigureAwait(false);
+                        QpPackageType.CommandResponse,
+                        bodyLength).ConfigureAwait(false);
             });
         }
     }
