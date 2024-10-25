@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Nerdbank.Streams;
+using Quick.Protocol.Streams;
 
 namespace Quick.Protocol
 {
@@ -39,6 +40,8 @@ namespace Quick.Protocol
         private async Task writePackageBuffer(PipeReader currentReader, QpPackageType packageType, int packageBodyLength, bool ignoreCompressAndEncrypt = false)
         {
             var stream = QpPackageHandler_Stream;
+            if (stream == null)
+                throw new IOException("Not connected.");
 
             var readRet = await currentReader.ReadAtLeastAsync(packageBodyLength);
             var packageBodyBuffer = readRet.Buffer;
@@ -55,16 +58,20 @@ namespace Quick.Protocol
                     if (writeCompressPipe == null)
                         writeCompressPipe = new Pipe();
                     using (var inStream = packageBodyBuffer.AsStream())
-                    using (var outStream = writeCompressPipe.Writer.AsStream(true))
-                    using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))
+                    using (var outStream = new PipeWriterStream(writeCompressPipe.Writer, true))
                     {
-                        await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
+                        using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))
+                        {
+                            await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
+                        }
+                        packageTotalLength = Convert.ToInt32(outStream.Length);
+                        _ = writeCompressPipe.Writer.FlushAsync();
                     }
                     currentReader.AdvanceTo(packageBodyBuffer.End);
+
+                    readRet = await writeCompressPipe.Reader.ReadAtLeastAsync(packageTotalLength).ConfigureAwait(false);
                     
-                    readRet = await writeCompressPipe.Reader.ReadAsync().ConfigureAwait(false);
                     packageBodyBuffer = readRet.Buffer;
-                    packageTotalLength += Convert.ToInt32(packageBodyBuffer.Length);
 
                     //包总长度
                     packageTotalLength += PACKAGE_TOTAL_LENGTH_LENGTH;
@@ -194,7 +201,7 @@ namespace Quick.Protocol
         {
             if (options.EnableNetstat)
                 Interlocked.Increment(ref PackageSendQueueCount);
-            await sendLock.WaitAsync(5000).ConfigureAwait(false);
+            await sendLock.WaitAsync().ConfigureAwait(false);
             try
             {
                 await handler(sendPipe);

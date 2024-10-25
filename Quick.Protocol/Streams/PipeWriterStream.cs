@@ -92,7 +92,6 @@ namespace Quick.Protocol.Streams
         public override void Write(byte[] buffer, int offset, int count)
         {
             WriteAsync(buffer, offset, count).GetAwaiter().GetResult();
-            _Length += count;
         }
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
