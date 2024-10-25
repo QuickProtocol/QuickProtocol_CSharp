@@ -36,9 +36,8 @@ namespace Quick.Protocol
         byte[] encryptBuffer1 = null;
         byte[] encryptBuffer2 = null;
 
-        private async Task writePackageBuffer(Stream stream, QpPackageType packageType, ReadOnlySequence<byte> packageBodyBuffer, Action afterSendHandler)
+        private async Task writePackageBuffer(Stream stream,PipeReader currentReader, QpPackageType packageType, ReadOnlySequence<byte> packageBodyBuffer, Action afterSendHandler)
         {
-            Pipe currentPipe = null;
             var packageTotalLength = 0;
             Memory<byte> packageHeadMemory = default;
 
@@ -55,6 +54,8 @@ namespace Quick.Protocol
                     using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))                    
                         await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
 
+                    currentReader.AdvanceTo(packageBodyBuffer.End);
+
                     var readRet = await writeCompressPipe.Reader.ReadAsync().ConfigureAwait(false);
                     packageBodyBuffer = readRet.Buffer;
                     var packageBodyLength = Convert.ToInt32(packageBodyBuffer.Length);
@@ -63,7 +64,7 @@ namespace Quick.Protocol
                     //准备包头
                     writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
                     packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
-                    currentPipe = writeCompressPipe;
+                    currentReader = writeCompressPipe.Reader;
                 }
                 //如果加密
                 if (options.InternalEncrypt)
@@ -75,7 +76,7 @@ namespace Quick.Protocol
                         {
                             encryptPipe = new Pipe();
                             encryptBuffer1 = new byte[enc.InputBlockSize];
-                            encryptBuffer2 = new byte[enc.InputBlockSize * 2];
+                            encryptBuffer2 = new byte[enc.OutputBlockSize];
                         }
                         //开始加密
                         var toEncryptedBuffer = packageBodyBuffer;
@@ -111,6 +112,7 @@ namespace Quick.Protocol
                         _ = Task.Run(async () =>
                         {
                             await encryptPipe.Writer.FlushAsync().ConfigureAwait(false);
+                            currentReader.AdvanceTo(packageBodyBuffer.End);
                         });
 
                         var readRet = await encryptPipe.Reader.ReadAtLeastAsync(packageTotalLength).ConfigureAwait(false);
@@ -121,7 +123,7 @@ namespace Quick.Protocol
                         //准备包头
                         writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
                         packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
-                        currentPipe = encryptPipe;
+                        currentReader = encryptPipe.Reader;
                     }
                     catch(Exception ex)
                     {
@@ -171,8 +173,7 @@ namespace Quick.Protocol
                     LogUtils.LogContent ?
                         BitConverter.ToString(sendHeadBuffer.Concat(packageBodyBuffer.ToArray()).ToArray())
                         : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-            if (currentPipe != null)
-                currentPipe.Reader.AdvanceTo(packageBodyBuffer.End);
+            currentReader.AdvanceTo(packageBodyBuffer.End);
             await stream.FlushAsync().ConfigureAwait(false);
         }
 
@@ -198,26 +199,19 @@ namespace Quick.Protocol
                 var ret = await getPackagePayloadFunc(sendPipe.Writer).ConfigureAwait(false);
                 var packageType = ret.Item1;
                 var packageBodyLength = ret.Item2;
-                var packageTotalLength = packageBodyLength + PACKAGE_HEAD_LENGTH;
+                var packageTotalLength = packageBodyLength + PACKAGE_TOTAL_LENGTH_LENGTH;
 
                 if (packageTotalLength < PACKAGE_HEAD_LENGTH)
                     throw new IOException($"包大小[{packageTotalLength}]小于包头长度[{PACKAGE_HEAD_LENGTH}]");
                 try
                 {
-                    ReadOnlySequence<byte> packageBuffer = default;
-                    if (packageBodyLength > 0)
-                    {
-                        var readRet = await sendPipe.Reader.ReadAtLeastAsync(packageBodyLength).ConfigureAwait(false);
-                        packageBuffer = readRet.Buffer;
-                    }
+                    var readRet = await sendPipe.Reader.ReadAtLeastAsync(packageBodyLength).ConfigureAwait(false);
+                    var packageBuffer = readRet.Buffer;
                     await writePackageBuffer(stream,
+                        sendPipe.Reader,
                         packageType,
                         packageBuffer,
                         afterSendHandler).ConfigureAwait(false);
-                    if (packageBodyLength > 0)
-                    {
-                        sendPipe.Reader.AdvanceTo(packageBuffer.End);
-                    }
                     lastSendPackageTime = DateTime.Now;
                 }
                 catch (Exception ex)
@@ -240,12 +234,13 @@ namespace Quick.Protocol
         /// </summary>
         public Task SendHeartbeatPackage()
         {
-            return writePackageAsync(writer =>
+            return writePackageAsync(async writer =>
             {
                 //写入包类型
                 writer.GetSpan(1)[0] = (byte)QpPackageType.Heartbeat;
                 writer.Advance(1);
-                return Task.FromResult(new Tuple<QpPackageType, int>(QpPackageType.Heartbeat, 1));
+                await writer.FlushAsync().ConfigureAwait(false);
+                return new Tuple<QpPackageType, int>(QpPackageType.Heartbeat, 1);
             }, null);
         }
 
