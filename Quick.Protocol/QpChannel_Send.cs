@@ -111,12 +111,14 @@ namespace Quick.Protocol
                 packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
             }
             //写入包头
-            await stream.WriteAsync(packageHeadMemory).ConfigureAwait(false);
-            
+            var writeTask = stream.WriteAsync(packageHeadMemory).AsTask();
+            await writeTask
+                    .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
+                    .ConfigureAwait(false);
+                    
             //如果有包内容，写入包内容
             if (packageBodyBuffer.Length > 0)
             {
-                Task writeTask = null;
                 using (var sequenceByteStream = new ReadOnlySequenceByteStream(packageBodyBuffer))
                     writeTask = sequenceByteStream.CopyToAsync(stream);
                 await writeTask
