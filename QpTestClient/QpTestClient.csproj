@@ -19,7 +19,23 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="Images\ilQpInstructions.Images.0.png" />
+	  <None Remove="Images\ilQpInstructions.Images.1.png" />
+	  <None Remove="Images\ilQpInstructions.Images.2.png" />
+	  <None Remove="Images\ilQpInstructions.Images.3.png" />
+	  <None Remove="Images\ilQpInstructions.Images.4.png" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Content Include="logo.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Images\ilQpInstructions.Images.0.png" />
+	  <EmbeddedResource Include="Images\ilQpInstructions.Images.1.png" />
+	  <EmbeddedResource Include="Images\ilQpInstructions.Images.2.png" />
+	  <EmbeddedResource Include="Images\ilQpInstructions.Images.3.png" />
+	  <EmbeddedResource Include="Images\ilQpInstructions.Images.4.png" />
 	</ItemGroup>
 
 	<ItemGroup>

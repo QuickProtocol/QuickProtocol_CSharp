@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -24,6 +26,12 @@ namespace QpTestClient
         public MainForm()
         {
             InitializeComponent();
+            var currentAssembly = typeof(MainForm).Assembly;
+            for (int i = 0; i < 5; i++)
+            {
+                using (var stream = currentAssembly.GetManifestResourceStream($"QpTestClient.Images.ilQpInstructions.Images.{i}.png"))
+                    ilQpInstructions.Images.Add(Image.FromStream(stream));
+            }
             Text = Application.ProductName;
             treeNodeCollection = tvQpInstructions.Nodes;
             cmsConnection.Opening += CmsConnection_Opening;

@@ -174,13 +174,7 @@ namespace QpTestClient
             // ilQpInstructions
             // 
             ilQpInstructions.ColorDepth = System.Windows.Forms.ColorDepth.Depth32Bit;
-            ilQpInstructions.ImageStream = (System.Windows.Forms.ImageListStreamer)resources.GetObject("ilQpInstructions.ImageStream");
             ilQpInstructions.TransparentColor = System.Drawing.Color.Transparent;
-            ilQpInstructions.Images.SetKeyName(0, "connect_gray.png");
-            ilQpInstructions.Images.SetKeyName(1, "connect.png");
-            ilQpInstructions.Images.SetKeyName(2, "archive_16px_1092529_easyicon.net.png");
-            ilQpInstructions.Images.SetKeyName(3, "speaker_volume_16px_514569_easyicon.net.png");
-            ilQpInstructions.Images.SetKeyName(4, "command_16px_583324_easyicon.net.png");
             // 
             // gbNodeInfo
             // 
