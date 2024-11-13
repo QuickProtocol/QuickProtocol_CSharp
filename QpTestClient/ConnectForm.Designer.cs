@@ -1,4 +1,6 @@
 ﻿
+using System.IO;
+
 namespace QpTestClient
 {
     partial class ConnectForm
@@ -123,7 +125,6 @@ namespace QpTestClient
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cbConnectType);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ConnectForm";

@@ -71,7 +71,6 @@ namespace QpTestClient
             // logoPictureBox
             // 
             logoPictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            logoPictureBox.Image = (System.Drawing.Image)resources.GetObject("logoPictureBox.Image");
             logoPictureBox.Location = new System.Drawing.Point(6, 8);
             logoPictureBox.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             logoPictureBox.Name = "logoPictureBox";

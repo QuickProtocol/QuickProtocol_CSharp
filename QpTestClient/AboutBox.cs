@@ -15,6 +15,10 @@ namespace QpTestClient
         public AboutBox()
         {
             InitializeComponent();
+            var currentAssembly = this.GetType().Assembly;
+            //窗体图标
+            using (var stream = currentAssembly.GetManifestResourceStream($"{nameof(QpTestClient)}.Images.logo-large.png"))
+                logoPictureBox.Image = Image.FromStream(stream);
             this.Text = String.Format("关于 {0}", ProductInfoUtils.GetAssemblyTitle());
             this.labelProductName.Text = ProductInfoUtils.GetAssemblyProduct();
             this.labelVersion.Text = $"版本 {ProductInfoUtils.GetAssemblyVersion()}";

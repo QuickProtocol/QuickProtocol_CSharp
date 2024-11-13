@@ -24,13 +24,17 @@ namespace QpTestClient
         public ConnectForm()
         {
             InitializeComponent();
+            var currentAssembly = this.GetType().Assembly;
+            //窗体图标
+            using (var stream = currentAssembly.GetManifestResourceStream($"{nameof(QpTestClient)}.Images.connection.ico"))
+                Icon = new Icon(stream);
         }
 
         public void EditConnectionInfo(TestConnectionInfo connectionInfo)
         {            
             this.ConnectionInfo = XmlConvert.Deserialize<TestConnectionInfo>(XmlConvert.Serialize(connectionInfo));
             txtName.Text = connectionInfo.Name;
-            var qpClientTypeInfo = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.QpClientType.FullName == connectionInfo.QpClientTypeName);
+            var qpClientTypeInfo = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.ClientType.FullName == connectionInfo.QpClientTypeName);
             cbConnectType.SelectedItem = qpClientTypeInfo;
             Text = "编辑连接";
         }
@@ -45,7 +49,7 @@ namespace QpTestClient
             var qpClientTypeName = "Quick.Protocol.Tcp.QpTcpClient";
             if (ConnectionInfo != null)
                 qpClientTypeName = ConnectionInfo.QpClientTypeName;
-            var item = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.QpClientType.FullName == qpClientTypeName);
+            var item = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.ClientType.FullName == qpClientTypeName);
             if (item != null)
                 cbConnectType.SelectedItem = item;
             else
@@ -57,15 +61,15 @@ namespace QpTestClient
             var qpClientTypeInfo = (QpClientTypeInfo)cbConnectType.SelectedItem;
 
             QpClientOptions options = null;
-            if (ConnectionInfo != null && qpClientTypeInfo.QpClientType.FullName == ConnectionInfo.QpClientTypeName)
+            if (ConnectionInfo != null && qpClientTypeInfo.ClientType.FullName == ConnectionInfo.QpClientTypeName)
             {
                 options = (QpClientOptions)JsonSerializer.Deserialize(
                     JsonSerializer.Serialize(ConnectionInfo.QpClientOptions),
-                    qpClientTypeInfo.QpClientOptionsType);
+                    qpClientTypeInfo.OptionsType);
             }
             else
             {
-                options = (QpClientOptions)Activator.CreateInstance(qpClientTypeInfo.QpClientOptionsType);
+                options = qpClientTypeInfo.CreateOptionsInstanceFunc();
             }
             pgOptions.SelectedObject = options;
         }
@@ -83,7 +87,7 @@ namespace QpTestClient
             ConnectionInfo = new TestConnectionInfo()
             {
                 Name = name,
-                QpClientTypeName = qpClientTypeInfo.QpClientType.FullName,
+                QpClientTypeName = qpClientTypeInfo.ClientType.FullName,
                 QpClientOptions = (QpClientOptions)pgOptions.SelectedObject,
                 Instructions = ConnectionInfo?.Instructions
             };
