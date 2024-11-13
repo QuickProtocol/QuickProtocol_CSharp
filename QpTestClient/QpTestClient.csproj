@@ -24,6 +24,7 @@
 	  <None Remove="Images\ilQpInstructions.Images.2.png" />
 	  <None Remove="Images\ilQpInstructions.Images.3.png" />
 	  <None Remove="Images\ilQpInstructions.Images.4.png" />
+	  <None Remove="Images\logo.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -36,6 +37,7 @@
 	  <EmbeddedResource Include="Images\ilQpInstructions.Images.2.png" />
 	  <EmbeddedResource Include="Images\ilQpInstructions.Images.3.png" />
 	  <EmbeddedResource Include="Images\ilQpInstructions.Images.4.png" />
+	  <EmbeddedResource Include="Images\logo.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -52,18 +54,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="Properties\Resources.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>Resources.resx</DependentUpon>
-	  </Compile>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <EmbeddedResource Update="Properties\Resources.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
+	  <Folder Include="Properties\" />
 	</ItemGroup>
 
 </Project>

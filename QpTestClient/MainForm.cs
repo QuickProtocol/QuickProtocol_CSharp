@@ -27,6 +27,10 @@ namespace QpTestClient
         {
             InitializeComponent();
             var currentAssembly = typeof(MainForm).Assembly;
+            //窗体图标
+            using (var stream = currentAssembly.GetManifestResourceStream($"QpTestClient.Images.logo.ico"))
+                Icon = new Icon(stream);
+            //树形图标
             for (int i = 0; i < 5; i++)
             {
                 using (var stream = currentAssembly.GetManifestResourceStream($"QpTestClient.Images.ilQpInstructions.Images.{i}.png"))

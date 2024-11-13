@@ -1,4 +1,6 @@
 ﻿
+using System.IO;
+
 namespace QpTestClient
 {
     partial class MainForm
@@ -85,7 +87,6 @@ namespace QpTestClient
             // 
             btnFile.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             btnFile.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { btnQuickAddConnection, btnAddConnection, btnImportConnectionFile, toolStripSeparator1, btnExit });
-            btnFile.Image = (System.Drawing.Image)resources.GetObject("btnFile.Image");
             btnFile.ImageTransparentColor = System.Drawing.Color.Magenta;
             btnFile.Name = "btnFile";
             btnFile.Size = new System.Drawing.Size(113, 35);
@@ -124,7 +125,6 @@ namespace QpTestClient
             // 
             toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { 关于ToolStripMenuItem });
-            toolStripDropDownButton1.Image = (System.Drawing.Image)resources.GetObject("toolStripDropDownButton1.Image");
             toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             toolStripDropDownButton1.Name = "toolStripDropDownButton1";
             toolStripDropDownButton1.Size = new System.Drawing.Size(119, 35);
@@ -133,7 +133,7 @@ namespace QpTestClient
             // 关于ToolStripMenuItem
             // 
             关于ToolStripMenuItem.Name = "关于ToolStripMenuItem";
-            关于ToolStripMenuItem.Size = new System.Drawing.Size(228, 44);
+            关于ToolStripMenuItem.Size = new System.Drawing.Size(359, 44);
             关于ToolStripMenuItem.Text = "关于(&A)";
             关于ToolStripMenuItem.Click += 关于ToolStripMenuItem_Click;
             // 
@@ -174,6 +174,7 @@ namespace QpTestClient
             // ilQpInstructions
             // 
             ilQpInstructions.ColorDepth = System.Windows.Forms.ColorDepth.Depth32Bit;
+            ilQpInstructions.ImageSize = new System.Drawing.Size(16, 16);
             ilQpInstructions.TransparentColor = System.Drawing.Color.Transparent;
             // 
             // gbNodeInfo
@@ -292,7 +293,6 @@ namespace QpTestClient
             ClientSize = new System.Drawing.Size(1296, 835);
             Controls.Add(scMain);
             Controls.Add(tsMain);
-            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
             Name = "MainForm";
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
