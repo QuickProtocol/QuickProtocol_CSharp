@@ -18,6 +18,7 @@ namespace QpTestClient
 {
     public partial class ConnectForm : Form
     {
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public TestConnectionInfo ConnectionInfo { get; private set; }
 
         public ConnectForm()

@@ -1,5 +1,6 @@
 ﻿using Quick.Protocol.Utils;
 using System;
+using System.ComponentModel;
 using System.Security.Policy;
 using System.Windows.Forms;
 
@@ -7,6 +8,7 @@ namespace QpTestClient
 {
     public partial class QuickConnectForm : Form
     {
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public TestConnectionInfo ConnectionInfo { get; private set; }
 
         public QuickConnectForm()
