@@ -15,6 +15,7 @@
 		<Copyright>Apache License</Copyright>
 		<PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
+		<CustomResourceTypesSupport>true</CustomResourceTypesSupport>
 	</PropertyGroup>
 
 	<ItemGroup>

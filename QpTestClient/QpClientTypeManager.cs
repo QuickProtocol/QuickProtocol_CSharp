@@ -15,34 +15,25 @@ namespace QpTestClient
         public static QpClientTypeManager Instance { get; } = new QpClientTypeManager();
         private Dictionary<string, QpClientTypeInfo> dict = null;
 
-        private void register<TClient>()
+        private void register(Type clientType, Type clientOptionsType)
         {
-            register(typeof(TClient));
-        }
-
-        private void register(Type type)
-        {
-            var typeConstructor = type.GetConstructors()[0];
-            var typeConstructorParameters = typeConstructor.GetParameters();
-            if (typeConstructorParameters == null || typeConstructorParameters.Length != 1)
-                return;
-            var optionsType = typeConstructorParameters[0].ParameterType;
-            var name = type.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? type.Name;
-            dict[type.FullName] = new QpClientTypeInfo()
+            var clientTypeFullName = clientType.FullName;
+            var name = clientType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? clientTypeFullName;
+            dict[clientTypeFullName] = new QpClientTypeInfo()
             {
                 Name = name,
-                QpClientType = type,
-                QpClientOptionsType = optionsType
+                QpClientType = clientType,
+                QpClientOptionsType = clientOptionsType
             };
         }
 
         public void Init()
         {
             dict = new Dictionary<string, QpClientTypeInfo>();
-            register<Quick.Protocol.Tcp.QpTcpClient>();
-            register<Quick.Protocol.Pipeline.QpPipelineClient>();
-            register<Quick.Protocol.SerialPort.QpSerialPortClient>();
-            register<Quick.Protocol.WebSocket.Client.QpWebSocketClient>();
+            register(typeof(Quick.Protocol.Tcp.QpTcpClient),typeof(Quick.Protocol.Tcp.QpTcpClientOptions));
+            register(typeof(Quick.Protocol.Pipeline.QpPipelineClient), typeof(Quick.Protocol.Pipeline.QpPipelineClientOptions));
+            register(typeof(Quick.Protocol.SerialPort.QpSerialPortClient), typeof(Quick.Protocol.SerialPort.QpSerialPortClientOptions));
+            register(typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClient), typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions));
         }
 
         public QpClientTypeInfo Get(string qpClientTypeName)
