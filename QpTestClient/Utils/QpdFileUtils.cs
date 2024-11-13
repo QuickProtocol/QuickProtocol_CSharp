@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Quick.Protocol;
+using Quick.Xml;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace QpTestClient.Utils
@@ -47,10 +50,24 @@ namespace QpTestClient.Utils
                 File.Delete(file);
         }
 
+        public static Quick.Xml.XmlConvertOptions XmlConvertOptions { get; private set; }
+
         public static TestConnectionInfo Load(string file)
         {
+            if (XmlConvertOptions == null)
+            {
+                XmlConvertOptions = new XmlConvertOptions()
+                {
+                     InstanceFactory = QpClientTypeManager.Instance.GetAll().ToDictionary(t => t.OptionsType, t =>
+                     {
+                         return new Func<object>(() => t.CreateOptionsInstanceFunc());
+                     })
+                };
+                XmlConvertOptions.InstanceFactory.Add(typeof(TestConnectionInfo), () => new TestConnectionInfo());
+                XmlConvertOptions.InstanceFactory.Add(typeof(QpInstruction), () => new QpInstruction());
+            }
             var content = File.ReadAllText(file);
-            return Quick.Xml.XmlConvert.Deserialize<TestConnectionInfo>(content);
+            return Quick.Xml.XmlConvert.Deserialize<TestConnectionInfo>(content, XmlConvertOptions);
         }
     }
 }

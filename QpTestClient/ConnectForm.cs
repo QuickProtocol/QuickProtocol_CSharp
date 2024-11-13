@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using QpTestClient.Utils;
 
 namespace QpTestClient
 {
@@ -31,8 +32,8 @@ namespace QpTestClient
         }
 
         public void EditConnectionInfo(TestConnectionInfo connectionInfo)
-        {            
-            this.ConnectionInfo = XmlConvert.Deserialize<TestConnectionInfo>(XmlConvert.Serialize(connectionInfo));
+        {
+            this.ConnectionInfo = XmlConvert.Deserialize<TestConnectionInfo>(XmlConvert.Serialize(connectionInfo), QpdFileUtils.XmlConvertOptions);
             txtName.Text = connectionInfo.Name;
             var qpClientTypeInfo = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.ClientType.FullName == connectionInfo.QpClientTypeName);
             cbConnectType.SelectedItem = qpClientTypeInfo;

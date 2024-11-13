@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using Quick.Protocol;
+﻿using Quick.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Text;
