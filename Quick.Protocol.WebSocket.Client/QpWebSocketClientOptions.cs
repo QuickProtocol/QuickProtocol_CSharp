@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.WebSocket.Client
 {
     [JsonSerializable(typeof(QpWebSocketClientOptions))]
-    internal partial class QpWebSocketClientOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpWebSocketClientOptionsSerializerContext : JsonSerializerContext { }
 
     public class QpWebSocketClientOptions : QpClientOptions
     {
@@ -53,6 +54,13 @@ namespace Quick.Protocol.WebSocket.Client
         {
             RegisterUriSchema(URI_SCHEMA_WS, () => new QpWebSocketClientOptions());
             RegisterUriSchema(URI_SCHEMA_WSS, () => new QpWebSocketClientOptions());
+        }
+
+
+        public override QpClientOptions Clone()
+        {
+            var json = JsonSerializer.Serialize(this, QpWebSocketClientOptionsSerializerContext.Default.QpWebSocketClientOptions);
+            return JsonSerializer.Deserialize(json, QpWebSocketClientOptionsSerializerContext.Default.QpWebSocketClientOptions);
         }
     }
 }

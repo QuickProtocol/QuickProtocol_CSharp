@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.Pipeline
 {
     [JsonSerializable(typeof(QpPipelineClientOptions))]
-    internal partial class QpPipelineClientOptionsOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpPipelineClientOptionsSerializerContext : JsonSerializerContext { }
 
     public class QpPipelineClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext GetJsonSerializerContext() => QpPipelineClientOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpPipelineClientOptionsSerializerContext.Default;
 
         public const string URI_SCHEMA = "qp.pipe";
 
-        [Category("常用")]
-        [DisplayName("服务器名称")]
         public string ServerName { get; set; } = ".";
 
-        [Category("常用")]
-        [DisplayName("管道名称")]
         public string PipeName { get; set; } = "Quick.Protocol";
 
         public override void Check()
@@ -51,6 +47,13 @@ namespace Quick.Protocol.Pipeline
         public static void RegisterUriSchema()
         {
             RegisterUriSchema(URI_SCHEMA, () => new QpPipelineClientOptions());
+        }
+
+
+        public override QpClientOptions Clone()
+        {
+            var json = JsonSerializer.Serialize(this, QpPipelineClientOptionsSerializerContext.Default.QpPipelineClientOptions);
+            return JsonSerializer.Deserialize(json, QpPipelineClientOptionsSerializerContext.Default.QpPipelineClientOptions);
         }
     }
 }

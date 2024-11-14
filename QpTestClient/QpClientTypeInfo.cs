@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows.Forms;
 
 namespace QpTestClient
 {
@@ -9,8 +10,8 @@ namespace QpTestClient
     {
         public string Name { get; set; }
         public Type ClientType { get; set; }
-        public Type OptionsType { get; set; }
         public Func<QpClientOptions> CreateOptionsInstanceFunc { get; set; }
+        public Func<Control> CreateOptionsControlFunc { get; set; }
         public override string ToString() => Name;
     }
 }

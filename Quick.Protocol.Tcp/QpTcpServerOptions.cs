@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Quick.Protocol.Tcp
 {
     [JsonSerializable(typeof(QpTcpServerOptions))]
-    internal partial class QpTcpServerOptionsOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpTcpServerOptionsOptionsSerializerContext : JsonSerializerContext { }
 
     public class QpTcpServerOptions : QpServerOptions
     {

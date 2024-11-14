@@ -316,7 +316,7 @@ namespace QpTestClient
             scMain.Enabled = false;
             try
             {
-                var preConnectionInfoContent = Quick.Xml.XmlConvert.Serialize(connectionContext.ConnectionInfo);
+                //var preConnectionInfoContent = Quick.Xml.XmlConvert.Serialize(connectionContext.ConnectionInfo);
 
                 await connectionContext.Connect();
                 connectionNode.ImageIndex = connectionNode.SelectedImageIndex = 1;
@@ -331,9 +331,11 @@ namespace QpTestClient
                 displayInstructions(connectionNode, connectionContext.ConnectionInfo.Instructions);
                 connectionNode.ExpandAll();
 
+                /*
                 var currentConnectionInfoContent = Quick.Xml.XmlConvert.Serialize(connectionContext.ConnectionInfo);
                 if (currentConnectionInfoContent != preConnectionInfoContent)
                     QpdFileUtils.SaveQpbFile(connectionContext.ConnectionInfo);
+                */
             }
             catch (Exception ex)
             {

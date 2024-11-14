@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml.Linq;
 
 namespace QpTestClient
@@ -15,7 +16,7 @@ namespace QpTestClient
         public static QpClientTypeManager Instance { get; } = new QpClientTypeManager();
         private Dictionary<string, QpClientTypeInfo> dict = null;
 
-        private void register(Type clientType, Type optionsType, Func<QpClientOptions> createOptionsInstanceFunc)
+        private void register(Type clientType, Func<QpClientOptions> createOptionsInstanceFunc, Func<Control> createOptionsControlFunc)
         {
             var clientTypeFullName = clientType.FullName;
             var name = clientType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? clientTypeFullName;
@@ -23,18 +24,18 @@ namespace QpTestClient
             {
                 Name = name,
                 ClientType = clientType,
-                OptionsType = optionsType,
-                CreateOptionsInstanceFunc = createOptionsInstanceFunc
+                CreateOptionsInstanceFunc = createOptionsInstanceFunc,
+                CreateOptionsControlFunc = createOptionsControlFunc
             };
         }
 
         public void Init()
         {
             dict = new Dictionary<string, QpClientTypeInfo>();
-            register(typeof(Quick.Protocol.Tcp.QpTcpClient),typeof(Quick.Protocol.Tcp.QpTcpClientOptions),()=>new Quick.Protocol.Tcp.QpTcpClientOptions());
-            register(typeof(Quick.Protocol.Pipeline.QpPipelineClient), typeof(Quick.Protocol.Pipeline.QpPipelineClientOptions), () => new Quick.Protocol.Pipeline.QpPipelineClientOptions());
-            register(typeof(Quick.Protocol.SerialPort.QpSerialPortClient), typeof(Quick.Protocol.SerialPort.QpSerialPortClientOptions), () => new Quick.Protocol.SerialPort.QpSerialPortClientOptions());
-            register(typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClient), typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions), () => new Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions());
+            register(typeof(Quick.Protocol.Tcp.QpTcpClient), () => new Quick.Protocol.Tcp.QpTcpClientOptions(), () => new Controls.ClientOptions.TcpClientOptionsControl());
+            //register(typeof(Quick.Protocol.Pipeline.QpPipelineClient), () => new Quick.Protocol.Pipeline.QpPipelineClientOptions());
+            //register(typeof(Quick.Protocol.SerialPort.QpSerialPortClient), () => new Quick.Protocol.SerialPort.QpSerialPortClientOptions());
+            //register(typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClient), () => new Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions());
         }
 
         public QpClientTypeInfo Get(string qpClientTypeName)

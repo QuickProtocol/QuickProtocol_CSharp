@@ -168,5 +168,7 @@ namespace Quick.Protocol
             qpClientOptions.LoadFromUri(uri);
             return qpClientOptions;
         }
+
+        public abstract QpClientOptions Clone();
     }
 }

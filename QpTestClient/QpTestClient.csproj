@@ -54,10 +54,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Quick.Xml" Version="1.0.2" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <Folder Include="Properties\" />
 	</ItemGroup>
 

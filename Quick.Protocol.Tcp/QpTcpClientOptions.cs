@@ -1,42 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.Tcp
 {
     [JsonSerializable(typeof(QpTcpClientOptions))]
-    internal partial class QpTcpClientOptionsOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpTcpClientOptionsSerializerContext : JsonSerializerContext { }
 
     public class QpTcpClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext GetJsonSerializerContext() => QpTcpClientOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpTcpClientOptionsSerializerContext.Default;
 
         public const string URI_SCHEMA = "qp.tcp";
         /// <summary>
         /// 主机
         /// </summary>
-        [DisplayName("主机")]
-        [Category("常用")]
         public string Host { get; set; } = "127.0.0.1";
         /// <summary>
         /// 端口
         /// </summary>
-        [DisplayName("端口")]
-        [Category("常用")]
         public int Port { get; set; } = 3011;
         /// <summary>
         /// 本地主机
         /// </summary>
-        [DisplayName("本地主机")]
-        [Category("高级")]
         public string LocalHost { get; set; }
         /// <summary>
         /// 本地端口
         /// </summary>
-        [DisplayName("本地端口")]
-        [Category("高级")]
         public int? LocalPort { get; set; }
 
         public override void Check()
@@ -86,6 +77,12 @@ namespace Quick.Protocol.Tcp
         public static void RegisterUriSchema()
         {
             RegisterUriSchema(URI_SCHEMA, () => new QpTcpClientOptions());
+        }
+
+        public override QpClientOptions Clone()
+        {
+            var json = JsonSerializer.Serialize(this, QpTcpClientOptionsSerializerContext.Default.QpTcpClientOptions);
+            return JsonSerializer.Deserialize(json, QpTcpClientOptionsSerializerContext.Default.QpTcpClientOptions);
         }
     }
 }

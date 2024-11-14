@@ -31,118 +31,117 @@ namespace QpTestClient
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConnectForm));
-            this.cbConnectType = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.pgOptions = new System.Windows.Forms.PropertyGrid();
-            this.txtName = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.btnOk = new System.Windows.Forms.Button();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.SuspendLayout();
+            cbConnectType = new System.Windows.Forms.ComboBox();
+            label1 = new System.Windows.Forms.Label();
+            txtName = new System.Windows.Forms.TextBox();
+            label2 = new System.Windows.Forms.Label();
+            btnOk = new System.Windows.Forms.Button();
+            btnCancel = new System.Windows.Forms.Button();
+            pnlClientOptions = new System.Windows.Forms.Panel();
+            SuspendLayout();
             // 
             // cbConnectType
             // 
-            this.cbConnectType.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbConnectType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbConnectType.FormattingEnabled = true;
-            this.cbConnectType.Location = new System.Drawing.Point(101, 51);
-            this.cbConnectType.Name = "cbConnectType";
-            this.cbConnectType.Size = new System.Drawing.Size(410, 28);
-            this.cbConnectType.TabIndex = 2;
-            this.cbConnectType.SelectedIndexChanged += new System.EventHandler(this.cbConnectType_SelectedIndexChanged);
+            cbConnectType.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            cbConnectType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            cbConnectType.FormattingEnabled = true;
+            cbConnectType.Location = new System.Drawing.Point(157, 79);
+            cbConnectType.Margin = new System.Windows.Forms.Padding(5);
+            cbConnectType.Name = "cbConnectType";
+            cbConnectType.Size = new System.Drawing.Size(636, 39);
+            cbConnectType.TabIndex = 2;
+            cbConnectType.SelectedIndexChanged += cbConnectType_SelectedIndexChanged;
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(22, 54);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(73, 20);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "连接方式:";
-            // 
-            // pgOptions
-            // 
-            this.pgOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pgOptions.Location = new System.Drawing.Point(12, 85);
-            this.pgOptions.Name = "pgOptions";
-            this.pgOptions.PropertySort = System.Windows.Forms.PropertySort.Categorized;
-            this.pgOptions.Size = new System.Drawing.Size(499, 370);
-            this.pgOptions.TabIndex = 4;
-            this.pgOptions.ToolbarVisible = false;
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(34, 84);
+            label1.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(116, 31);
+            label1.TabIndex = 3;
+            label1.Text = "连接方式:";
             // 
             // txtName
             // 
-            this.txtName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtName.Location = new System.Drawing.Point(101, 12);
-            this.txtName.Name = "txtName";
-            this.txtName.Size = new System.Drawing.Size(410, 27);
-            this.txtName.TabIndex = 0;
+            txtName.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            txtName.Location = new System.Drawing.Point(157, 19);
+            txtName.Margin = new System.Windows.Forms.Padding(5);
+            txtName.Name = "txtName";
+            txtName.Size = new System.Drawing.Size(636, 38);
+            txtName.TabIndex = 0;
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(52, 15);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(43, 20);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "名称:";
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(81, 23);
+            label2.Margin = new System.Windows.Forms.Padding(5, 0, 5, 0);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(68, 31);
+            label2.TabIndex = 3;
+            label2.Text = "名称:";
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(101, 461);
-            this.btnOk.Name = "btnOk";
-            this.btnOk.Size = new System.Drawing.Size(94, 29);
-            this.btnOk.TabIndex = 5;
-            this.btnOk.Text = "确定(&O)";
-            this.btnOk.UseVisualStyleBackColor = true;
-            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
+            btnOk.Location = new System.Drawing.Point(157, 715);
+            btnOk.Margin = new System.Windows.Forms.Padding(5);
+            btnOk.Name = "btnOk";
+            btnOk.Size = new System.Drawing.Size(146, 45);
+            btnOk.TabIndex = 5;
+            btnOk.Text = "确定(&O)";
+            btnOk.UseVisualStyleBackColor = true;
+            btnOk.Click += btnOk_Click;
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(201, 461);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(94, 29);
-            this.btnCancel.TabIndex = 6;
-            this.btnCancel.Text = "取消(&C)";
-            this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            btnCancel.Location = new System.Drawing.Point(313, 715);
+            btnCancel.Margin = new System.Windows.Forms.Padding(5);
+            btnCancel.Name = "btnCancel";
+            btnCancel.Size = new System.Drawing.Size(146, 45);
+            btnCancel.TabIndex = 6;
+            btnCancel.Text = "取消(&C)";
+            btnCancel.UseVisualStyleBackColor = true;
+            btnCancel.Click += btnCancel_Click;
+            // 
+            // pnlClientOptions
+            // 
+            pnlClientOptions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            pnlClientOptions.Location = new System.Drawing.Point(34, 126);
+            pnlClientOptions.Name = "pnlClientOptions";
+            pnlClientOptions.Size = new System.Drawing.Size(759, 581);
+            pnlClientOptions.TabIndex = 7;
             // 
             // ConnectForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(523, 502);
-            this.Controls.Add(this.btnCancel);
-            this.Controls.Add(this.btnOk);
-            this.Controls.Add(this.txtName);
-            this.Controls.Add(this.pgOptions);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.cbConnectType);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "ConnectForm";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "添加连接";
-            this.Load += new System.EventHandler(this.ConnectForm_Load);
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(814, 778);
+            Controls.Add(pnlClientOptions);
+            Controls.Add(btnCancel);
+            Controls.Add(btnOk);
+            Controls.Add(txtName);
+            Controls.Add(label2);
+            Controls.Add(label1);
+            Controls.Add(cbConnectType);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            Margin = new System.Windows.Forms.Padding(5);
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "ConnectForm";
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            Text = "添加连接";
+            Load += ConnectForm_Load;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
         private System.Windows.Forms.ComboBox cbConnectType;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.PropertyGrid pgOptions;
         private System.Windows.Forms.TextBox txtName;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btnOk;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Panel pnlClientOptions;
     }
 }

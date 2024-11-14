@@ -3,7 +3,7 @@
 namespace Quick.Protocol.WebSocket.Server.AspNetCore
 {
     [JsonSerializable(typeof(QpWebSocketServerOptions))]
-    internal partial class QpWebSocketServerOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpWebSocketServerOptionsSerializerContext : JsonSerializerContext { }
 
     public class QpWebSocketServerOptions : QpServerOptions
     {

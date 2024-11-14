@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO.Ports;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.SerialPort
 {
     [JsonSerializable(typeof(QpSerialPortClientOptions))]
-    internal partial class QpSerialPortClientOptionsOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpSerialPortClientOptionsSerializerContext : JsonSerializerContext { }
 
     public class QpSerialPortClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext GetJsonSerializerContext() => QpSerialPortClientOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpSerialPortClientOptionsSerializerContext.Default;
 
         public const string URI_SCHEMA = "qp.serial";
         /// <summary>
@@ -94,6 +95,12 @@ namespace Quick.Protocol.SerialPort
         public static void RegisterUriSchema()
         {
             RegisterUriSchema(URI_SCHEMA, () => new QpSerialPortClientOptions());
+        }
+
+        public override QpClientOptions Clone()
+        {
+            var json = JsonSerializer.Serialize(this, QpSerialPortClientOptionsSerializerContext.Default.QpSerialPortClientOptions);
+            return JsonSerializer.Deserialize(json, QpSerialPortClientOptionsSerializerContext.Default.QpSerialPortClientOptions);
         }
     }
 }

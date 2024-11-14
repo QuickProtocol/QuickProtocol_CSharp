@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Quick.Protocol.SerialPort
 {
     [JsonSerializable(typeof(QpSerialPortServerOptions))]
-    internal partial class QpSerialPortServerOptionsOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpSerialPortServerOptionsOptionsSerializerContext : JsonSerializerContext { }
 
     public class QpSerialPortServerOptions : QpServerOptions
     {

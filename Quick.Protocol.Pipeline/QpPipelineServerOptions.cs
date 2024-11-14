@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Quick.Protocol.Pipeline
 {
     [JsonSerializable(typeof(QpPipelineServerOptions))]
-    internal partial class QpPipelineServerOptionsOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpPipelineServerOptionsOptionsSerializerContext : JsonSerializerContext { }
 
     public class QpPipelineServerOptions : QpServerOptions
     {

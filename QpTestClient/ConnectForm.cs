@@ -1,19 +1,12 @@
 ﻿using System.Text.Json;
 using Quick.Protocol;
-using Quick.Protocol.Utils;
-using Quick.Xml;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using QpTestClient.Utils;
 
 namespace QpTestClient
 {
@@ -21,7 +14,7 @@ namespace QpTestClient
     {
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public TestConnectionInfo ConnectionInfo { get; private set; }
-
+        private QpClientOptions clientOptions = null;
         public ConnectForm()
         {
             InitializeComponent();
@@ -33,7 +26,7 @@ namespace QpTestClient
 
         public void EditConnectionInfo(TestConnectionInfo connectionInfo)
         {
-            this.ConnectionInfo = XmlConvert.Deserialize<TestConnectionInfo>(XmlConvert.Serialize(connectionInfo), QpdFileUtils.XmlConvertOptions);
+            this.ConnectionInfo = connectionInfo;
             txtName.Text = connectionInfo.Name;
             var qpClientTypeInfo = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.ClientType.FullName == connectionInfo.QpClientTypeName);
             cbConnectType.SelectedItem = qpClientTypeInfo;
@@ -47,32 +40,31 @@ namespace QpTestClient
 
             if (cbConnectType.Items.Count <= 0)
                 return;
-            var qpClientTypeName = "Quick.Protocol.Tcp.QpTcpClient";
+
             if (ConnectionInfo != null)
-                qpClientTypeName = ConnectionInfo.QpClientTypeName;
-            var item = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.ClientType.FullName == qpClientTypeName);
-            if (item != null)
+            {
+                var qpClientTypeName = ConnectionInfo.QpClientTypeName;
+                var item = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.ClientType.FullName == qpClientTypeName);
                 cbConnectType.SelectedItem = item;
-            else
-                cbConnectType.SelectedIndex = 0;
+            }
         }
 
         private void cbConnectType_SelectedIndexChanged(object sender, EventArgs e)
         {
             var qpClientTypeInfo = (QpClientTypeInfo)cbConnectType.SelectedItem;
-
-            QpClientOptions options = null;
             if (ConnectionInfo != null && qpClientTypeInfo.ClientType.FullName == ConnectionInfo.QpClientTypeName)
             {
-                options = (QpClientOptions)JsonSerializer.Deserialize(
-                    JsonSerializer.Serialize(ConnectionInfo.QpClientOptions),
-                    qpClientTypeInfo.OptionsType);
+                clientOptions = ConnectionInfo.QpClientOptions.Clone();
             }
             else
             {
-                options = qpClientTypeInfo.CreateOptionsInstanceFunc();
+                clientOptions = qpClientTypeInfo.CreateOptionsInstanceFunc();
             }
-            pgOptions.SelectedObject = options;
+            pnlClientOptions.Controls.Clear();
+            var control = qpClientTypeInfo.CreateOptionsControlFunc();
+            control.DataContext = clientOptions;
+            control.Dock = DockStyle.Fill;
+            pnlClientOptions.Controls.Add(control);
         }
 
         private void btnOk_Click(object sender, EventArgs e)
@@ -89,7 +81,7 @@ namespace QpTestClient
             {
                 Name = name,
                 QpClientTypeName = qpClientTypeInfo.ClientType.FullName,
-                QpClientOptions = (QpClientOptions)pgOptions.SelectedObject,
+                QpClientOptions = clientOptions,
                 Instructions = ConnectionInfo?.Instructions
             };
             DialogResult = DialogResult.OK;

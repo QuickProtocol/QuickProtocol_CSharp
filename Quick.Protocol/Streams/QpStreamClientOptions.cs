@@ -24,5 +24,10 @@ namespace Quick.Protocol.Streams
         {
             return "qp.stream://" + BaseStream.GetType().Name;
         }
+
+        public override QpClientOptions Clone()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
