@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace QpTestClient.Controls.ClientOptions
 {
-    public partial class PipelineClientOptionsControl : UserControl
+    public partial class PipelineClientOptionsControl : ClientOptionsControl
     {
         public PipelineClientOptionsControl()
         {

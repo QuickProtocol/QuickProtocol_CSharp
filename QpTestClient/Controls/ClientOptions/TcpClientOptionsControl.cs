@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace QpTestClient.Controls.ClientOptions
 {
-    public partial class TcpClientOptionsControl : UserControl
+    public partial class TcpClientOptionsControl : ClientOptionsControl
     {
         public TcpClientOptionsControl()
         {

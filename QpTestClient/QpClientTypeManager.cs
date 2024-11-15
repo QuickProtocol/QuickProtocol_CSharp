@@ -1,4 +1,5 @@
-﻿using Quick.Protocol;
+﻿using QpTestClient.Controls.ClientOptions;
+using Quick.Protocol;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,7 +17,7 @@ namespace QpTestClient
         public static QpClientTypeManager Instance { get; } = new QpClientTypeManager();
         private Dictionary<string, QpClientTypeInfo> dict = null;
 
-        private void register(Type clientType, Func<QpClientOptions> createOptionsInstanceFunc, Func<Control> createOptionsControlFunc)
+        private void register(Type clientType, Func<QpClientOptions> createOptionsInstanceFunc, Func<ClientOptionsControl> createOptionsControlFunc)
         {
             var clientTypeFullName = clientType.FullName;
             var name = clientType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? clientTypeFullName;
@@ -44,7 +45,10 @@ namespace QpTestClient
                 typeof(Quick.Protocol.SerialPort.QpSerialPortClient),
                 () => new Quick.Protocol.SerialPort.QpSerialPortClientOptions(),
                 () => new Controls.ClientOptions.SerialPortClientOptionsControl());
-            //register(typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClient), () => new Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions());
+            register(
+                typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClient),
+                () => new Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions(),
+                () => new Controls.ClientOptions.WebSocketClientOptionsControl());
         }
 
         public QpClientTypeInfo Get(string qpClientTypeName)

@@ -19,8 +19,10 @@ namespace QpTestClient.Controls
         {
             this.item = item;
             InitializeComponent();
-
-            var ctl = UiUtils.GetPropertyGridControl(item.ConnectionInfo.QpClientOptions);
+            var qpClientTypeInfo = QpClientTypeManager.Instance.Get(item.ConnectionInfo.QpClientTypeName);
+            var ctl = qpClientTypeInfo.CreateOptionsControlFunc();
+            ctl.DataContext = item.ConnectionInfo.QpClientOptions;
+            ctl.ReadOnly = true;
             ctl.Dock = DockStyle.Fill;
             tpBasic.Controls.Add(ctl);
         }

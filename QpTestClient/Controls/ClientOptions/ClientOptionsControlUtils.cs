@@ -75,10 +75,13 @@ namespace QpTestClient.Controls.ClientOptions
         {
             label.Click += (_, _) =>
             {
-                ActiveLabel(label);
-                if (!control.Focused)
+                if (control.CanFocus)
                 {
-                    control.Focus();
+                    ActiveLabel(label);
+                    if (!control.Focused)
+                    {
+                        control.Focus();
+                    }
                 }
             };
             control.GotFocus += (_, _) =>
