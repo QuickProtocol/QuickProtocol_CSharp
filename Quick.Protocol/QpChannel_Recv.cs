@@ -414,6 +414,12 @@ namespace Quick.Protocol
                 if (bytesRead == 0)
                     break;
                 writer.Advance(bytesRead);
+                if (options.EnableNetstat)
+                {
+                    BytesReceived += bytesRead;
+                    if (BytesReceived > LONG_HALF_MAX_VALUE)
+                        BytesReceived = 0;
+                }
                 await writer.FlushAsync(token);
             }
         }
