@@ -1,4 +1,5 @@
-﻿using Quick.Protocol.Tcp;
+﻿using Quick.Protocol.Pipeline;
+using Quick.Protocol.Tcp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,31 +13,25 @@ using System.Windows.Forms;
 
 namespace QpTestClient.Controls.ClientOptions
 {
-    public partial class TcpClientOptionsControl : UserControl
+    public partial class PipelineClientOptionsControl : UserControl
     {
-        public TcpClientOptionsControl()
+        public PipelineClientOptionsControl()
         {
             InitializeComponent();
         }
 
         private void UserControl_DataContextChanged(object sender, EventArgs e)
         {
-            var options = (QpTcpClientOptions)DataContext;
+            var options = (QpPipelineClientOptions)DataContext;
 
-            ClientOptionsControlUtils.LinkControl(lblHost, txtHost);
-            ClientOptionsControlUtils.BindString(txtHost, () => options.Host, t => options.Host = t);
+            ClientOptionsControlUtils.LinkControl(lblServerName, txtServerName);
+            ClientOptionsControlUtils.BindString(txtServerName, () => options.ServerName, t => options.ServerName = t);
 
-            ClientOptionsControlUtils.LinkControl(lblPort, txtPort);
-            ClientOptionsControlUtils.BindInt32(txtPort, () => options.Port, t => options.Port = t);
+            ClientOptionsControlUtils.LinkControl(lblPipeName, txtPipeName);
+            ClientOptionsControlUtils.BindString(txtPipeName, () => options.PipeName, t => options.PipeName = t);
 
             ClientOptionsControlUtils.LinkControl(lblPassword, txtPassword);
             ClientOptionsControlUtils.BindString(txtPassword, () => options.Password, t => options.Password = t);
-
-            ClientOptionsControlUtils.LinkControl(lblLocalHost, txtLocalHost);
-            ClientOptionsControlUtils.BindString(txtLocalHost, () => options.LocalHost, t => options.LocalHost = t);
-
-            ClientOptionsControlUtils.LinkControl(lblLocalPort, txtLocalPort);
-            ClientOptionsControlUtils.BindInt32(txtLocalPort, () => options.LocalPort, t => options.LocalPort = t);
 
             ClientOptionsControlUtils.LinkControl(lblConnectionTimeout, txtConnectionTimeout);
             ClientOptionsControlUtils.BindInt32(txtConnectionTimeout, () => options.ConnectionTimeout, t => options.ConnectionTimeout = t);

@@ -47,6 +47,10 @@ namespace QpTestClient
                 var item = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.ClientType.FullName == qpClientTypeName);
                 cbConnectType.SelectedItem = item;
             }
+            else
+            {
+                cbConnectType.SelectedIndex = 0;
+            }
         }
 
         private void cbConnectType_SelectedIndexChanged(object sender, EventArgs e)

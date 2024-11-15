@@ -1,6 +1,6 @@
 ﻿namespace QpTestClient.Controls.ClientOptions
 {
-    partial class TcpClientOptionsControl
+    partial class PipelineClientOptionsControl
     {
         /// <summary> 
         /// 必需的设计器变量。
@@ -30,20 +30,14 @@
         {
             label1 = new System.Windows.Forms.Label();
             panel1 = new System.Windows.Forms.Panel();
-            txtHost = new System.Windows.Forms.TextBox();
-            lblHost = new System.Windows.Forms.Label();
+            txtServerName = new System.Windows.Forms.TextBox();
+            lblServerName = new System.Windows.Forms.Label();
             panel2 = new System.Windows.Forms.Panel();
-            txtPort = new System.Windows.Forms.TextBox();
-            lblPort = new System.Windows.Forms.Label();
+            txtPipeName = new System.Windows.Forms.TextBox();
+            lblPipeName = new System.Windows.Forms.Label();
             panel3 = new System.Windows.Forms.Panel();
             txtPassword = new System.Windows.Forms.TextBox();
             lblPassword = new System.Windows.Forms.Label();
-            panel5 = new System.Windows.Forms.Panel();
-            txtLocalPort = new System.Windows.Forms.TextBox();
-            lblLocalPort = new System.Windows.Forms.Label();
-            panel6 = new System.Windows.Forms.Panel();
-            txtLocalHost = new System.Windows.Forms.TextBox();
-            lblLocalHost = new System.Windows.Forms.Label();
             label5 = new System.Windows.Forms.Label();
             panel4 = new System.Windows.Forms.Panel();
             txtConnectionTimeout = new System.Windows.Forms.TextBox();
@@ -73,8 +67,6 @@
             panel1.SuspendLayout();
             panel2.SuspendLayout();
             panel3.SuspendLayout();
-            panel5.SuspendLayout();
-            panel6.SuspendLayout();
             panel4.SuspendLayout();
             panel7.SuspendLayout();
             panel8.SuspendLayout();
@@ -104,70 +96,70 @@
             // panel1
             // 
             panel1.AutoSize = true;
-            panel1.Controls.Add(txtHost);
-            panel1.Controls.Add(lblHost);
+            panel1.Controls.Add(txtServerName);
+            panel1.Controls.Add(lblServerName);
             panel1.Dock = System.Windows.Forms.DockStyle.Top;
             panel1.Location = new System.Drawing.Point(0, 40);
             panel1.Name = "panel1";
             panel1.Size = new System.Drawing.Size(878, 38);
             panel1.TabIndex = 2;
             // 
-            // txtHost
+            // txtServerName
             // 
-            txtHost.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            txtHost.Dock = System.Windows.Forms.DockStyle.Top;
-            txtHost.Location = new System.Drawing.Point(180, 0);
-            txtHost.Margin = new System.Windows.Forms.Padding(0);
-            txtHost.Name = "txtHost";
-            txtHost.Size = new System.Drawing.Size(698, 38);
-            txtHost.TabIndex = 1;
+            txtServerName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            txtServerName.Dock = System.Windows.Forms.DockStyle.Top;
+            txtServerName.Location = new System.Drawing.Point(180, 0);
+            txtServerName.Margin = new System.Windows.Forms.Padding(0);
+            txtServerName.Name = "txtServerName";
+            txtServerName.Size = new System.Drawing.Size(698, 38);
+            txtServerName.TabIndex = 1;
             // 
-            // lblHost
+            // lblServerName
             // 
-            lblHost.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            lblHost.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            lblHost.Dock = System.Windows.Forms.DockStyle.Left;
-            lblHost.Location = new System.Drawing.Point(0, 0);
-            lblHost.Margin = new System.Windows.Forms.Padding(0);
-            lblHost.MinimumSize = new System.Drawing.Size(180, 30);
-            lblHost.Name = "lblHost";
-            lblHost.Size = new System.Drawing.Size(180, 38);
-            lblHost.TabIndex = 0;
-            lblHost.Text = "主机";
+            lblServerName.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            lblServerName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            lblServerName.Dock = System.Windows.Forms.DockStyle.Left;
+            lblServerName.Location = new System.Drawing.Point(0, 0);
+            lblServerName.Margin = new System.Windows.Forms.Padding(0);
+            lblServerName.MinimumSize = new System.Drawing.Size(180, 30);
+            lblServerName.Name = "lblServerName";
+            lblServerName.Size = new System.Drawing.Size(180, 38);
+            lblServerName.TabIndex = 0;
+            lblServerName.Text = "服务器名称";
             // 
             // panel2
             // 
             panel2.AutoSize = true;
-            panel2.Controls.Add(txtPort);
-            panel2.Controls.Add(lblPort);
+            panel2.Controls.Add(txtPipeName);
+            panel2.Controls.Add(lblPipeName);
             panel2.Dock = System.Windows.Forms.DockStyle.Top;
             panel2.Location = new System.Drawing.Point(0, 78);
             panel2.Name = "panel2";
             panel2.Size = new System.Drawing.Size(878, 38);
             panel2.TabIndex = 3;
             // 
-            // txtPort
+            // txtPipeName
             // 
-            txtPort.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            txtPort.Dock = System.Windows.Forms.DockStyle.Top;
-            txtPort.Location = new System.Drawing.Point(180, 0);
-            txtPort.Margin = new System.Windows.Forms.Padding(0);
-            txtPort.Name = "txtPort";
-            txtPort.Size = new System.Drawing.Size(698, 38);
-            txtPort.TabIndex = 1;
+            txtPipeName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            txtPipeName.Dock = System.Windows.Forms.DockStyle.Top;
+            txtPipeName.Location = new System.Drawing.Point(180, 0);
+            txtPipeName.Margin = new System.Windows.Forms.Padding(0);
+            txtPipeName.Name = "txtPipeName";
+            txtPipeName.Size = new System.Drawing.Size(698, 38);
+            txtPipeName.TabIndex = 1;
             // 
-            // lblPort
+            // lblPipeName
             // 
-            lblPort.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            lblPort.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            lblPort.Dock = System.Windows.Forms.DockStyle.Left;
-            lblPort.Location = new System.Drawing.Point(0, 0);
-            lblPort.Margin = new System.Windows.Forms.Padding(0);
-            lblPort.MinimumSize = new System.Drawing.Size(180, 30);
-            lblPort.Name = "lblPort";
-            lblPort.Size = new System.Drawing.Size(180, 38);
-            lblPort.TabIndex = 0;
-            lblPort.Text = "端口";
+            lblPipeName.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            lblPipeName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            lblPipeName.Dock = System.Windows.Forms.DockStyle.Left;
+            lblPipeName.Location = new System.Drawing.Point(0, 0);
+            lblPipeName.Margin = new System.Windows.Forms.Padding(0);
+            lblPipeName.MinimumSize = new System.Drawing.Size(180, 30);
+            lblPipeName.Name = "lblPipeName";
+            lblPipeName.Size = new System.Drawing.Size(180, 38);
+            lblPipeName.TabIndex = 0;
+            lblPipeName.Text = "管道名称";
             // 
             // panel3
             // 
@@ -204,74 +196,6 @@
             lblPassword.TabIndex = 0;
             lblPassword.Text = "密码";
             // 
-            // panel5
-            // 
-            panel5.AutoSize = true;
-            panel5.Controls.Add(txtLocalPort);
-            panel5.Controls.Add(lblLocalPort);
-            panel5.Dock = System.Windows.Forms.DockStyle.Top;
-            panel5.Location = new System.Drawing.Point(0, 232);
-            panel5.Name = "panel5";
-            panel5.Size = new System.Drawing.Size(878, 38);
-            panel5.TabIndex = 7;
-            // 
-            // txtLocalPort
-            // 
-            txtLocalPort.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            txtLocalPort.Dock = System.Windows.Forms.DockStyle.Top;
-            txtLocalPort.Location = new System.Drawing.Point(180, 0);
-            txtLocalPort.Margin = new System.Windows.Forms.Padding(0);
-            txtLocalPort.Name = "txtLocalPort";
-            txtLocalPort.Size = new System.Drawing.Size(698, 38);
-            txtLocalPort.TabIndex = 1;
-            // 
-            // lblLocalPort
-            // 
-            lblLocalPort.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            lblLocalPort.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            lblLocalPort.Dock = System.Windows.Forms.DockStyle.Left;
-            lblLocalPort.Location = new System.Drawing.Point(0, 0);
-            lblLocalPort.Margin = new System.Windows.Forms.Padding(0);
-            lblLocalPort.MinimumSize = new System.Drawing.Size(180, 30);
-            lblLocalPort.Name = "lblLocalPort";
-            lblLocalPort.Size = new System.Drawing.Size(180, 38);
-            lblLocalPort.TabIndex = 0;
-            lblLocalPort.Text = "本地端口";
-            // 
-            // panel6
-            // 
-            panel6.AutoSize = true;
-            panel6.Controls.Add(txtLocalHost);
-            panel6.Controls.Add(lblLocalHost);
-            panel6.Dock = System.Windows.Forms.DockStyle.Top;
-            panel6.Location = new System.Drawing.Point(0, 194);
-            panel6.Name = "panel6";
-            panel6.Size = new System.Drawing.Size(878, 38);
-            panel6.TabIndex = 6;
-            // 
-            // txtLocalHost
-            // 
-            txtLocalHost.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            txtLocalHost.Dock = System.Windows.Forms.DockStyle.Top;
-            txtLocalHost.Location = new System.Drawing.Point(180, 0);
-            txtLocalHost.Margin = new System.Windows.Forms.Padding(0);
-            txtLocalHost.Name = "txtLocalHost";
-            txtLocalHost.Size = new System.Drawing.Size(698, 38);
-            txtLocalHost.TabIndex = 1;
-            // 
-            // lblLocalHost
-            // 
-            lblLocalHost.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            lblLocalHost.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            lblLocalHost.Dock = System.Windows.Forms.DockStyle.Left;
-            lblLocalHost.Location = new System.Drawing.Point(0, 0);
-            lblLocalHost.Margin = new System.Windows.Forms.Padding(0);
-            lblLocalHost.MinimumSize = new System.Drawing.Size(180, 30);
-            lblLocalHost.Name = "lblLocalHost";
-            lblLocalHost.Size = new System.Drawing.Size(180, 38);
-            lblLocalHost.TabIndex = 0;
-            lblLocalHost.Text = "本地主机";
-            // 
             // label5
             // 
             label5.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
@@ -291,7 +215,7 @@
             panel4.Controls.Add(txtConnectionTimeout);
             panel4.Controls.Add(lblConnectionTimeout);
             panel4.Dock = System.Windows.Forms.DockStyle.Top;
-            panel4.Location = new System.Drawing.Point(0, 270);
+            panel4.Location = new System.Drawing.Point(0, 194);
             panel4.Name = "panel4";
             panel4.Size = new System.Drawing.Size(878, 38);
             panel4.TabIndex = 8;
@@ -325,7 +249,7 @@
             panel7.Controls.Add(txtTransportTimeout);
             panel7.Controls.Add(lblTransportTimeout);
             panel7.Dock = System.Windows.Forms.DockStyle.Top;
-            panel7.Location = new System.Drawing.Point(0, 308);
+            panel7.Location = new System.Drawing.Point(0, 232);
             panel7.Name = "panel7";
             panel7.Size = new System.Drawing.Size(878, 38);
             panel7.TabIndex = 9;
@@ -358,7 +282,7 @@
             panel8.Controls.Add(panel9);
             panel8.Controls.Add(lblEnableEncrypt);
             panel8.Dock = System.Windows.Forms.DockStyle.Top;
-            panel8.Location = new System.Drawing.Point(0, 346);
+            panel8.Location = new System.Drawing.Point(0, 270);
             panel8.Name = "panel8";
             panel8.Size = new System.Drawing.Size(878, 38);
             panel8.TabIndex = 10;
@@ -402,7 +326,7 @@
             panel10.Controls.Add(panel11);
             panel10.Controls.Add(lblEnableCompress);
             panel10.Dock = System.Windows.Forms.DockStyle.Top;
-            panel10.Location = new System.Drawing.Point(0, 384);
+            panel10.Location = new System.Drawing.Point(0, 308);
             panel10.Name = "panel10";
             panel10.Size = new System.Drawing.Size(878, 38);
             panel10.TabIndex = 11;
@@ -447,7 +371,7 @@
             panel12.Controls.Add(txtMaxPackageSize);
             panel12.Controls.Add(lblMaxPackageSize);
             panel12.Dock = System.Windows.Forms.DockStyle.Top;
-            panel12.Location = new System.Drawing.Point(0, 422);
+            panel12.Location = new System.Drawing.Point(0, 346);
             panel12.Name = "panel12";
             panel12.Size = new System.Drawing.Size(878, 38);
             panel12.TabIndex = 12;
@@ -480,7 +404,7 @@
             panel13.Controls.Add(panel14);
             panel13.Controls.Add(lblEnableNetstat);
             panel13.Dock = System.Windows.Forms.DockStyle.Top;
-            panel13.Location = new System.Drawing.Point(0, 460);
+            panel13.Location = new System.Drawing.Point(0, 384);
             panel13.Name = "panel13";
             panel13.Size = new System.Drawing.Size(878, 38);
             panel13.TabIndex = 13;
@@ -524,7 +448,7 @@
             panel15.Controls.Add(panel16);
             panel15.Controls.Add(lblRaiseNoticePackageReceivedEvent);
             panel15.Dock = System.Windows.Forms.DockStyle.Top;
-            panel15.Location = new System.Drawing.Point(0, 498);
+            panel15.Location = new System.Drawing.Point(0, 422);
             panel15.Name = "panel15";
             panel15.Size = new System.Drawing.Size(878, 38);
             panel15.TabIndex = 14;
@@ -563,7 +487,7 @@
             lblRaiseNoticePackageReceivedEvent.TabIndex = 0;
             lblRaiseNoticePackageReceivedEvent.Text = "通知接收事件";
             // 
-            // TcpClientOptionsControl
+            // PipelineClientOptionsControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -576,14 +500,12 @@
             Controls.Add(panel8);
             Controls.Add(panel7);
             Controls.Add(panel4);
-            Controls.Add(panel5);
-            Controls.Add(panel6);
             Controls.Add(label5);
             Controls.Add(panel3);
             Controls.Add(panel2);
             Controls.Add(panel1);
             Controls.Add(label1);
-            Name = "TcpClientOptionsControl";
+            Name = "PipelineClientOptionsControl";
             Size = new System.Drawing.Size(878, 833);
             DataContextChanged += UserControl_DataContextChanged;
             panel1.ResumeLayout(false);
@@ -592,10 +514,6 @@
             panel2.PerformLayout();
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
-            panel5.ResumeLayout(false);
-            panel5.PerformLayout();
-            panel6.ResumeLayout(false);
-            panel6.PerformLayout();
             panel4.ResumeLayout(false);
             panel4.PerformLayout();
             panel7.ResumeLayout(false);
@@ -618,20 +536,14 @@
 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.TextBox txtHost;
-        private System.Windows.Forms.Label lblHost;
+        private System.Windows.Forms.TextBox txtServerName;
+        private System.Windows.Forms.Label lblServerName;
         private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.TextBox txtPort;
-        private System.Windows.Forms.Label lblPort;
+        private System.Windows.Forms.TextBox txtPipeName;
+        private System.Windows.Forms.Label lblPipeName;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.TextBox txtPassword;
         private System.Windows.Forms.Label lblPassword;
-        private System.Windows.Forms.Panel panel5;
-        private System.Windows.Forms.TextBox txtLocalPort;
-        private System.Windows.Forms.Label lblLocalPort;
-        private System.Windows.Forms.Panel panel6;
-        private System.Windows.Forms.TextBox txtLocalHost;
-        private System.Windows.Forms.Label lblLocalHost;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Panel panel4;
         private System.Windows.Forms.TextBox txtConnectionTimeout;
