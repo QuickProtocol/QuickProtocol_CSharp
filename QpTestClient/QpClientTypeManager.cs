@@ -32,9 +32,18 @@ namespace QpTestClient
         public void Init()
         {
             dict = new Dictionary<string, QpClientTypeInfo>();
-            register(typeof(Quick.Protocol.Tcp.QpTcpClient), () => new Quick.Protocol.Tcp.QpTcpClientOptions(), () => new Controls.ClientOptions.TcpClientOptionsControl());
-            register(typeof(Quick.Protocol.Pipeline.QpPipelineClient), () => new Quick.Protocol.Pipeline.QpPipelineClientOptions(),()=>new Controls.ClientOptions.PipelineClientOptionsControl());
-            //register(typeof(Quick.Protocol.SerialPort.QpSerialPortClient), () => new Quick.Protocol.SerialPort.QpSerialPortClientOptions());
+            register(
+                typeof(Quick.Protocol.Tcp.QpTcpClient),
+                () => new Quick.Protocol.Tcp.QpTcpClientOptions(),
+                () => new Controls.ClientOptions.TcpClientOptionsControl());
+            register(
+                typeof(Quick.Protocol.Pipeline.QpPipelineClient),
+                () => new Quick.Protocol.Pipeline.QpPipelineClientOptions(),
+                () => new Controls.ClientOptions.PipelineClientOptionsControl());
+            register(
+                typeof(Quick.Protocol.SerialPort.QpSerialPortClient),
+                () => new Quick.Protocol.SerialPort.QpSerialPortClientOptions(),
+                () => new Controls.ClientOptions.SerialPortClientOptionsControl());
             //register(typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClient), () => new Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions());
         }
 

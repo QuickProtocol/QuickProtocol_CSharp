@@ -14,13 +14,13 @@ namespace QpTestClient.Controls.ClientOptions
         public static void BindString(TextBox textBox, Func<string> getValueHandler, Action<string> setValueHandler)
         {
             textBox.Text = getValueHandler();
-            textBox.TextChanged += (sender2, e2) => setValueHandler(textBox.Text);
+            textBox.TextChanged += (_, _) => setValueHandler(textBox.Text);
         }
 
         public static void BindInt32(TextBox textBox, Func<int> getValueHandler, Action<int> setValueHandler)
         {
             textBox.Text = getValueHandler().ToString();
-            textBox.TextChanged += (sender2, e2) =>
+            textBox.TextChanged += (_, _) =>
             {
                 if (int.TryParse(textBox.Text, out var v))
                     setValueHandler(v);
@@ -32,7 +32,7 @@ namespace QpTestClient.Controls.ClientOptions
         public static void BindInt32(TextBox textBox, Func<int?> getValueHandler, Action<int?> setValueHandler)
         {
             textBox.Text = getValueHandler()?.ToString();
-            textBox.TextChanged += (sender2, e2) =>
+            textBox.TextChanged += (_, _) =>
             {
                 var text = textBox.Text;
                 if (string.IsNullOrEmpty(text))
@@ -47,7 +47,16 @@ namespace QpTestClient.Controls.ClientOptions
         public static void BindBoolean(CheckBox checkBox, Func<bool> getValueHandler, Action<bool> setValueHandler)
         {
             checkBox.Checked = getValueHandler();
-            checkBox.CheckedChanged += (sender2, e2) => setValueHandler(checkBox.Checked);
+            checkBox.CheckedChanged += (_, _) => setValueHandler(checkBox.Checked);
+        }
+
+        public static void BindEnum<TEnum>(ComboBox comboBox, Func<TEnum> getValueHandler, Action<TEnum> setValueHandler)
+             where TEnum : struct, Enum
+        {
+            foreach (var item in Enum.GetValues<TEnum>())
+                comboBox.Items.Add(item);
+            comboBox.SelectedItem = getValueHandler();
+            comboBox.SelectedIndexChanged += (_, _) => setValueHandler((TEnum)comboBox.SelectedItem);
         }
 
         private static void ActiveLabel(Label label)
@@ -64,7 +73,7 @@ namespace QpTestClient.Controls.ClientOptions
 
         public static void LinkControl(Label label, Control control)
         {
-            label.Click += (sender, e) =>
+            label.Click += (_, _) =>
             {
                 ActiveLabel(label);
                 if (!control.Focused)
@@ -72,11 +81,11 @@ namespace QpTestClient.Controls.ClientOptions
                     control.Focus();
                 }
             };
-            control.GotFocus += (sender, e) =>
+            control.GotFocus += (_, _) =>
             {
                 ActiveLabel(label);
             };
-            control.LostFocus += (sender, e) =>
+            control.LostFocus += (_, _) =>
             {
                 DeactiveLabel(label);
             };

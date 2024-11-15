@@ -83,7 +83,8 @@ namespace QpTestClient
             // 
             // btnOk
             // 
-            btnOk.Location = new System.Drawing.Point(157, 715);
+            btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            btnOk.Location = new System.Drawing.Point(157, 756);
             btnOk.Margin = new System.Windows.Forms.Padding(5);
             btnOk.Name = "btnOk";
             btnOk.Size = new System.Drawing.Size(146, 45);
@@ -94,7 +95,8 @@ namespace QpTestClient
             // 
             // btnCancel
             // 
-            btnCancel.Location = new System.Drawing.Point(313, 715);
+            btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            btnCancel.Location = new System.Drawing.Point(313, 756);
             btnCancel.Margin = new System.Windows.Forms.Padding(5);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new System.Drawing.Size(146, 45);
@@ -105,17 +107,18 @@ namespace QpTestClient
             // 
             // pnlClientOptions
             // 
+            pnlClientOptions.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             pnlClientOptions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             pnlClientOptions.Location = new System.Drawing.Point(34, 126);
             pnlClientOptions.Name = "pnlClientOptions";
-            pnlClientOptions.Size = new System.Drawing.Size(759, 581);
+            pnlClientOptions.Size = new System.Drawing.Size(759, 624);
             pnlClientOptions.TabIndex = 7;
             // 
             // ConnectForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(814, 778);
+            ClientSize = new System.Drawing.Size(814, 815);
             Controls.Add(pnlClientOptions);
             Controls.Add(btnCancel);
             Controls.Add(btnOk);
