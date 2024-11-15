@@ -12,6 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Resources;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -316,7 +317,7 @@ namespace QpTestClient
             scMain.Enabled = false;
             try
             {
-                //var preConnectionInfoContent = Quick.Xml.XmlConvert.Serialize(connectionContext.ConnectionInfo);
+                var preConnectionInfoContent = JsonSerializer.Serialize(connectionContext.ConnectionInfo, TestConnectionInfoSerializerContext.Default.TestConnectionInfo);
 
                 await connectionContext.Connect();
                 connectionNode.ImageIndex = connectionNode.SelectedImageIndex = 1;
@@ -331,11 +332,9 @@ namespace QpTestClient
                 displayInstructions(connectionNode, connectionContext.ConnectionInfo.Instructions);
                 connectionNode.ExpandAll();
 
-                /*
-                var currentConnectionInfoContent = Quick.Xml.XmlConvert.Serialize(connectionContext.ConnectionInfo);
+                var currentConnectionInfoContent = JsonSerializer.Serialize(connectionContext.ConnectionInfo, TestConnectionInfoSerializerContext.Default.TestConnectionInfo);
                 if (currentConnectionInfoContent != preConnectionInfoContent)
                     QpdFileUtils.SaveQpbFile(connectionContext.ConnectionInfo);
-                */
             }
             catch (Exception ex)
             {

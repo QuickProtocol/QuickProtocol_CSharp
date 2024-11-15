@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -118,7 +119,7 @@ namespace Quick.Protocol
             HashSet<string> ignorePropertyNames = new HashSet<string>();
             ignorePropertyNames.Add(nameof(HeartBeatInterval));
             if (!includePassword)
-                ignorePropertyNames.Add(nameof(Password));            
+                ignorePropertyNames.Add(nameof(Password));
             string baseUrl = ToUriBasic(ignorePropertyNames);
             if (includePassword || includeOtherProperty)
             {
@@ -170,5 +171,6 @@ namespace Quick.Protocol
         }
 
         public abstract QpClientOptions Clone();
+        public abstract void Serialize(Stream stream);
     }
 }

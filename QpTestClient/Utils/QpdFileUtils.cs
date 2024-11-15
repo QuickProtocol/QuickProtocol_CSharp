@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Quick.Protocol;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 
 namespace QpTestClient.Utils
 {
@@ -14,16 +17,24 @@ namespace QpTestClient.Utils
 
         public static void SaveQpbFile(TestConnectionInfo connectionInfo, string file = null)
         {
-            /*
-            var content = Quick.Xml.XmlConvert.Serialize(connectionInfo);
             if (!Directory.Exists(QpbFileFolder))
                 Directory.CreateDirectory(QpbFileFolder);
             if (string.IsNullOrEmpty(file))
                 file = GetQpbFilePath(connectionInfo);
             if (File.Exists(file))
                 File.Delete(file);
-            File.WriteAllText(file, content, Encoding.UTF8);
-            */
+
+            using (var zipArchive = ZipFile.Open(file, ZipArchiveMode.Create))
+            {
+                //写入连接信息
+                var entry = zipArchive.CreateEntry(typeof(TestConnectionInfo).FullName);
+                using (var stream = entry.Open())
+                    JsonSerializer.Serialize(stream, connectionInfo, TestConnectionInfoSerializerContext.Default.TestConnectionInfo);
+                //写入客户端配置信息
+                entry = zipArchive.CreateEntry(typeof(QpClientOptions).FullName);
+                using (var stream = entry.Open())
+                    connectionInfo.QpClientOptions.Serialize(stream);
+            }
         }
 
         public static TestConnectionInfo[] GetConnectionInfosFromQpbFileFolder()
@@ -53,9 +64,34 @@ namespace QpTestClient.Utils
 
         public static TestConnectionInfo Load(string file)
         {
-            return null;
-            //var content = File.ReadAllText(file);
-            //return Quick.Xml.XmlConvert.Deserialize<TestConnectionInfo>(content);
+            TestConnectionInfo testConnectionInfo = null;
+            using (var zipArchive = ZipFile.OpenRead(file))
+            {
+                //读取连接信息
+                var entry = zipArchive.GetEntry(typeof(TestConnectionInfo).FullName);
+                using (var stream = entry.Open())
+                    testConnectionInfo = JsonSerializer.Deserialize(stream, TestConnectionInfoSerializerContext.Default.TestConnectionInfo);
+                //读取客户端配置信息
+                entry = zipArchive.GetEntry(typeof(QpClientOptions).FullName);
+                using (var stream = entry.Open())
+                {
+                    QpClientOptions options = null;
+                    if (testConnectionInfo.QpClientTypeName == typeof(Quick.Protocol.Tcp.QpTcpClient).FullName)
+                        options = JsonSerializer.Deserialize(stream,
+                            Quick.Protocol.Tcp.QpTcpClientOptionsSerializerContext.Default.QpTcpClientOptions);
+                    else if (testConnectionInfo.QpClientTypeName == typeof(Quick.Protocol.Pipeline.QpPipelineClient).FullName)
+                        options = JsonSerializer.Deserialize(stream,
+                            Quick.Protocol.Pipeline.QpPipelineClientOptionsSerializerContext.Default.QpPipelineClientOptions);
+                    else if (testConnectionInfo.QpClientTypeName == typeof(Quick.Protocol.SerialPort.QpSerialPortClient).FullName)
+                        options = JsonSerializer.Deserialize(stream,
+                            Quick.Protocol.SerialPort.QpSerialPortClientOptionsSerializerContext.Default.QpSerialPortClientOptions);
+                    else if (testConnectionInfo.QpClientTypeName == typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClient).FullName)
+                        options = JsonSerializer.Deserialize(stream,
+                            Quick.Protocol.WebSocket.Client.QpWebSocketClientOptionsSerializerContext.Default.QpWebSocketClientOptions);
+                    testConnectionInfo.QpClientOptions = options;
+                }
+            }
+            return testConnectionInfo;
         }
     }
 }

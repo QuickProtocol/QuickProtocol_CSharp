@@ -29,5 +29,10 @@ namespace Quick.Protocol.Streams
         {
             throw new System.NotImplementedException();
         }
+
+        public override void Serialize(Stream stream)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

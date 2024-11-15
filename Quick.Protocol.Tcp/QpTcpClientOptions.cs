@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -83,6 +84,11 @@ namespace Quick.Protocol.Tcp
         {
             var json = JsonSerializer.Serialize(this, QpTcpClientOptionsSerializerContext.Default.QpTcpClientOptions);
             return JsonSerializer.Deserialize(json, QpTcpClientOptionsSerializerContext.Default.QpTcpClientOptions);
+        }
+
+        public override void Serialize(Stream stream)
+        {
+            JsonSerializer.Serialize(stream, this, QpTcpClientOptionsSerializerContext.Default.QpTcpClientOptions);
         }
     }
 }

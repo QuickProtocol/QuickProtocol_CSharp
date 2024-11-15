@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.IO.Ports;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -101,6 +102,11 @@ namespace Quick.Protocol.SerialPort
         {
             var json = JsonSerializer.Serialize(this, QpSerialPortClientOptionsSerializerContext.Default.QpSerialPortClientOptions);
             return JsonSerializer.Deserialize(json, QpSerialPortClientOptionsSerializerContext.Default.QpSerialPortClientOptions);
+        }
+
+        public override void Serialize(Stream stream)
+        {
+            JsonSerializer.Serialize(stream, this, QpSerialPortClientOptionsSerializerContext.Default.QpSerialPortClientOptions);
         }
     }
 }
