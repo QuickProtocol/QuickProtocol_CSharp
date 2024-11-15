@@ -43,6 +43,21 @@ namespace QpTestClient.Controls.ClientOptions
             
             ClientOptionsControlUtils.LinkControl(lblTransportTimeout, txtTransportTimeout);
             ClientOptionsControlUtils.BindInt32(txtTransportTimeout, () => options.TransportTimeout, t => options.TransportTimeout = t);
+
+            ClientOptionsControlUtils.LinkControl(lblEnableEncrypt, cbEnableEncrypt);
+            ClientOptionsControlUtils.BindBoolean(cbEnableEncrypt, () => options.EnableEncrypt, t => options.EnableEncrypt = t);
+
+            ClientOptionsControlUtils.LinkControl(lblEnableCompress, cbEnableCompress);
+            ClientOptionsControlUtils.BindBoolean(cbEnableCompress, () => options.EnableCompress, t => options.EnableCompress = t);
+
+            ClientOptionsControlUtils.LinkControl(lblMaxPackageSize, txtMaxPackageSize);
+            ClientOptionsControlUtils.BindInt32(txtMaxPackageSize, () => options.MaxPackageSize, t => options.MaxPackageSize = t);
+
+            ClientOptionsControlUtils.LinkControl(lblEnableNetstat, cbEnableNetstat);
+            ClientOptionsControlUtils.BindBoolean(cbEnableNetstat, () => options.EnableNetstat, t => options.EnableNetstat = t);
+
+            ClientOptionsControlUtils.LinkControl(lblRaiseNoticePackageReceivedEvent, cbRaiseNoticePackageReceivedEvent);
+            ClientOptionsControlUtils.BindBoolean(cbRaiseNoticePackageReceivedEvent, () => options.RaiseNoticePackageReceivedEvent, t => options.RaiseNoticePackageReceivedEvent = t);
         }
     }
 }

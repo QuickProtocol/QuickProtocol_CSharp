@@ -44,6 +44,12 @@ namespace QpTestClient.Controls.ClientOptions
             };
         }
 
+        public static void BindBoolean(CheckBox checkBox, Func<bool> getValueHandler, Action<bool> setValueHandler)
+        {
+            checkBox.Checked = getValueHandler();
+            checkBox.CheckedChanged += (sender2, e2) => setValueHandler(checkBox.Checked);
+        }
+
         private static void ActiveLabel(Label label)
         {
             label.ForeColor = SystemColors.HighlightText;
@@ -56,14 +62,13 @@ namespace QpTestClient.Controls.ClientOptions
             label.BackColor = SystemColors.ControlLightLight;
         }
 
-        public static void LinkControl(Label label, TextBox control)
+        public static void LinkControl(Label label, Control control)
         {
             label.Click += (sender, e) =>
             {
                 ActiveLabel(label);
                 if (!control.Focused)
                 {
-                    control.SelectionStart = control.Text.Length;
                     control.Focus();
                 }
             };

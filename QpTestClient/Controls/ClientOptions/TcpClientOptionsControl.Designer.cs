@@ -51,6 +51,25 @@
             panel7 = new System.Windows.Forms.Panel();
             txtTransportTimeout = new System.Windows.Forms.TextBox();
             lblTransportTimeout = new System.Windows.Forms.Label();
+            panel8 = new System.Windows.Forms.Panel();
+            panel9 = new System.Windows.Forms.Panel();
+            cbEnableEncrypt = new System.Windows.Forms.CheckBox();
+            lblEnableEncrypt = new System.Windows.Forms.Label();
+            panel10 = new System.Windows.Forms.Panel();
+            panel11 = new System.Windows.Forms.Panel();
+            cbEnableCompress = new System.Windows.Forms.CheckBox();
+            lblEnableCompress = new System.Windows.Forms.Label();
+            panel12 = new System.Windows.Forms.Panel();
+            txtMaxPackageSize = new System.Windows.Forms.TextBox();
+            lblMaxPackageSize = new System.Windows.Forms.Label();
+            panel13 = new System.Windows.Forms.Panel();
+            panel14 = new System.Windows.Forms.Panel();
+            cbEnableNetstat = new System.Windows.Forms.CheckBox();
+            lblEnableNetstat = new System.Windows.Forms.Label();
+            panel15 = new System.Windows.Forms.Panel();
+            panel16 = new System.Windows.Forms.Panel();
+            cbRaiseNoticePackageReceivedEvent = new System.Windows.Forms.CheckBox();
+            lblRaiseNoticePackageReceivedEvent = new System.Windows.Forms.Label();
             panel1.SuspendLayout();
             panel2.SuspendLayout();
             panel3.SuspendLayout();
@@ -58,19 +77,29 @@
             panel6.SuspendLayout();
             panel4.SuspendLayout();
             panel7.SuspendLayout();
+            panel8.SuspendLayout();
+            panel9.SuspendLayout();
+            panel10.SuspendLayout();
+            panel11.SuspendLayout();
+            panel12.SuspendLayout();
+            panel13.SuspendLayout();
+            panel14.SuspendLayout();
+            panel15.SuspendLayout();
+            panel16.SuspendLayout();
             SuspendLayout();
             // 
             // label1
             // 
-            label1.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            label1.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             label1.Dock = System.Windows.Forms.DockStyle.Top;
+            label1.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Bold);
             label1.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             label1.Location = new System.Drawing.Point(0, 0);
             label1.Name = "label1";
             label1.Size = new System.Drawing.Size(878, 40);
             label1.TabIndex = 1;
             label1.Text = "常用";
-            label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // panel1
             // 
@@ -158,9 +187,9 @@
             txtPassword.Location = new System.Drawing.Point(180, 0);
             txtPassword.Margin = new System.Windows.Forms.Padding(0);
             txtPassword.Name = "txtPassword";
-            txtPassword.PasswordChar = '✱';
             txtPassword.Size = new System.Drawing.Size(698, 38);
             txtPassword.TabIndex = 1;
+            txtPassword.UseSystemPasswordChar = true;
             // 
             // lblPassword
             // 
@@ -245,15 +274,16 @@
             // 
             // label5
             // 
-            label5.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            label5.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             label5.Dock = System.Windows.Forms.DockStyle.Top;
+            label5.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Bold);
             label5.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             label5.Location = new System.Drawing.Point(0, 154);
             label5.Name = "label5";
             label5.Size = new System.Drawing.Size(878, 40);
             label5.TabIndex = 5;
             label5.Text = "高级";
-            label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // panel4
             // 
@@ -323,12 +353,227 @@
             lblTransportTimeout.TabIndex = 0;
             lblTransportTimeout.Text = "传输超时";
             // 
+            // panel8
+            // 
+            panel8.Controls.Add(panel9);
+            panel8.Controls.Add(lblEnableEncrypt);
+            panel8.Dock = System.Windows.Forms.DockStyle.Top;
+            panel8.Location = new System.Drawing.Point(0, 346);
+            panel8.Name = "panel8";
+            panel8.Size = new System.Drawing.Size(878, 38);
+            panel8.TabIndex = 10;
+            // 
+            // panel9
+            // 
+            panel9.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panel9.Controls.Add(cbEnableEncrypt);
+            panel9.Dock = System.Windows.Forms.DockStyle.Fill;
+            panel9.Location = new System.Drawing.Point(180, 0);
+            panel9.Name = "panel9";
+            panel9.Size = new System.Drawing.Size(698, 38);
+            panel9.TabIndex = 1;
+            // 
+            // cbEnableEncrypt
+            // 
+            cbEnableEncrypt.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            cbEnableEncrypt.Dock = System.Windows.Forms.DockStyle.Fill;
+            cbEnableEncrypt.Location = new System.Drawing.Point(0, 0);
+            cbEnableEncrypt.Name = "cbEnableEncrypt";
+            cbEnableEncrypt.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            cbEnableEncrypt.Size = new System.Drawing.Size(696, 36);
+            cbEnableEncrypt.TabIndex = 1;
+            cbEnableEncrypt.UseVisualStyleBackColor = false;
+            // 
+            // lblEnableEncrypt
+            // 
+            lblEnableEncrypt.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            lblEnableEncrypt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            lblEnableEncrypt.Dock = System.Windows.Forms.DockStyle.Left;
+            lblEnableEncrypt.Location = new System.Drawing.Point(0, 0);
+            lblEnableEncrypt.Margin = new System.Windows.Forms.Padding(0);
+            lblEnableEncrypt.MinimumSize = new System.Drawing.Size(180, 30);
+            lblEnableEncrypt.Name = "lblEnableEncrypt";
+            lblEnableEncrypt.Size = new System.Drawing.Size(180, 38);
+            lblEnableEncrypt.TabIndex = 0;
+            lblEnableEncrypt.Text = "加密";
+            // 
+            // panel10
+            // 
+            panel10.Controls.Add(panel11);
+            panel10.Controls.Add(lblEnableCompress);
+            panel10.Dock = System.Windows.Forms.DockStyle.Top;
+            panel10.Location = new System.Drawing.Point(0, 384);
+            panel10.Name = "panel10";
+            panel10.Size = new System.Drawing.Size(878, 38);
+            panel10.TabIndex = 11;
+            // 
+            // panel11
+            // 
+            panel11.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panel11.Controls.Add(cbEnableCompress);
+            panel11.Dock = System.Windows.Forms.DockStyle.Fill;
+            panel11.Location = new System.Drawing.Point(180, 0);
+            panel11.Name = "panel11";
+            panel11.Size = new System.Drawing.Size(698, 38);
+            panel11.TabIndex = 1;
+            // 
+            // cbEnableCompress
+            // 
+            cbEnableCompress.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            cbEnableCompress.Dock = System.Windows.Forms.DockStyle.Fill;
+            cbEnableCompress.Location = new System.Drawing.Point(0, 0);
+            cbEnableCompress.Name = "cbEnableCompress";
+            cbEnableCompress.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            cbEnableCompress.Size = new System.Drawing.Size(696, 36);
+            cbEnableCompress.TabIndex = 1;
+            cbEnableCompress.UseVisualStyleBackColor = false;
+            // 
+            // lblEnableCompress
+            // 
+            lblEnableCompress.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            lblEnableCompress.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            lblEnableCompress.Dock = System.Windows.Forms.DockStyle.Left;
+            lblEnableCompress.Location = new System.Drawing.Point(0, 0);
+            lblEnableCompress.Margin = new System.Windows.Forms.Padding(0);
+            lblEnableCompress.MinimumSize = new System.Drawing.Size(180, 30);
+            lblEnableCompress.Name = "lblEnableCompress";
+            lblEnableCompress.Size = new System.Drawing.Size(180, 38);
+            lblEnableCompress.TabIndex = 0;
+            lblEnableCompress.Text = "压缩";
+            // 
+            // panel12
+            // 
+            panel12.AutoSize = true;
+            panel12.Controls.Add(txtMaxPackageSize);
+            panel12.Controls.Add(lblMaxPackageSize);
+            panel12.Dock = System.Windows.Forms.DockStyle.Top;
+            panel12.Location = new System.Drawing.Point(0, 422);
+            panel12.Name = "panel12";
+            panel12.Size = new System.Drawing.Size(878, 38);
+            panel12.TabIndex = 12;
+            // 
+            // txtMaxPackageSize
+            // 
+            txtMaxPackageSize.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            txtMaxPackageSize.Dock = System.Windows.Forms.DockStyle.Top;
+            txtMaxPackageSize.Location = new System.Drawing.Point(180, 0);
+            txtMaxPackageSize.Margin = new System.Windows.Forms.Padding(0);
+            txtMaxPackageSize.Name = "txtMaxPackageSize";
+            txtMaxPackageSize.Size = new System.Drawing.Size(698, 38);
+            txtMaxPackageSize.TabIndex = 1;
+            // 
+            // lblMaxPackageSize
+            // 
+            lblMaxPackageSize.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            lblMaxPackageSize.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            lblMaxPackageSize.Dock = System.Windows.Forms.DockStyle.Left;
+            lblMaxPackageSize.Location = new System.Drawing.Point(0, 0);
+            lblMaxPackageSize.Margin = new System.Windows.Forms.Padding(0);
+            lblMaxPackageSize.MinimumSize = new System.Drawing.Size(180, 30);
+            lblMaxPackageSize.Name = "lblMaxPackageSize";
+            lblMaxPackageSize.Size = new System.Drawing.Size(180, 38);
+            lblMaxPackageSize.TabIndex = 0;
+            lblMaxPackageSize.Text = "最大包大小";
+            // 
+            // panel13
+            // 
+            panel13.Controls.Add(panel14);
+            panel13.Controls.Add(lblEnableNetstat);
+            panel13.Dock = System.Windows.Forms.DockStyle.Top;
+            panel13.Location = new System.Drawing.Point(0, 460);
+            panel13.Name = "panel13";
+            panel13.Size = new System.Drawing.Size(878, 38);
+            panel13.TabIndex = 13;
+            // 
+            // panel14
+            // 
+            panel14.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panel14.Controls.Add(cbEnableNetstat);
+            panel14.Dock = System.Windows.Forms.DockStyle.Fill;
+            panel14.Location = new System.Drawing.Point(180, 0);
+            panel14.Name = "panel14";
+            panel14.Size = new System.Drawing.Size(698, 38);
+            panel14.TabIndex = 1;
+            // 
+            // cbEnableNetstat
+            // 
+            cbEnableNetstat.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            cbEnableNetstat.Dock = System.Windows.Forms.DockStyle.Fill;
+            cbEnableNetstat.Location = new System.Drawing.Point(0, 0);
+            cbEnableNetstat.Name = "cbEnableNetstat";
+            cbEnableNetstat.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            cbEnableNetstat.Size = new System.Drawing.Size(696, 36);
+            cbEnableNetstat.TabIndex = 1;
+            cbEnableNetstat.UseVisualStyleBackColor = false;
+            // 
+            // lblEnableNetstat
+            // 
+            lblEnableNetstat.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            lblEnableNetstat.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            lblEnableNetstat.Dock = System.Windows.Forms.DockStyle.Left;
+            lblEnableNetstat.Location = new System.Drawing.Point(0, 0);
+            lblEnableNetstat.Margin = new System.Windows.Forms.Padding(0);
+            lblEnableNetstat.MinimumSize = new System.Drawing.Size(180, 30);
+            lblEnableNetstat.Name = "lblEnableNetstat";
+            lblEnableNetstat.Size = new System.Drawing.Size(180, 38);
+            lblEnableNetstat.TabIndex = 0;
+            lblEnableNetstat.Text = "网络统计";
+            // 
+            // panel15
+            // 
+            panel15.Controls.Add(panel16);
+            panel15.Controls.Add(lblRaiseNoticePackageReceivedEvent);
+            panel15.Dock = System.Windows.Forms.DockStyle.Top;
+            panel15.Location = new System.Drawing.Point(0, 498);
+            panel15.Name = "panel15";
+            panel15.Size = new System.Drawing.Size(878, 38);
+            panel15.TabIndex = 14;
+            // 
+            // panel16
+            // 
+            panel16.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panel16.Controls.Add(cbRaiseNoticePackageReceivedEvent);
+            panel16.Dock = System.Windows.Forms.DockStyle.Fill;
+            panel16.Location = new System.Drawing.Point(180, 0);
+            panel16.Name = "panel16";
+            panel16.Size = new System.Drawing.Size(698, 38);
+            panel16.TabIndex = 1;
+            // 
+            // cbRaiseNoticePackageReceivedEvent
+            // 
+            cbRaiseNoticePackageReceivedEvent.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            cbRaiseNoticePackageReceivedEvent.Dock = System.Windows.Forms.DockStyle.Fill;
+            cbRaiseNoticePackageReceivedEvent.Location = new System.Drawing.Point(0, 0);
+            cbRaiseNoticePackageReceivedEvent.Name = "cbRaiseNoticePackageReceivedEvent";
+            cbRaiseNoticePackageReceivedEvent.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            cbRaiseNoticePackageReceivedEvent.Size = new System.Drawing.Size(696, 36);
+            cbRaiseNoticePackageReceivedEvent.TabIndex = 1;
+            cbRaiseNoticePackageReceivedEvent.UseVisualStyleBackColor = false;
+            // 
+            // lblRaiseNoticePackageReceivedEvent
+            // 
+            lblRaiseNoticePackageReceivedEvent.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            lblRaiseNoticePackageReceivedEvent.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            lblRaiseNoticePackageReceivedEvent.Dock = System.Windows.Forms.DockStyle.Left;
+            lblRaiseNoticePackageReceivedEvent.Location = new System.Drawing.Point(0, 0);
+            lblRaiseNoticePackageReceivedEvent.Margin = new System.Windows.Forms.Padding(0);
+            lblRaiseNoticePackageReceivedEvent.MinimumSize = new System.Drawing.Size(180, 30);
+            lblRaiseNoticePackageReceivedEvent.Name = "lblRaiseNoticePackageReceivedEvent";
+            lblRaiseNoticePackageReceivedEvent.Size = new System.Drawing.Size(180, 38);
+            lblRaiseNoticePackageReceivedEvent.TabIndex = 0;
+            lblRaiseNoticePackageReceivedEvent.Text = "通知接收事件";
+            // 
             // TcpClientOptionsControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             AutoScroll = true;
             BackColor = System.Drawing.SystemColors.ControlLight;
+            Controls.Add(panel15);
+            Controls.Add(panel13);
+            Controls.Add(panel12);
+            Controls.Add(panel10);
+            Controls.Add(panel8);
             Controls.Add(panel7);
             Controls.Add(panel4);
             Controls.Add(panel5);
@@ -355,6 +600,16 @@
             panel4.PerformLayout();
             panel7.ResumeLayout(false);
             panel7.PerformLayout();
+            panel8.ResumeLayout(false);
+            panel9.ResumeLayout(false);
+            panel10.ResumeLayout(false);
+            panel11.ResumeLayout(false);
+            panel12.ResumeLayout(false);
+            panel12.PerformLayout();
+            panel13.ResumeLayout(false);
+            panel14.ResumeLayout(false);
+            panel15.ResumeLayout(false);
+            panel16.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -384,5 +639,24 @@
         private System.Windows.Forms.Panel panel7;
         private System.Windows.Forms.TextBox txtTransportTimeout;
         private System.Windows.Forms.Label lblTransportTimeout;
+        private System.Windows.Forms.Panel panel8;
+        private System.Windows.Forms.CheckBox cbEnableEncrypt;
+        private System.Windows.Forms.Label lblEnableEncrypt;
+        private System.Windows.Forms.Panel panel9;
+        private System.Windows.Forms.Panel panel10;
+        private System.Windows.Forms.Panel panel11;
+        private System.Windows.Forms.CheckBox cbEnableCompress;
+        private System.Windows.Forms.Label lblEnableCompress;
+        private System.Windows.Forms.Panel panel12;
+        private System.Windows.Forms.TextBox txtMaxPackageSize;
+        private System.Windows.Forms.Label lblMaxPackageSize;
+        private System.Windows.Forms.Panel panel13;
+        private System.Windows.Forms.Panel panel14;
+        private System.Windows.Forms.CheckBox cbEnableNetstat;
+        private System.Windows.Forms.Label lblEnableNetstat;
+        private System.Windows.Forms.Panel panel15;
+        private System.Windows.Forms.Panel panel16;
+        private System.Windows.Forms.CheckBox cbRaiseNoticePackageReceivedEvent;
+        private System.Windows.Forms.Label lblRaiseNoticePackageReceivedEvent;
     }
 }
