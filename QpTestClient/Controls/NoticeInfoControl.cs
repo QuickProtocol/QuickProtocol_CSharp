@@ -16,7 +16,7 @@ namespace QpTestClient.Controls
             InitializeComponent();
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"名称：{item.Name}");
+            sb.AppendLine($"通知名称：{item.Name}");
             sb.AppendLine($"类名称：{item.NoticeTypeName}");            
             if (!string.IsNullOrEmpty(item.Description))
             {

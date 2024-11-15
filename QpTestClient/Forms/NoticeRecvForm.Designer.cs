@@ -160,7 +160,6 @@ namespace QpTestClient.Forms
             this.Controls.Add(this.btnStopRecv);
             this.Controls.Add(this.btnStartRecv);
             this.Controls.Add(this.txtLog);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "NoticeRecvForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "通知接收";

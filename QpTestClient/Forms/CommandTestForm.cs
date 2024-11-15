@@ -1,6 +1,7 @@
 ﻿using Quick.Protocol;
 using Quick.Protocol.Utils;
 using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace QpTestClient.Forms
@@ -14,6 +15,10 @@ namespace QpTestClient.Forms
             this.connectionContext = connectionContext;
 
             InitializeComponent();
+            var currentAssembly = this.GetType().Assembly;
+            //窗体图标
+            using (var stream = currentAssembly.GetManifestResourceStream($"{nameof(QpTestClient)}.Images.connection.ico"))
+                Icon = new Icon(stream);
             if (qpCommandInfo == null)
             {
                 txtFormTitle.Text = $"{Text} - {connectionContext.ConnectionInfo.Name}";

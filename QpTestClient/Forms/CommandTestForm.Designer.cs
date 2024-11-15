@@ -1,5 +1,4 @@
-﻿
-namespace QpTestClient.Forms
+﻿namespace QpTestClient.Forms
 {
     partial class CommandTestForm
     {
@@ -169,7 +168,6 @@ namespace QpTestClient.Forms
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnSend);
             this.Controls.Add(this.scTest);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "CommandTestForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "命令测试";

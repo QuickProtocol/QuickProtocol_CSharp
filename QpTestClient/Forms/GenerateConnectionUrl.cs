@@ -17,6 +17,10 @@ namespace QpTestClient.Forms
         {
             this.connectionContext=connectionContext;
             InitializeComponent();
+            var currentAssembly = this.GetType().Assembly;
+            //窗体图标
+            using (var stream = currentAssembly.GetManifestResourceStream($"{nameof(QpTestClient)}.Images.connection.ico"))
+                Icon = new Icon(stream);
         }
 
         private void GenerateConnectionUrl_Load(object sender, EventArgs e)

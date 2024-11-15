@@ -138,7 +138,6 @@ namespace QpTestClient.Forms
             this.Controls.Add(this.btnStopRecv);
             this.Controls.Add(this.btnStartRecv);
             this.Controls.Add(this.txtLog);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "HeartbeatRecvForm";
             this.Text = "心跳接收";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.HeartbeatRecvForm_FormClosing);

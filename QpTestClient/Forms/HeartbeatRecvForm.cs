@@ -20,6 +20,10 @@ namespace QpTestClient.Forms
         {
             this.connectionContext = connectionContext;
             InitializeComponent();
+            var currentAssembly = this.GetType().Assembly;
+            //窗体图标
+            using (var stream = currentAssembly.GetManifestResourceStream($"{nameof(QpTestClient)}.Images.connection.ico"))
+                Icon = new Icon(stream);
             txtFormTitle.Text = $"{Text} - {connectionContext.ConnectionInfo.Name}";
         }
 

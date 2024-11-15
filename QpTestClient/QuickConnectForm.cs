@@ -1,6 +1,7 @@
 ﻿using Quick.Protocol.Utils;
 using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.Security.Policy;
 using System.Windows.Forms;
 
@@ -14,6 +15,10 @@ namespace QpTestClient
         public QuickConnectForm()
         {
             InitializeComponent();
+            var currentAssembly = this.GetType().Assembly;
+            //窗体图标
+            using (var stream = currentAssembly.GetManifestResourceStream($"{nameof(QpTestClient)}.Images.connection.ico"))
+                Icon = new Icon(stream);
         }
 
         private void btnOk_Click(object sender, EventArgs e)

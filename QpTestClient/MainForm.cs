@@ -4,13 +4,9 @@ using Quick.Protocol.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Resources;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -127,22 +123,87 @@ namespace QpTestClient
             {
                 showContent(null);
             }
-            else if (nodeObj is ConnectionContext)
+            else if (nodeObj is ConnectionContext connectionContext)
             {
-                var connectionContext = (ConnectionContext)nodeObj;
                 showContent(new Controls.ConnectionInfoControl(connectionContext));
             }
-            else if (nodeObj is QpInstruction)
+            else if (nodeObj is QpInstruction qpInstruction)
             {
-                showContent(UiUtils.GetPropertyGridControl(nodeObj));
+                var sb = new StringBuilder();
+                sb.AppendLine($"编号：{qpInstruction.Id}");
+                sb.AppendLine($"名称：{qpInstruction.Name}");
+                if (qpInstruction.CommandInfos != null && qpInstruction.CommandInfos.Length > 0)
+                {
+                    sb.AppendLine($"命令：");
+                    foreach (var cmdInfo in qpInstruction.CommandInfos)
+                    {
+                        sb.AppendLine($"    {cmdInfo.Name}");
+                    }
+                }
+                if (qpInstruction.NoticeInfos != null && qpInstruction.NoticeInfos.Length > 0)
+                {
+                    sb.AppendLine($"通知：");
+                    foreach (var noticeInfo in qpInstruction.NoticeInfos)
+                    {
+                        sb.AppendLine($"    {noticeInfo.Name}");
+                    }
+                }
+                showContent(new TextBox()
+                {
+                    Dock = DockStyle.Fill,
+                    Multiline = true,
+                    ReadOnly = true,
+                    Text = sb.ToString()
+                });
             }
-            else if (nodeObj is QpNoticeInfo)
+            else if (nodeObj is QpNoticeInfo[] noticeInfos)
             {
-                showContent(new Controls.NoticeInfoControl((QpNoticeInfo)nodeObj));
+                var sb = new StringBuilder();
+                if (noticeInfos != null && noticeInfos.Length > 0)
+                {
+                    foreach (var noticeInfo in noticeInfos)
+                    {
+                        sb.AppendLine($"通知名称：{noticeInfo.Name}");
+                        sb.AppendLine($"类名称：{noticeInfo.NoticeTypeName}");
+                        sb.AppendLine();
+                    }
+                }
+                showContent(new TextBox()
+                {
+                    Dock = DockStyle.Fill,
+                    Multiline = true,
+                    ReadOnly = true,
+                    Text = sb.ToString()
+                });
             }
-            else if (nodeObj is QpCommandInfo)
+            else if (nodeObj is QpNoticeInfo noticeInfo)
             {
-                showContent(new Controls.CommandInfoControl((QpCommandInfo)nodeObj));
+                showContent(new Controls.NoticeInfoControl(noticeInfo));
+            }
+            else if (nodeObj is QpCommandInfo[] cmdInfos)
+            {
+                var sb = new StringBuilder();
+                if (cmdInfos != null && cmdInfos.Length > 0)
+                {
+                    foreach (var cmdInfo in cmdInfos)
+                    {
+                        sb.AppendLine($"命令名称：{cmdInfo.Name}");
+                        sb.AppendLine($"请求类名称：{cmdInfo.RequestTypeName}");
+                        sb.AppendLine($"响应类名称：{cmdInfo.ResponseTypeName}");
+                        sb.AppendLine();
+                    }
+                }
+                showContent(new TextBox()
+                {
+                    Dock = DockStyle.Fill,
+                    Multiline = true,
+                    ReadOnly = true,
+                    Text = sb.ToString()
+                });
+            }
+            else if (nodeObj is QpCommandInfo commandInfo)
+            {
+                showContent(new Controls.CommandInfoControl(commandInfo));
             }
         }
 
@@ -232,6 +293,7 @@ namespace QpTestClient
                 var instructionNode = connectionNode.Nodes.Add(instruction.Id, instruction.Name, 2, 2);
                 instructionNode.Tag = instruction;
                 var noticesNode = instructionNode.Nodes.Add("Notice", "通知", 3, 3);
+                noticesNode.Tag = instruction.NoticeInfos;
                 foreach (var noticeInfo in instruction.NoticeInfos)
                 {
                     var noticeNode = noticesNode.Nodes.Add(noticeInfo.NoticeTypeName, noticeInfo.Name, 3, 3);
@@ -239,6 +301,7 @@ namespace QpTestClient
                     noticeNode.Tag = noticeInfo;
                 }
                 var commandsNode = instructionNode.Nodes.Add("Command", "命令", 4, 4);
+                commandsNode.Tag = instruction.CommandInfos;
                 foreach (var commandInfo in instruction.CommandInfos)
                 {
                     var commandNode = commandsNode.Nodes.Add(commandInfo.RequestTypeName, commandInfo.Name, 4, 4);
