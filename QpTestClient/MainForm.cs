@@ -130,8 +130,8 @@ namespace QpTestClient
             else if (nodeObj is QpInstruction qpInstruction)
             {
                 var sb = new StringBuilder();
-                sb.AppendLine($"编号：{qpInstruction.Id}");
-                sb.AppendLine($"名称：{qpInstruction.Name}");
+                sb.AppendLine($"指令集编号：{qpInstruction.Id}");
+                sb.AppendLine($"指令集名称：{qpInstruction.Name}");
                 if (qpInstruction.CommandInfos != null && qpInstruction.CommandInfos.Length > 0)
                 {
                     sb.AppendLine($"命令：");
