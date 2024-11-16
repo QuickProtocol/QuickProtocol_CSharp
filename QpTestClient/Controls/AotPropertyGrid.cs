@@ -53,103 +53,102 @@ namespace QpTestClient.Controls
 
         public void RegisterGroup(string groupName)
         {
-            var groupLabel = new Label();
-            groupLabel.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            groupLabel.Dock = DockStyle.Top;
-            groupLabel.Margin = new Padding(0);
-            groupLabel.BorderStyle = BorderStyle.FixedSingle;
-            groupLabel.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Bold);
-            groupLabel.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
-            groupLabel.Location = new System.Drawing.Point(0, 0);
-            groupLabel.Name = "label1";
-            groupLabel.Size = new System.Drawing.Size(878, 40);
-            groupLabel.TabIndex = 1;
-            groupLabel.Text = $"∇ {groupName}";
-            groupLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            var control = new Label();
+            control.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
+            control.Dock = DockStyle.Top;
+            control.Margin = new Padding(0);
+            control.BorderStyle = BorderStyle.FixedSingle;
+            control.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Bold);
+            control.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            control.Location = new System.Drawing.Point(0, 0);
+            control.Name = "label1";
+            control.Size = new System.Drawing.Size(878, 40);
+            control.TabIndex = 1;
+            control.Text = $"∇ {groupName}";
+            control.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             var collapse = false;
-            groupLabel.Click += (_, _) =>
+            control.Click += (_, _) =>
             {
                 collapse = !collapse;
                 if (collapse)
-                    groupLabel.Text = $"▷ {groupName}";
+                    control.Text = $"▷ {groupName}";
                 else
-                    groupLabel.Text = $"∇ {groupName}";
+                    control.Text = $"∇ {groupName}";
 
                 var enterGroup = false;
-                foreach (Control control in pnlPropertyControls)
+                foreach (Control child in pnlPropertyControls)
                 {
                     if (enterGroup)
                     {
-                        if (control is Label)
+                        if (child is Label)
                             break;
-                        control.Visible = !collapse;
+                        child.Visible = !collapse;
                     }
                     else
                     {
-                        if (control == groupLabel)
+                        if (child == control)
                             enterGroup = true;
                     }
                 }
             };
-            pnlPropertyControls.Add(groupLabel);
+            pnlPropertyControls.Add(control);
         }
 
         private Label createPropertyLabel(string propertyName, string propertyDescription)
         {
-            var label = new Label();
-            label.BackColor = SystemColors.ControlLightLight;
-            label.BorderStyle = BorderStyle.FixedSingle;
-            label.Dock = DockStyle.Left;
-            label.Margin = new Padding(0);
-            label.MinimumSize = new Size(180, 30);
-            label.Size = new Size(180, 38);
-            label.Text = propertyName;
-            label.Click += (_, _) =>
+            var control = new Label();
+            control.BackColor = SystemColors.ControlLightLight;
+            control.BorderStyle = BorderStyle.None;
+            control.Dock = DockStyle.Left;
+            control.Margin = new Padding(0);
+            control.Size = new Size(280, 38);
+            control.Text = propertyName;
+            control.Click += (_, _) =>
             {
                 lblPropertyName.Text = propertyName;
                 lblPropertyDescription.Text = propertyDescription;
             };
-            return label;
+            return control;
         }
 
         private TextBox createPropertyTextBox(string propertyName, string propertyDescription)
         {
-            var textBox = new TextBox();
-            textBox.BorderStyle = BorderStyle.FixedSingle;
-            textBox.Dock = DockStyle.Top;
-            textBox.Margin = new Padding(0);
-            textBox.Size = new Size(698, 38);
-            textBox.GotFocus += (_, _) =>
+            var control = new TextBox();
+            control.BorderStyle = BorderStyle.None;
+            control.Dock = DockStyle.Top;
+            control.Margin = new Padding(0);
+            control.Size = new Size(698, 38);
+            control.GotFocus += (_, _) =>
             {
                 lblPropertyName.Text = propertyName;
                 lblPropertyDescription.Text = propertyDescription;
             };
-            return textBox;
+            return control;
         }
 
         private CheckBox createPropertyCheckBox(string propertyName, string propertyDescription)
         {
-            var checkBox = new CheckBox();
-            checkBox.BackColor = SystemColors.ControlLightLight;
-            checkBox.Dock = DockStyle.Top;
-            checkBox.Location = new Point(0, 0);
-            checkBox.Padding = new Padding(10, 0, 0, 0);
-            checkBox.Size = new Size(696, 36);
-            checkBox.UseVisualStyleBackColor = false;
-            return checkBox;
+            var control = new CheckBox();
+            control.BackColor = SystemColors.ControlLightLight;
+            control.Dock = DockStyle.Top;
+            control.Location = new Point(0, 0);
+            control.Padding = new Padding(10, 0, 0, 0);
+            control.Size = new Size(696, 36);
+            control.UseVisualStyleBackColor = false;
+            return control;
         }
 
 
         private ComboBox createPropertyComboBox(string propertyName, string propertyDescription)
         {
-            var comboBox = new ComboBox();
-            comboBox.Dock = DockStyle.Top;
-            comboBox.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBox.FlatStyle = FlatStyle.Flat;
-            comboBox.FormattingEnabled = true;
-            comboBox.Location = new Point(0, 0);
-            comboBox.Size = new Size(696, 39);
-            return comboBox;
+            var control = new ComboBox();
+            control.Dock = DockStyle.Top;
+            control.DropDownStyle = ComboBoxStyle.DropDownList;
+            control.FlatStyle = FlatStyle.Flat;
+            control.FormattingEnabled = true;
+            control.Location = new Point(0, 0);
+            control.Size = new Size(696, 39);
+            return control;
         }
 
         private void addPropertyControl(Label label1, Control control1)
@@ -160,7 +159,9 @@ namespace QpTestClient.Controls
             var panel1 = new Panel();
             panel1.AutoSize = true;
             panel1.Margin = new Padding(0);
+            panel1.BorderStyle = BorderStyle.FixedSingle;
             panel1.Controls.Add(control1);
+            panel1.Controls.Add(new Splitter() { BackColor = SystemColors.ControlDark, Width = 2 });
             panel1.Controls.Add(label1);
             panel1.Padding = new Padding(0);
             panel1.Dock = DockStyle.Top;
