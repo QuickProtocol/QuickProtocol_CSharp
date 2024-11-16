@@ -20,10 +20,11 @@ namespace QpTestClient.Controls
             this.item = item;
             InitializeComponent();
             var qpClientTypeInfo = QpClientTypeManager.Instance.Get(item.ConnectionInfo.QpClientTypeName);
-            var ctl = qpClientTypeInfo.CreateOptionsControlFunc();
-            ctl.DataContext = item.ConnectionInfo.QpClientOptions;
-            ctl.ReadOnly = true;
+            var ctl = new AotPropertyGrid();
+            qpClientTypeInfo.EditOptions(ctl, item.ConnectionInfo.QpClientOptions);
             ctl.Dock = DockStyle.Fill;
+            ctl.GenerateControls();
+            ctl.ReadOnly = true;
             tpBasic.Controls.Add(ctl);
         }
         private string lastNetstatStr = string.Empty;

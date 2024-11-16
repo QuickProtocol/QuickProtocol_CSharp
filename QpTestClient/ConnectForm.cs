@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using QpTestClient.Controls;
 
 namespace QpTestClient
 {
@@ -65,9 +66,10 @@ namespace QpTestClient
                 clientOptions = qpClientTypeInfo.CreateOptionsInstanceFunc();
             }
             pnlClientOptions.Controls.Clear();
-            var control = qpClientTypeInfo.CreateOptionsControlFunc();
-            control.DataContext = clientOptions;
+            var control = new AotPropertyGrid();
             control.Dock = DockStyle.Fill;
+            qpClientTypeInfo.EditOptions(control, clientOptions);
+            control.GenerateControls();
             pnlClientOptions.Controls.Add(control);
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -7,7 +8,43 @@ namespace QpTestClient.Controls
 {
     public partial class AotPropertyGrid : UserControl
     {
+        private List<Control> pnlPropertyControls = new List<Control>();
         private List<Label> propertyLabelList = new List<Label>();
+
+        private bool _ReadOnly = false;
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool ReadOnly
+        {
+            get { return _ReadOnly; }
+            set
+            {
+                _ReadOnly = value;
+                travelChild(pnlProperty, control =>
+                {
+                    if (control is TextBoxBase textBoxBase)
+                    {
+                        textBoxBase.ReadOnly = value;
+                    }
+                    else if (control is ButtonBase buttonBase)
+                    {
+                        buttonBase.Enabled = !value;
+                    }
+                    else if (control is ListControl listControl)
+                    {
+                        listControl.Enabled = !value;
+                    }
+                });
+            }
+        }
+
+        private void travelChild(Control control, Action<Control> action)
+        {
+            action(control);
+            foreach (Control child in control.Controls)
+            {
+                travelChild(child, action);
+            }
+        }
 
         public AotPropertyGrid()
         {
@@ -39,7 +76,7 @@ namespace QpTestClient.Controls
                     groupLabel.Text = $"∇ {groupName}";
 
                 var enterGroup = false;
-                foreach (Control control in flp.Controls)
+                foreach (Control control in pnlPropertyControls)
                 {
                     if (enterGroup)
                     {
@@ -54,22 +91,18 @@ namespace QpTestClient.Controls
                     }
                 }
             };
-
-
-            flp.Controls.Add(groupLabel);
+            pnlPropertyControls.Add(groupLabel);
         }
 
         private Label createPropertyLabel(string propertyName, string propertyDescription)
         {
             var label = new Label();
-            label.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            label.BackColor = SystemColors.ControlLightLight;
             label.BorderStyle = BorderStyle.FixedSingle;
             label.Dock = DockStyle.Left;
-            label.Location = new System.Drawing.Point(0, 0);
             label.Margin = new Padding(0);
-            label.MinimumSize = new System.Drawing.Size(180, 30);
-            label.Size = new System.Drawing.Size(180, 38);
-            label.TabIndex = 0;
+            label.MinimumSize = new Size(180, 30);
+            label.Size = new Size(180, 38);
             label.Text = propertyName;
             label.Click += (_, _) =>
             {
@@ -83,8 +116,7 @@ namespace QpTestClient.Controls
         {
             var textBox = new TextBox();
             textBox.BorderStyle = BorderStyle.FixedSingle;
-            textBox.Dock = DockStyle.Fill;
-            textBox.Location = new Point(180, 0);
+            textBox.Dock = DockStyle.Top;
             textBox.Margin = new Padding(0);
             textBox.Size = new Size(698, 38);
             textBox.GotFocus += (_, _) =>
@@ -97,12 +129,12 @@ namespace QpTestClient.Controls
 
         private CheckBox createPropertyCheckBox(string propertyName, string propertyDescription)
         {
-            var checkBox=new CheckBox();
-            checkBox.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            checkBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            checkBox.Location = new System.Drawing.Point(0, 0);
-            checkBox.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
-            checkBox.Size = new System.Drawing.Size(696, 36);
+            var checkBox = new CheckBox();
+            checkBox.BackColor = SystemColors.ControlLightLight;
+            checkBox.Dock = DockStyle.Top;
+            checkBox.Location = new Point(0, 0);
+            checkBox.Padding = new Padding(10, 0, 0, 0);
+            checkBox.Size = new Size(696, 36);
             checkBox.UseVisualStyleBackColor = false;
             return checkBox;
         }
@@ -110,13 +142,13 @@ namespace QpTestClient.Controls
 
         private ComboBox createPropertyComboBox(string propertyName, string propertyDescription)
         {
-            var comboBox=new ComboBox();
-            comboBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            comboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            comboBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            var comboBox = new ComboBox();
+            comboBox.Dock = DockStyle.Top;
+            comboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox.FlatStyle = FlatStyle.Flat;
             comboBox.FormattingEnabled = true;
-            comboBox.Location = new System.Drawing.Point(0, 0);
-            comboBox.Size = new System.Drawing.Size(696, 39);
+            comboBox.Location = new Point(0, 0);
+            comboBox.Size = new Size(696, 39);
             return comboBox;
         }
 
@@ -126,15 +158,15 @@ namespace QpTestClient.Controls
             LinkControl(label1, control1);
 
             var panel1 = new Panel();
+            panel1.AutoSize = true;
             panel1.Margin = new Padding(0);
             panel1.Controls.Add(control1);
             panel1.Controls.Add(label1);
             panel1.Padding = new Padding(0);
             panel1.Dock = DockStyle.Top;
-            panel1.Location = new System.Drawing.Point(0, 40);
-            panel1.Size = new System.Drawing.Size(878, 38);
+            panel1.Size = new Size(878, 38);
 
-            flp.Controls.Add(panel1);
+            pnlPropertyControls.Add(panel1);
         }
 
 
@@ -220,6 +252,22 @@ namespace QpTestClient.Controls
             checkBox.Checked = getValueHandler();
             checkBox.CheckedChanged += (_, _) => setValueHandler(checkBox.Checked);
             addPropertyControl(createPropertyLabel(propertyName, propertyDescription), checkBox);
+        }
+
+        /// <summary>
+        /// 生成控件
+        /// </summary>
+        public void GenerateControls()
+        {
+            for (var i = pnlPropertyControls.Count - 1; i >= 0; i--)
+            {
+                pnlProperty.Controls.Add(pnlPropertyControls[i]);
+            }
+        }
+
+        private void AotPropertyGrid_Load(object sender, EventArgs e)
+        {
+            
         }
 
         public void RegisterProperty<TEnum>(string propertyName, string propertyDescription, Func<TEnum> getValueHandler, Action<TEnum> setValueHandler)

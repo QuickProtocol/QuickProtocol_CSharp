@@ -57,16 +57,4 @@
 	  <Folder Include="Properties\" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Compile Update="Controls\ClientOptions\WebSocketClientOptionsControl.cs">
-	    <SubType>UserControl</SubType>
-	  </Compile>
-	  <Compile Update="Controls\ClientOptions\SerialPortClientOptionsControl.cs">
-	    <SubType>UserControl</SubType>
-	  </Compile>
-	  <Compile Update="Controls\ClientOptions\PipelineClientOptionsControl.cs">
-	    <SubType>UserControl</SubType>
-	  </Compile>
-	</ItemGroup>
-
 </Project>

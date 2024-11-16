@@ -29,10 +29,10 @@
         private void InitializeComponent()
         {
             splitContainer1 = new System.Windows.Forms.SplitContainer();
-            flp = new System.Windows.Forms.FlowLayoutPanel();
+            pnlProperty = new System.Windows.Forms.Panel();
+            panel1 = new System.Windows.Forms.Panel();
             lblPropertyDescription = new System.Windows.Forms.Label();
             lblPropertyName = new System.Windows.Forms.Label();
-            panel1 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -49,7 +49,7 @@
             // 
             // splitContainer1.Panel1
             // 
-            splitContainer1.Panel1.Controls.Add(flp);
+            splitContainer1.Panel1.Controls.Add(pnlProperty);
             // 
             // splitContainer1.Panel2
             // 
@@ -58,14 +58,26 @@
             splitContainer1.SplitterDistance = 718;
             splitContainer1.TabIndex = 0;
             // 
-            // flp
+            // pnlProperty
             // 
-            flp.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            flp.Dock = System.Windows.Forms.DockStyle.Fill;
-            flp.Location = new System.Drawing.Point(0, 0);
-            flp.Name = "flp";
-            flp.Size = new System.Drawing.Size(845, 718);
-            flp.TabIndex = 0;
+            pnlProperty.AutoScroll = true;
+            pnlProperty.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            pnlProperty.Dock = System.Windows.Forms.DockStyle.Fill;
+            pnlProperty.Location = new System.Drawing.Point(0, 0);
+            pnlProperty.Name = "pnlProperty";
+            pnlProperty.Size = new System.Drawing.Size(845, 718);
+            pnlProperty.TabIndex = 0;
+            // 
+            // panel1
+            // 
+            panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            panel1.Controls.Add(lblPropertyDescription);
+            panel1.Controls.Add(lblPropertyName);
+            panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            panel1.Location = new System.Drawing.Point(0, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new System.Drawing.Size(845, 199);
+            panel1.TabIndex = 2;
             // 
             // lblPropertyDescription
             // 
@@ -84,17 +96,6 @@
             lblPropertyName.Size = new System.Drawing.Size(843, 31);
             lblPropertyName.TabIndex = 0;
             // 
-            // panel1
-            // 
-            panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            panel1.Controls.Add(lblPropertyDescription);
-            panel1.Controls.Add(lblPropertyName);
-            panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            panel1.Location = new System.Drawing.Point(0, 0);
-            panel1.Name = "panel1";
-            panel1.Size = new System.Drawing.Size(845, 199);
-            panel1.TabIndex = 2;
-            // 
             // AotPropertyGrid
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
@@ -102,6 +103,7 @@
             Controls.Add(splitContainer1);
             Name = "AotPropertyGrid";
             Size = new System.Drawing.Size(845, 921);
+            Load += AotPropertyGrid_Load;
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
@@ -113,9 +115,9 @@
         #endregion
 
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.FlowLayoutPanel flp;
         private System.Windows.Forms.Label lblPropertyDescription;
         private System.Windows.Forms.Label lblPropertyName;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel pnlProperty;
     }
 }

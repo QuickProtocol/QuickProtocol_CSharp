@@ -108,7 +108,6 @@ namespace QpTestClient
             // pnlClientOptions
             // 
             pnlClientOptions.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            pnlClientOptions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             pnlClientOptions.Location = new System.Drawing.Point(34, 126);
             pnlClientOptions.Name = "pnlClientOptions";
             pnlClientOptions.Size = new System.Drawing.Size(759, 624);

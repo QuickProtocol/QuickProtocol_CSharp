@@ -1,4 +1,4 @@
-﻿using QpTestClient.Controls.ClientOptions;
+﻿using QpTestClient.Controls;
 using Quick.Protocol;
 using System;
 using System.Collections.Generic;
@@ -11,8 +11,8 @@ namespace QpTestClient
         public string TypeName { get; set; }
         public string Name { get; set; }
         public Func<QpClientOptions> CreateOptionsInstanceFunc { get; set; }
-        public Func<ClientOptionsControl> CreateOptionsControlFunc { get; set; }
         public Func<Stream, QpClientOptions> DeserializeQpClientOptions { get; set; }
+        public Action<AotPropertyGrid, QpClientOptions> EditOptions { get; set; }
         public override string ToString() => Name;
     }
 }
