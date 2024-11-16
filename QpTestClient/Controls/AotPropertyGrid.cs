@@ -116,6 +116,7 @@ namespace QpTestClient.Controls
             var control = new TextBox();
             control.BorderStyle = BorderStyle.None;
             control.Dock = DockStyle.Top;
+            control.ReadOnly = ReadOnly;
             control.Margin = new Padding(0);
             control.Size = new Size(698, 38);
             control.GotFocus += (_, _) =>
@@ -135,6 +136,7 @@ namespace QpTestClient.Controls
             control.Padding = new Padding(10, 0, 0, 0);
             control.Size = new Size(696, 36);
             control.UseVisualStyleBackColor = false;
+            control.Enabled = !ReadOnly;
             return control;
         }
 
@@ -148,6 +150,7 @@ namespace QpTestClient.Controls
             control.FormattingEnabled = true;
             control.Location = new Point(0, 0);
             control.Size = new Size(696, 39);
+            control.Enabled = !ReadOnly;
             return control;
         }
 
@@ -200,6 +203,26 @@ namespace QpTestClient.Controls
                     {
                         control.Focus();
                     }
+                }
+            };
+            label.DoubleClick += (_, _) =>
+            {
+                if (ReadOnly)
+                    return;
+                if (control is TextBox textBox)
+                {
+                    textBox.SelectAll();
+                }
+                else if(control is CheckBox checkBox)
+                {
+                    checkBox.Checked = !checkBox.Checked;
+                }
+                else if (control is ComboBox cmb)
+                {
+                    var index = cmb.SelectedIndex+1;
+                    if (index >= cmb.Items.Count)
+                        index = 0;
+                    cmb.SelectedIndex = index;
                 }
             };
             control.GotFocus += (_, _) =>

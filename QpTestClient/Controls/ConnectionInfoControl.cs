@@ -22,9 +22,9 @@ namespace QpTestClient.Controls
             var qpClientTypeInfo = QpClientTypeManager.Instance.Get(item.ConnectionInfo.QpClientTypeName);
             var ctl = new AotPropertyGrid();
             qpClientTypeInfo.EditOptions(ctl, item.ConnectionInfo.QpClientOptions);
-            ctl.Dock = DockStyle.Fill;
             ctl.GenerateControls();
             ctl.ReadOnly = true;
+            ctl.Dock = DockStyle.Fill;
             tpBasic.Controls.Add(ctl);
         }
         private string lastNetstatStr = string.Empty;

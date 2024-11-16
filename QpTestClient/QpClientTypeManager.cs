@@ -24,11 +24,11 @@ namespace QpTestClient
         {
             propertyGrid.RegisterProperty("密码", "", () => options.Password, t => options.Password = t);
             propertyGrid.RegisterGroup("高级");
-            propertyGrid.RegisterProperty("连接超时", "", () => options.ConnectionTimeout, t => options.ConnectionTimeout = t);
-            propertyGrid.RegisterProperty("传输超时", "", () => options.TransportTimeout, t => options.TransportTimeout = t);
+            propertyGrid.RegisterProperty("连接超时", "单位：秒", () => options.ConnectionTimeout, t => options.ConnectionTimeout = t);
+            propertyGrid.RegisterProperty("传输超时", "单位：秒", () => options.TransportTimeout, t => options.TransportTimeout = t);
             propertyGrid.RegisterProperty("加密", "", () => options.EnableEncrypt, t => options.EnableEncrypt = t);
             propertyGrid.RegisterProperty("压缩", "", () => options.EnableCompress, t => options.EnableCompress = t);
-            propertyGrid.RegisterProperty("最大包大小", "", () => options.MaxPackageSize, t => options.MaxPackageSize = t);
+            propertyGrid.RegisterProperty("最大包大小", "单位：字节", () => options.MaxPackageSize, t => options.MaxPackageSize = t);
             propertyGrid.RegisterProperty("网络统计", "", () => options.EnableNetstat, t => options.EnableNetstat = t);
             propertyGrid.RegisterProperty("通知接收事件", "", () => options.RaiseNoticePackageReceivedEvent, t => options.RaiseNoticePackageReceivedEvent = t);
         }
