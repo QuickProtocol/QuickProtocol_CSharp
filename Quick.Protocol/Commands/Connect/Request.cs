@@ -14,5 +14,10 @@ namespace Quick.Protocol.Commands.Connect
         /// 指令集编号数组
         /// </summary>
         public string[] InstructionIds { get; set; }
+
+        public static Request GetDefine() => new Request()
+        {
+            InstructionIds = new[] { typeof(Base).FullName }
+        };
     }
 }

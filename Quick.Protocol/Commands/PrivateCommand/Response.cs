@@ -15,5 +15,6 @@ namespace Quick.Protocol.Commands.PrivateCommand
         /// 内容
         /// </summary>
         public string Content { get; set; }
+        public static Response GetDefine() => new Response() { Content = "Content" };
     }
 }

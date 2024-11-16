@@ -15,16 +15,20 @@ namespace Quick.Protocol
             CommandInfos = new QpCommandInfo[]
             {
                 QpCommandInfo.Create(
-                    new Commands.Connect.Request(){ InstructionIds=new[]{ typeof(Base).FullName } },
-                    new Commands.Connect.Response(){ Question=Guid.NewGuid().ToString("N") }),
+                    Commands.Connect.Request.GetDefine(),
+                    Commands.Connect.Response.GetDefine()),
                 QpCommandInfo.Create(
-                    new Commands.Authenticate.Request(){ Answer=Guid.NewGuid().ToString("N") },
-                    new Commands.Authenticate.Response()),
-                QpCommandInfo.Create(new Commands.HandShake.Request()),
+                    Commands.Authenticate.Request.GetDefine(),
+                    Commands.Authenticate.Response.GetDefine()),
                 QpCommandInfo.Create(
-                    new Commands.PrivateCommand.Request(){ Action="Action", Content="Content" },
-                    new Commands.PrivateCommand.Response(){ Content="Content" }),
-                QpCommandInfo.Create(new Commands.GetQpInstructions.Request())
+                    Commands.HandShake.Request.GetDefine(),
+                    Commands.HandShake.Response.GetDefine()),
+                QpCommandInfo.Create(
+                    Commands.PrivateCommand.Request.GetDefine(),
+                    Commands.PrivateCommand.Response.GetDefine()),
+                QpCommandInfo.Create(
+                    Commands.GetQpInstructions.Request.GetDefine(),
+                    Commands.GetQpInstructions.Response.GetDefine())
             }
         };
     }

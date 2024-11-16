@@ -10,5 +10,6 @@ namespace Quick.Protocol.Commands.GetQpInstructions
     public class Request : AbstractQpSerializer<Request>, IQpCommandRequest<Request, Response>
     {
         protected override JsonTypeInfo<Request> GetTypeInfo() => GetQpInstructionsCommandSerializerContext.Default.Request;
+        public static Request GetDefine() => new Request();
     }
 }

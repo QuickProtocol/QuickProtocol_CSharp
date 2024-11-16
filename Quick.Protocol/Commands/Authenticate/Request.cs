@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Commands.Authenticate
@@ -11,5 +12,7 @@ namespace Quick.Protocol.Commands.Authenticate
         /// 认证回答
         /// </summary>
         public string Answer { get; set; }
+
+        public static Request GetDefine() => new Request() { Answer = Guid.NewGuid().ToString("N") };
     }
 }

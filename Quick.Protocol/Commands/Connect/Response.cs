@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization.Metadata;
+﻿using System;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Quick.Protocol.Commands.Connect
 {
@@ -17,5 +18,6 @@ namespace Quick.Protocol.Commands.Connect
         /// 认证问题
         /// </summary>
         public string Question { get; set; }
+        public static Response GetDefine() => new Response() { Question = Guid.NewGuid().ToString("N") };
     }
 }

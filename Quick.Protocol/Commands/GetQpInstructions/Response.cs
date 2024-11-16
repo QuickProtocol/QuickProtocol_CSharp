@@ -12,5 +12,6 @@ namespace Quick.Protocol.Commands.GetQpInstructions
         /// 指令集数据
         /// </summary>
         public QpInstruction[] Data { get; set; }
+        public static Response GetDefine() => new Response();
     }
 }

@@ -20,5 +20,7 @@ namespace Quick.Protocol.Commands.HandShake
         /// 启用压缩(默认为false)
         /// </summary>
         public bool EnableCompress { get; set; } = false;
+
+        public static Request GetDefine() => new Request();
     }
 }
