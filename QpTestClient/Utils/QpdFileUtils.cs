@@ -75,19 +75,8 @@ namespace QpTestClient.Utils
                 entry = zipArchive.GetEntry(typeof(QpClientOptions).FullName);
                 using (var stream = entry.Open())
                 {
-                    QpClientOptions options = null;
-                    if (testConnectionInfo.QpClientTypeName == typeof(Quick.Protocol.Tcp.QpTcpClient).FullName)
-                        options = JsonSerializer.Deserialize(stream,
-                            Quick.Protocol.Tcp.QpTcpClientOptionsSerializerContext.Default.QpTcpClientOptions);
-                    else if (testConnectionInfo.QpClientTypeName == typeof(Quick.Protocol.Pipeline.QpPipelineClient).FullName)
-                        options = JsonSerializer.Deserialize(stream,
-                            Quick.Protocol.Pipeline.QpPipelineClientOptionsSerializerContext.Default.QpPipelineClientOptions);
-                    else if (testConnectionInfo.QpClientTypeName == typeof(Quick.Protocol.SerialPort.QpSerialPortClient).FullName)
-                        options = JsonSerializer.Deserialize(stream,
-                            Quick.Protocol.SerialPort.QpSerialPortClientOptionsSerializerContext.Default.QpSerialPortClientOptions);
-                    else if (testConnectionInfo.QpClientTypeName == typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClient).FullName)
-                        options = JsonSerializer.Deserialize(stream,
-                            Quick.Protocol.WebSocket.Client.QpWebSocketClientOptionsSerializerContext.Default.QpWebSocketClientOptions);
+                    var qpClientTypeInfo = QpClientTypeManager.Instance.Get(testConnectionInfo.QpClientTypeName);
+                    QpClientOptions options = qpClientTypeInfo.DeserializeQpClientOptions(stream);
                     testConnectionInfo.QpClientOptions = options;
                 }
             }

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
@@ -17,38 +18,46 @@ namespace QpTestClient
         public static QpClientTypeManager Instance { get; } = new QpClientTypeManager();
         private Dictionary<string, QpClientTypeInfo> dict = null;
 
-        private void register(Type clientType, Func<QpClientOptions> createOptionsInstanceFunc, Func<ClientOptionsControl> createOptionsControlFunc)
+        private void register(QpClientTypeInfo qpClientTypeInfo)
         {
-            var clientTypeFullName = clientType.FullName;
-            var name = clientType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? clientTypeFullName;
-            dict[clientTypeFullName] = new QpClientTypeInfo()
-            {
-                Name = name,
-                ClientType = clientType,
-                CreateOptionsInstanceFunc = createOptionsInstanceFunc,
-                CreateOptionsControlFunc = createOptionsControlFunc
-            };
+            dict[qpClientTypeInfo.TypeName] = qpClientTypeInfo;
         }
 
         public void Init()
         {
             dict = new Dictionary<string, QpClientTypeInfo>();
-            register(
-                typeof(Quick.Protocol.Tcp.QpTcpClient),
-                () => new Quick.Protocol.Tcp.QpTcpClientOptions(),
-                () => new Controls.ClientOptions.TcpClientOptionsControl());
-            register(
-                typeof(Quick.Protocol.Pipeline.QpPipelineClient),
-                () => new Quick.Protocol.Pipeline.QpPipelineClientOptions(),
-                () => new Controls.ClientOptions.PipelineClientOptionsControl());
-            register(
-                typeof(Quick.Protocol.SerialPort.QpSerialPortClient),
-                () => new Quick.Protocol.SerialPort.QpSerialPortClientOptions(),
-                () => new Controls.ClientOptions.SerialPortClientOptionsControl());
-            register(
-                typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClient),
-                () => new Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions(),
-                () => new Controls.ClientOptions.WebSocketClientOptionsControl());
+            register(new QpClientTypeInfo()
+            {
+                TypeName = typeof(Quick.Protocol.Tcp.QpTcpClient).FullName,
+                Name = "TCP",
+                CreateOptionsControlFunc = () => new Controls.ClientOptions.TcpClientOptionsControl(),
+                CreateOptionsInstanceFunc = () => new Quick.Protocol.Tcp.QpTcpClientOptions(),
+                DeserializeQpClientOptions = stream => JsonSerializer.Deserialize(stream, Quick.Protocol.Tcp.QpTcpClientOptionsSerializerContext.Default.QpTcpClientOptions)
+            });
+            register(new QpClientTypeInfo()
+            {
+                TypeName = typeof(Quick.Protocol.Pipeline.QpPipelineClient).FullName,
+                Name = "命名管道",
+                CreateOptionsControlFunc = () => new Controls.ClientOptions.PipelineClientOptionsControl(),
+                CreateOptionsInstanceFunc = () => new Quick.Protocol.Pipeline.QpPipelineClientOptions(),
+                DeserializeQpClientOptions = stream => JsonSerializer.Deserialize(stream, Quick.Protocol.Pipeline.QpPipelineClientOptionsSerializerContext.Default.QpPipelineClientOptions)
+            });
+            register(new QpClientTypeInfo()
+            {
+                TypeName = typeof(Quick.Protocol.SerialPort.QpSerialPortClient).FullName,
+                Name = "串口",
+                CreateOptionsControlFunc = () => new Controls.ClientOptions.SerialPortClientOptionsControl(),
+                CreateOptionsInstanceFunc = () => new Quick.Protocol.SerialPort.QpSerialPortClientOptions(),
+                DeserializeQpClientOptions = stream => JsonSerializer.Deserialize(stream, Quick.Protocol.SerialPort.QpSerialPortClientOptionsSerializerContext.Default.QpSerialPortClientOptions)
+            });
+            register(new QpClientTypeInfo()
+            {
+                TypeName = typeof(Quick.Protocol.WebSocket.Client.QpWebSocketClient).FullName,
+                Name = "WebSocket",
+                CreateOptionsControlFunc = () => new Controls.ClientOptions.WebSocketClientOptionsControl(),
+                CreateOptionsInstanceFunc = () => new Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions(),
+                DeserializeQpClientOptions = stream => JsonSerializer.Deserialize(stream, Quick.Protocol.WebSocket.Client.QpWebSocketClientOptionsSerializerContext.Default.QpWebSocketClientOptions)
+            });
         }
 
         public QpClientTypeInfo Get(string qpClientTypeName)

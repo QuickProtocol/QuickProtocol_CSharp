@@ -28,7 +28,7 @@ namespace QpTestClient
         {
             this.ConnectionInfo = connectionInfo;
             txtName.Text = connectionInfo.Name;
-            var qpClientTypeInfo = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.ClientType.FullName == connectionInfo.QpClientTypeName);
+            var qpClientTypeInfo = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.TypeName == connectionInfo.QpClientTypeName);
             cbConnectType.SelectedItem = qpClientTypeInfo;
             Text = "编辑连接";
         }
@@ -44,7 +44,7 @@ namespace QpTestClient
             if (ConnectionInfo != null)
             {
                 var qpClientTypeName = ConnectionInfo.QpClientTypeName;
-                var item = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.ClientType.FullName == qpClientTypeName);
+                var item = QpClientTypeManager.Instance.GetAll().FirstOrDefault(t => t.TypeName == qpClientTypeName);
                 cbConnectType.SelectedItem = item;
             }
             else
@@ -56,7 +56,7 @@ namespace QpTestClient
         private void cbConnectType_SelectedIndexChanged(object sender, EventArgs e)
         {
             var qpClientTypeInfo = (QpClientTypeInfo)cbConnectType.SelectedItem;
-            if (ConnectionInfo != null && qpClientTypeInfo.ClientType.FullName == ConnectionInfo.QpClientTypeName)
+            if (ConnectionInfo != null && qpClientTypeInfo.TypeName == ConnectionInfo.QpClientTypeName)
             {
                 clientOptions = ConnectionInfo.QpClientOptions.Clone();
             }
@@ -84,7 +84,7 @@ namespace QpTestClient
             ConnectionInfo = new TestConnectionInfo()
             {
                 Name = name,
-                QpClientTypeName = qpClientTypeInfo.ClientType.FullName,
+                QpClientTypeName = qpClientTypeInfo.TypeName,
                 QpClientOptions = clientOptions,
                 Instructions = ConnectionInfo?.Instructions
             };
