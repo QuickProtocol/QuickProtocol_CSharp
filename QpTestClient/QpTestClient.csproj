@@ -2,8 +2,8 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<RollForward>Major</RollForward>
 		<TargetFramework>net9.0-windows</TargetFramework>
+		<RollForward>Major</RollForward>
 		<UseWindowsForms>true</UseWindowsForms>
 		<Product>[QuickProtocol]测试客户端</Product>
 		<AssemblyTitle>[QuickProtocol]测试客户端</AssemblyTitle>
@@ -15,6 +15,8 @@
 		<Copyright>Apache License</Copyright>
 		<PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
+		<PublishAot>true</PublishAot>
+		<_SuppressWinFormsTrimError>true</_SuppressWinFormsTrimError>
 		<CustomResourceTypesSupport>true</CustomResourceTypesSupport>
 	</PropertyGroup>
 
