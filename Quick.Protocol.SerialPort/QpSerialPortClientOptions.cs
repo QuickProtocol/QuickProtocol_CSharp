@@ -13,6 +13,7 @@ namespace Quick.Protocol.SerialPort
     public class QpSerialPortClientOptions : QpClientOptions
     {
         protected override JsonSerializerContext GetJsonSerializerContext() => QpSerialPortClientOptionsSerializerContext.Default;
+        private const string unixPortNamePrefix = "/dev/";
 
         public const string URI_SCHEMA = "qp.serial";
         /// <summary>
@@ -73,13 +74,24 @@ namespace Quick.Protocol.SerialPort
         protected override void LoadFromUri(Uri uri)
         {
             PortName = uri.Host;
+            if (!OperatingSystem.IsWindows())
+            {
+                if (!PortName.StartsWith(unixPortNamePrefix))
+                    PortName = unixPortNamePrefix + PortName;
+            }
             base.LoadFromUri(uri);
         }
 
         protected override string ToUriBasic(HashSet<string> ignorePropertyNames)
         {
             ignorePropertyNames.Add(nameof(PortName));
-            return $"{URI_SCHEMA}://{PortName}";            
+            var host = PortName;
+            if (!OperatingSystem.IsWindows())
+            {
+                if (host.StartsWith(unixPortNamePrefix))
+                    host = host.Substring(unixPortNamePrefix.Length);
+            }
+            return $"{URI_SCHEMA}://{host}";
         }
 
         public static void RegisterUriSchema()
