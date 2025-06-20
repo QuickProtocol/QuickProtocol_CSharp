@@ -73,7 +73,7 @@ namespace Quick.Protocol.SerialPort
 
         protected override void LoadFromUri(Uri uri)
         {
-            PortName = uri.Host;
+            PortName = uri.AbsolutePath.Replace("/", string.Empty);
             if (!OperatingSystem.IsWindows())
             {
                 if (!PortName.StartsWith(unixPortNamePrefix))
@@ -85,13 +85,13 @@ namespace Quick.Protocol.SerialPort
         protected override string ToUriBasic(HashSet<string> ignorePropertyNames)
         {
             ignorePropertyNames.Add(nameof(PortName));
-            var host = PortName;
+            var portName = PortName;
             if (!OperatingSystem.IsWindows())
             {
-                if (host.StartsWith(unixPortNamePrefix))
-                    host = host.Substring(unixPortNamePrefix.Length);
+                if (portName.StartsWith(unixPortNamePrefix))
+                    portName = portName.Substring(unixPortNamePrefix.Length);
             }
-            return $"{URI_SCHEMA}://{host}";
+            return $"{URI_SCHEMA}://./{portName}";
         }
 
         public static void RegisterUriSchema()

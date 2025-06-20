@@ -39,7 +39,6 @@ namespace Quick.Protocol.SerialPort
             if (LogUtils.LogConnection)
                 LogUtils.Log($"SerialPort[{options.PortName}] open success.");
             serialPort.WriteTimeout = options.TransportTimeout;
-            serialPort.WriteLine(QpConsts.QuickProtocolNameAndVersion);
             return serialPort.BaseStream;
         }
 

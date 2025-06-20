@@ -1,8 +1,4 @@
 ﻿using Quick.Protocol.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,17 +54,11 @@ namespace Quick.Protocol.SerialPort
             if (isAccepted)
                 return Task.Delay(1000, token);
             isAccepted = true;
-            
+
             return Task.Run(() =>
             {
                 if (!serialPort.IsOpen)
                     serialPort.Open();
-                var line = serialPort.ReadLine();
-                if (QpConsts.QuickProtocolNameAndVersion != line)
-                {
-                    isAccepted = false;
-                    throw new IOException("Protocol not match.");
-                }
             }, token)
                 .ContinueWith(task =>
                 {
