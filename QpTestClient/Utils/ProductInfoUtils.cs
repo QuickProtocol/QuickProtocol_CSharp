@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QpTestClient.Utils
 {
@@ -20,7 +16,7 @@ namespace QpTestClient.Utils
                     return titleAttribute.Title;
                 }
             }
-            return System.IO.Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
+            return System.IO.Path.GetFileNameWithoutExtension(AppContext.BaseDirectory);
         }
 
         public static string GetAssemblyVersion()
