@@ -166,6 +166,28 @@ namespace Quick.Protocol
                 commandContext.SetResponse(new CommandException(code, message));
         }
 
+        private async Task FillRecvPipeAsync(Stream stream, PipeWriter writer, CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                Memory<byte> memory = writer.GetMemory(minimumBufferSize);
+                var readTask = stream.ReadAsync(memory, token).AsTask()
+                    .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
+                    .ConfigureAwait(false);;
+                int bytesRead = await readTask;
+                if (bytesRead == 0)
+                    continue;
+                writer.Advance(bytesRead);
+                if (options.EnableNetstat)
+                {
+                    BytesReceived += bytesRead;
+                    if (BytesReceived > LONG_HALF_MAX_VALUE)
+                        BytesReceived = 0;
+                }
+                await writer.FlushAsync(token);
+            }
+        }
+
         private async Task ReadRecvPipeAsync(PipeReader recvReader, CancellationToken token)
         {
             //暂存包头缓存
@@ -402,25 +424,6 @@ namespace Quick.Protocol
                     OnReadError(task.Exception);
                 pipe.Reader.CompleteAsync(task.Exception);
             });
-        }
-
-        private async Task FillRecvPipeAsync(Stream stream, PipeWriter writer, CancellationToken token)
-        {
-            while (!token.IsCancellationRequested)
-            {
-                Memory<byte> memory = writer.GetMemory(minimumBufferSize);
-                int bytesRead = await stream.ReadAsync(memory, token);
-                if (bytesRead == 0)
-                    continue;
-                writer.Advance(bytesRead);
-                if (options.EnableNetstat)
-                {
-                    BytesReceived += bytesRead;
-                    if (BytesReceived > LONG_HALF_MAX_VALUE)
-                        BytesReceived = 0;
-                }
-                await writer.FlushAsync(token);
-            }
         }
 
         //解析包总长度
