@@ -4,7 +4,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
-		<Version>2.5.2</Version>
+		<Version>2.5.3</Version>
 		<Authors>scbeta</Authors>
 		<Company />
 		<Product>Quick.Protocol</Product>
