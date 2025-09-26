@@ -182,7 +182,6 @@ namespace Quick.Protocol
             while (!token.IsCancellationRequested)
             {
                 var currentReader = recvReader;
-                
                 var readTask = currentReader.ReadAtLeastAsync(PACKAGE_TOTAL_LENGTH_LENGTH, token);
                 var ret = await readTask.AsTask()
                     .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
@@ -197,7 +196,7 @@ namespace Quick.Protocol
                 currentReader.AdvanceTo(ret.Buffer.Start);
 
                 //读取完整包
-                ret = await recvReader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
+                ret = await currentReader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
                 if (ret.IsCanceled)
                     return;
                 if (ret.Buffer.Length < packageTotalLength)
@@ -412,7 +411,7 @@ namespace Quick.Protocol
                 Memory<byte> memory = writer.GetMemory(minimumBufferSize);
                 int bytesRead = await stream.ReadAsync(memory, token);
                 if (bytesRead == 0)
-                    break;
+                    continue;
                 writer.Advance(bytesRead);
                 if (options.EnableNetstat)
                 {
