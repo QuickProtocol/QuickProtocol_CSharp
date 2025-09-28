@@ -196,8 +196,6 @@ namespace Quick.Protocol
             var packageTotalLength = 0;
             //解密相关变量
             Pipe decryptPipe = null;
-            byte[] decryptBuffer1 = null;
-            byte[] decryptBuffer2 = null;
             //解压相关变量
             Pipe decompressPipe = null;
 
@@ -233,23 +231,23 @@ namespace Quick.Protocol
                     {
                         //准备管道
                         if (decryptPipe == null)
-                        {
                             decryptPipe = new Pipe();
-                            decryptBuffer1 = new byte[dec.InputBlockSize];
-                            decryptBuffer2 = new byte[dec.OutputBlockSize];
-                        }
 
                         //写入包头
-                        decryptPipe.Writer.GetMemory(PACKAGE_TOTAL_LENGTH_LENGTH);
-                        decryptPipe.Writer.Advance(PACKAGE_TOTAL_LENGTH_LENGTH);
+                        var headMemory = decryptPipe.Writer.GetMemory(PACKAGE_TOTAL_LENGTH_LENGTH);
                         packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH;
-
                         //开始解密
                         var encryptedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH).ToArray();
                         var decryptBuffer = dec.TransformFinalBlock(encryptedBuffer, 0, encryptedBuffer.Length);
                         packageTotalLength += decryptBuffer.Length;
 
+                        //修改包头
+                        writePackageTotalLengthToBuffer(headMemory,packageTotalLength);
+                        //通知读取包头
+                        decryptPipe.Writer.Advance(PACKAGE_TOTAL_LENGTH_LENGTH);                        
+                        //写入包体
                         decryptBuffer.CopyTo(decryptPipe.Writer.GetMemory(decryptBuffer.Length));
+                        //通知读取包体
                         decryptPipe.Writer.Advance(decryptBuffer.Length);
 
                         _ = decryptPipe.Writer.FlushAsync();
@@ -270,9 +268,9 @@ namespace Quick.Protocol
                             decompressPipe = new Pipe();
 
                         //写入包头
-                        decompressPipe.Writer.GetMemory(PACKAGE_TOTAL_LENGTH_LENGTH);
-                        decompressPipe.Writer.Advance(PACKAGE_TOTAL_LENGTH_LENGTH);
+                        var headMemory = decompressPipe.Writer.GetMemory(PACKAGE_TOTAL_LENGTH_LENGTH);
                         packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH;
+                        decompressPipe.Writer.Advance(packageTotalLength);
 
                         //开始解压
                         var compressedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH);
@@ -284,14 +282,14 @@ namespace Quick.Protocol
                                 var count = await gzStream.ReadAsync(decompressPipe.Writer.GetMemory(minimumBufferSize), token).ConfigureAwait(false);
                                 if (count <= 0)
                                     break;
-                                decompressPipe.Writer.Advance(count);
                                 packageTotalLength += count;
+                                decompressPipe.Writer.Advance(count);
                             }
                         }
-                        _ = Task.Run(async () =>
-                        {
-                            await decompressPipe.Writer.FlushAsync().ConfigureAwait(false);
-                        });
+                        //修改包头
+                        writePackageTotalLengthToBuffer(headMemory, packageTotalLength);
+                        _ = decompressPipe.Writer.FlushAsync();
+                        //开始读取
                         ret = await decompressPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
                         //解压完成，释放缓存
                         currentReader?.AdvanceTo(packageBuffer.End);

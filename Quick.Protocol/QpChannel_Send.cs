@@ -41,9 +41,20 @@ namespace Quick.Protocol
             var readRet = await currentReader.ReadAtLeastAsync(packageBodyLength);
             var packageBodyBuffer = readRet.Buffer;
 
-            var packageTotalLength = 0;
-            Memory<byte> packageHeadMemory = default;
-
+            //包总长度
+            var packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + Convert.ToInt32(packageBodyBuffer.Length);
+            //准备包头
+            writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
+            var packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
+            if (LogUtils.LogPackage)
+                LogUtils.Log(
+                    "{0}: [Send-Package]Length:{1}，Type:{2}，Content:{3}",
+                    DateTime.Now,
+                    packageTotalLength,
+                    packageType,
+                    LogUtils.LogContent ?
+                        BitConverter.ToString(packageHeadMemory.ToArray()) + "-" + BitConverter.ToString(packageBodyBuffer.ToArray())
+                        : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
             //如果压缩或者加密
             if (!ignoreCompressAndEncrypt && (options.InternalCompress || options.InternalEncrypt))
             {
@@ -102,14 +113,6 @@ namespace Quick.Protocol
                     }
                 }
             }
-            else
-            {
-                //包总长度
-                packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + Convert.ToInt32(packageBodyBuffer.Length);
-                //准备包头
-                writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
-                packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
-            }
             //写入包头
             var writeTask = stream.WriteAsync(packageHeadMemory).AsTask();
             await writeTask
@@ -137,25 +140,25 @@ namespace Quick.Protocol
                 if (BytesSent > LONG_HALF_MAX_VALUE)
                     BytesSent = 0;
             }
-            if (LogUtils.LogPackage)
-                LogUtils.Log(
-                    "{0}: [Send-Package]Length:{1}，Type:{2}，Content:{3}",
-                    DateTime.Now,
-                    packageTotalLength,
-                    packageType,
-                    LogUtils.LogContent ?
-                        BitConverter.ToString(packageHeadMemory.ToArray()) + "-" + BitConverter.ToString(packageBodyBuffer.ToArray())
-                        : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
             currentReader?.AdvanceTo(packageBodyBuffer.End);
             await stream.FlushAsync().ConfigureAwait(false);
         }
 
         private static void writePackageTotalLengthToBuffer(byte[] buffer, int offset, int packageTotalLength)
         {
-            BitConverter.TryWriteBytes(new Span<byte>(buffer, offset, sizeof(int)), packageTotalLength);
-            //如果是小端字节序，则交换
+            writePackageTotalLengthToBuffer(new Span<byte>(buffer, offset, sizeof(int)), packageTotalLength);
+        }
+
+        private static void writePackageTotalLengthToBuffer(Span<byte> span, int packageTotalLength)
+        {
+            BitConverter.TryWriteBytes(span, packageTotalLength);
             if (BitConverter.IsLittleEndian)
-                Array.Reverse(buffer, offset, sizeof(int));
+                span.Slice(0, sizeof(int)).Reverse();
+        }
+
+        private static void writePackageTotalLengthToBuffer(Memory<byte> memory, int packageTotalLength)
+        {
+            writePackageTotalLengthToBuffer(memory.Span, packageTotalLength);
         }
 
         private async Task UseSendPipe(Func<Pipe, Task> handler)
