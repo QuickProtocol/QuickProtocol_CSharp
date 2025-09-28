@@ -1,7 +1,6 @@
 ﻿using Quick.Protocol.Utils;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO.Compression;
 using System.IO.Pipelines;
 using System.IO;
@@ -39,8 +38,24 @@ namespace Quick.Protocol
                 throw new IOException("Not connected.");
 
             var readRet = await currentReader.ReadAtLeastAsync(packageBodyLength);
+            //不带包长度的包体
             var packageBodyBuffer = readRet.Buffer;
 
+            if (LogUtils.LogPackage)
+            {
+                //不带包长度和包类型的包体
+                var bodyBuffer = packageBodyBuffer.Slice(1);
+                var sb = new StringBuilder();
+                sb.Append($"{DateTime.Now}: [Send-Package]Type: {packageType}");
+                if (bodyBuffer.Length > 0)
+                {
+                    if (LogUtils.LogContent)
+                        sb.Append(", Content: "+Convert.ToHexString(bodyBuffer.ToArray()));
+                    else
+                        sb.Append(LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                }
+                LogUtils.Log(sb.ToString());
+            }
             var packageTotalLength = 0;
             Memory<byte> packageHeadMemory = default;
 
@@ -137,15 +152,6 @@ namespace Quick.Protocol
                 if (BytesSent > LONG_HALF_MAX_VALUE)
                     BytesSent = 0;
             }
-            if (LogUtils.LogPackage)
-                LogUtils.Log(
-                    "{0}: [Send-Package]Length:{1}，Type:{2}，Content:{3}",
-                    DateTime.Now,
-                    packageTotalLength,
-                    packageType,
-                    LogUtils.LogContent ?
-                        BitConverter.ToString(packageHeadMemory.ToArray()) + "-" + BitConverter.ToString(packageBodyBuffer.ToArray())
-                        : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
             currentReader?.AdvanceTo(packageBodyBuffer.End);
             await stream.FlushAsync().ConfigureAwait(false);
         }
@@ -194,8 +200,8 @@ namespace Quick.Protocol
                 var bodyLength = 1;
                 _ = writer.FlushAsync();
                 await writePackageBuffer(pipe.Reader,
-                        QpPackageType.Heartbeat,
-                        bodyLength).ConfigureAwait(false);
+                    QpPackageType.Heartbeat,
+                    bodyLength).ConfigureAwait(false);
             });
         }
 

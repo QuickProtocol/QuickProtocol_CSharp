@@ -233,11 +233,7 @@ namespace Quick.Protocol
                     {
                         //准备管道
                         if (decryptPipe == null)
-                        {
                             decryptPipe = new Pipe();
-                            decryptBuffer1 = new byte[dec.InputBlockSize];
-                            decryptBuffer2 = new byte[dec.OutputBlockSize];
-                        }
 
                         //写入包头
                         decryptPipe.Writer.GetMemory(PACKAGE_TOTAL_LENGTH_LENGTH);
@@ -288,10 +284,7 @@ namespace Quick.Protocol
                                 packageTotalLength += count;
                             }
                         }
-                        _ = Task.Run(async () =>
-                        {
-                            await decompressPipe.Writer.FlushAsync().ConfigureAwait(false);
-                        });
+                        _ = decompressPipe.Writer.FlushAsync();
                         ret = await decompressPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
                         //解压完成，释放缓存
                         currentReader?.AdvanceTo(packageBuffer.End);
@@ -304,15 +297,6 @@ namespace Quick.Protocol
                 packageBuffer.Slice(0, PACKAGE_HEAD_LENGTH).CopyTo(packageHeadBuffer);
                 var packageType = (QpPackageType)packageHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH];
 
-                if (LogUtils.LogPackage)
-                    LogUtils.Log(
-                    "{0}: [Recv-Package]Length:{1}，Type:{2}，Content:{3}",
-                    DateTime.Now,
-                    packageTotalLength,
-                    packageType,
-                    LogUtils.LogContent ?
-                        BitConverter.ToString(packageBuffer.ToArray())
-                        : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
                 HandlePackage(packageType, packageBuffer);
                 currentReader?.AdvanceTo(packageBuffer.End);
             }
@@ -320,7 +304,21 @@ namespace Quick.Protocol
 
         protected void HandlePackage(QpPackageType packageType, ReadOnlySequence<byte> packageBuffer)
         {
+            //不带包长度和包类型的包体
             var bodyBuffer = packageBuffer.Slice(PACKAGE_HEAD_LENGTH);
+            if (LogUtils.LogPackage)
+            {
+                var sb = new StringBuilder();
+                sb.Append($"{DateTime.Now}: [Recv-Package]Type: {packageType}");
+                if (bodyBuffer.Length > 0)
+                {
+                    if (LogUtils.LogContent)
+                        sb.Append(", Content: "+Convert.ToHexString(bodyBuffer.ToArray()));
+                    else
+                        sb.Append(LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                }
+                LogUtils.Log(sb.ToString());
+            }
             switch (packageType)
             {
                 case QpPackageType.Heartbeat:
