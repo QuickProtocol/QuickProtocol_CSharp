@@ -2,17 +2,24 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.SerialPort
 {
     [JsonSerializable(typeof(QpSerialPortClientOptions))]
-    public partial class QpSerialPortClientOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpSerialPortClientOptionsSerializerContext : JsonSerializerContext
+    {
+        public static QpSerialPortClientOptionsSerializerContext Default2 { get; } = new QpSerialPortClientOptionsSerializerContext(new JsonSerializerOptions()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+    }
 
     public class QpSerialPortClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext GetJsonSerializerContext() => QpSerialPortClientOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpSerialPortClientOptionsSerializerContext.Default2;
         private const string unixPortNamePrefix = "/dev/";
 
         public const string URI_SCHEMA = "qp.serial";

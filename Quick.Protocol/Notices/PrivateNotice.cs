@@ -7,7 +7,7 @@ namespace Quick.Protocol.Notices
     [Description("用于传递私有协议通知。")]
     public class PrivateNotice : AbstractQpSerializer<PrivateNotice>
     {
-        protected override JsonTypeInfo<PrivateNotice> GetTypeInfo() => NoticesSerializerContext.Default.PrivateNotice;
+        protected override JsonTypeInfo<PrivateNotice> GetTypeInfo() => NoticesSerializerContext.Default2.PrivateNotice;
 
         /// <summary>
         /// 动作

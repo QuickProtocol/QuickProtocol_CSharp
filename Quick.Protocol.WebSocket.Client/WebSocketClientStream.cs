@@ -1,8 +1,5 @@
-﻿using Quick.Protocol.Utils;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,7 +13,6 @@ namespace Quick.Protocol.WebSocket.Client
         public override long Length => throw new NotImplementedException();
 
         private System.Net.WebSockets.ClientWebSocket client;
-        private byte[] buffer = new byte[1024];
         private string closeReason = null;
 
         public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }

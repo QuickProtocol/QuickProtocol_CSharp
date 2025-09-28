@@ -9,7 +9,7 @@ namespace Quick.Protocol.Commands.Connect
     [DisplayName("连接")]
     public class Request : AbstractQpSerializer<Request>, IQpCommandRequest<Request, Response>
     {
-        protected override JsonTypeInfo<Request> GetTypeInfo() => ConnectCommandSerializerContext.Default.Request;
+        protected override JsonTypeInfo<Request> GetTypeInfo() => ConnectCommandSerializerContext.Default2.Request;
         /// <summary>
         /// 指令集编号数组
         /// </summary>

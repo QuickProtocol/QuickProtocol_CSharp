@@ -1,17 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.Tcp
 {
     [JsonSerializable(typeof(QpTcpClientOptions))]
-    public partial class QpTcpClientOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpTcpClientOptionsSerializerContext : JsonSerializerContext
+    {
+        public static QpTcpClientOptionsSerializerContext Default2 { get; } = new QpTcpClientOptionsSerializerContext(new JsonSerializerOptions()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+    }
 
     public class QpTcpClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext GetJsonSerializerContext() => QpTcpClientOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpTcpClientOptionsSerializerContext.Default2;
 
         public const string URI_SCHEMA = "qp.tcp";
         /// <summary>

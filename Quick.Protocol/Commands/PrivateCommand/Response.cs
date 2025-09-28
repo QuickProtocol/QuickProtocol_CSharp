@@ -10,7 +10,7 @@ namespace Quick.Protocol.Commands.PrivateCommand
     /// </summary>
     public class Response : AbstractQpSerializer<Response>
     {
-        protected override JsonTypeInfo<Response> GetTypeInfo() => PrivateCommandCommandSerializerContext.Default.Response;
+        protected override JsonTypeInfo<Response> GetTypeInfo() => PrivateCommandCommandSerializerContext.Default2.Response;
         /// <summary>
         /// 内容
         /// </summary>

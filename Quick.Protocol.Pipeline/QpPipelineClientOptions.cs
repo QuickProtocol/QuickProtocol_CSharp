@@ -1,17 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.Pipeline
 {
     [JsonSerializable(typeof(QpPipelineClientOptions))]
-    public partial class QpPipelineClientOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpPipelineClientOptionsSerializerContext : JsonSerializerContext
+    {
+        public static QpPipelineClientOptionsSerializerContext Default2 { get; } = new QpPipelineClientOptionsSerializerContext(new JsonSerializerOptions()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+    }
 
     public class QpPipelineClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext GetJsonSerializerContext() => QpPipelineClientOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpPipelineClientOptionsSerializerContext.Default2;
 
         public const string URI_SCHEMA = "qp.pipe";
 

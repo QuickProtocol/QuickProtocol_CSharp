@@ -3,17 +3,24 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.WebSocket.Client
 {
     [JsonSerializable(typeof(QpWebSocketClientOptions))]
-    public partial class QpWebSocketClientOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpWebSocketClientOptionsSerializerContext : JsonSerializerContext
+    {
+        public static QpWebSocketClientOptionsSerializerContext Default2 { get; } = new QpWebSocketClientOptionsSerializerContext(new JsonSerializerOptions()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+    }
 
     public class QpWebSocketClientOptions : QpClientOptions
     {
-        protected override JsonSerializerContext GetJsonSerializerContext() => QpWebSocketClientOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpWebSocketClientOptionsSerializerContext.Default2;
 
         public const string URI_SCHEMA_WS = "qp.ws";
         public const string URI_SCHEMA_WSS = "qp.wss";

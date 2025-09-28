@@ -79,7 +79,7 @@ Content-Length: {Encoding.UTF8.GetByteCount(message)}
                     {
                         e.SendNoticePackage(new Quick.Protocol.Notices.PrivateNotice()
                         {
-                            Action = "NowTime",
+                            Action = "当前时间：",
                             Content = DateTime.Now.ToString()
                         }).Wait();
                     }

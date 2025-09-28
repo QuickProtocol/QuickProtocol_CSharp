@@ -1,15 +1,23 @@
 ﻿using System;
 using System.IO.Ports;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.SerialPort
 {
     [JsonSerializable(typeof(QpSerialPortServerOptions))]
-    public partial class QpSerialPortServerOptionsOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpSerialPortServerOptionsOptionsSerializerContext : JsonSerializerContext
+    {
+        public static QpSerialPortServerOptionsOptionsSerializerContext Default2 { get; } = new QpSerialPortServerOptionsOptionsSerializerContext(new JsonSerializerOptions()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+     }
 
     public class QpSerialPortServerOptions : QpServerOptions
     {
-        protected override JsonSerializerContext GetJsonSerializerContext() => QpSerialPortServerOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpSerialPortServerOptionsOptionsSerializerContext.Default2;
 
         /// <summary>
         /// 端口名称

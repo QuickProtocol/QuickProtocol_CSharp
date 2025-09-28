@@ -5,7 +5,7 @@ namespace Quick.Protocol.Commands.Authenticate
 {
     public class Response : AbstractQpSerializer<Response>
     {
-        protected override JsonTypeInfo<Response> GetTypeInfo() => AuthenticateCommandSerializerContext.Default.Response;
+        protected override JsonTypeInfo<Response> GetTypeInfo() => AuthenticateCommandSerializerContext.Default2.Response;
         public static Response GetDefine() => new Response();
     }
 }

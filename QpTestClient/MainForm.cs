@@ -380,7 +380,7 @@ namespace QpTestClient
             scMain.Enabled = false;
             try
             {
-                var preConnectionInfoContent = JsonSerializer.Serialize(connectionContext.ConnectionInfo, TestConnectionInfoSerializerContext.Default.TestConnectionInfo);
+                var preConnectionInfoContent = JsonSerializer.Serialize(connectionContext.ConnectionInfo, TestConnectionInfoSerializerContext.Default2.TestConnectionInfo);
 
                 await connectionContext.Connect();
                 connectionNode.ImageIndex = connectionNode.SelectedImageIndex = 1;
@@ -395,7 +395,7 @@ namespace QpTestClient
                 displayInstructions(connectionNode, connectionContext.ConnectionInfo.Instructions);
                 connectionNode.ExpandAll();
 
-                var currentConnectionInfoContent = JsonSerializer.Serialize(connectionContext.ConnectionInfo, TestConnectionInfoSerializerContext.Default.TestConnectionInfo);
+                var currentConnectionInfoContent = JsonSerializer.Serialize(connectionContext.ConnectionInfo, TestConnectionInfoSerializerContext.Default2.TestConnectionInfo);
                 if (currentConnectionInfoContent != preConnectionInfoContent)
                     QpdFileUtils.SaveQpbFile(connectionContext.ConnectionInfo);
             }

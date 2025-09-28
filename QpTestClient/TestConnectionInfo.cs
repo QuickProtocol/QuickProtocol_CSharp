@@ -1,14 +1,19 @@
 ﻿using Quick.Protocol;
-using Quick.Protocol.SerialPort;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace QpTestClient
 {
     [JsonSerializable(typeof(TestConnectionInfo))]
-    public partial class TestConnectionInfoSerializerContext : JsonSerializerContext { }
+    [JsonSourceGenerationOptions]
+    public partial class TestConnectionInfoSerializerContext : JsonSerializerContext
+    {
+        public static TestConnectionInfoSerializerContext Default2 { get; } = new TestConnectionInfoSerializerContext(new JsonSerializerOptions()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+    }
 
     public class TestConnectionInfo
     {

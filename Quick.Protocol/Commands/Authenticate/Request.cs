@@ -7,7 +7,7 @@ namespace Quick.Protocol.Commands.Authenticate
     [DisplayName("认证")]
     public class Request : AbstractQpSerializer<Request>, IQpCommandRequest<Request, Response>
     {
-        protected override JsonTypeInfo<Request> GetTypeInfo() => AuthenticateCommandSerializerContext.Default.Request;
+        protected override JsonTypeInfo<Request> GetTypeInfo() => AuthenticateCommandSerializerContext.Default2.Request;
 
         /// 认证回答
         /// </summary>

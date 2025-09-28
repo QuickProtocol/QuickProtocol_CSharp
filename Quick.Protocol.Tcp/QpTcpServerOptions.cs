@@ -1,15 +1,23 @@
 ﻿using System;
 using System.Net;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.Tcp
 {
     [JsonSerializable(typeof(QpTcpServerOptions))]
-    public partial class QpTcpServerOptionsOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpTcpServerOptionsOptionsSerializerContext : JsonSerializerContext
+    {
+        public static QpTcpServerOptionsOptionsSerializerContext Default2 { get; } = new QpTcpServerOptionsOptionsSerializerContext(new JsonSerializerOptions()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+    }
 
     public class QpTcpServerOptions : QpServerOptions
     {
-        protected override JsonSerializerContext GetJsonSerializerContext() => QpTcpServerOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpTcpServerOptionsOptionsSerializerContext.Default2;
         /// <summary>
         /// IP地址
         /// </summary>

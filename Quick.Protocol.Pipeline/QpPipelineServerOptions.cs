@@ -1,14 +1,22 @@
 ﻿using System;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Quick.Protocol.Pipeline
 {
     [JsonSerializable(typeof(QpPipelineServerOptions))]
-    public partial class QpPipelineServerOptionsOptionsSerializerContext : JsonSerializerContext { }
+    public partial class QpPipelineServerOptionsOptionsSerializerContext : JsonSerializerContext
+    {
+        public static QpPipelineServerOptionsOptionsSerializerContext Default2 { get; } = new QpPipelineServerOptionsOptionsSerializerContext(new JsonSerializerOptions()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+    }
 
     public class QpPipelineServerOptions : QpServerOptions
     {
-        protected override JsonSerializerContext GetJsonSerializerContext() => QpPipelineServerOptionsOptionsSerializerContext.Default;
+        protected override JsonSerializerContext GetJsonSerializerContext() => QpPipelineServerOptionsOptionsSerializerContext.Default2;
 
         public string PipeName { get; set; }
 

@@ -29,7 +29,7 @@ namespace QpTestClient.Utils
                 //写入连接信息
                 var entry = zipArchive.CreateEntry(typeof(TestConnectionInfo).FullName);
                 using (var stream = entry.Open())
-                    JsonSerializer.Serialize(stream, connectionInfo, TestConnectionInfoSerializerContext.Default.TestConnectionInfo);
+                    JsonSerializer.Serialize(stream, connectionInfo, TestConnectionInfoSerializerContext.Default2.TestConnectionInfo);
                 //写入客户端配置信息
                 entry = zipArchive.CreateEntry(typeof(QpClientOptions).FullName);
                 using (var stream = entry.Open())
@@ -70,7 +70,7 @@ namespace QpTestClient.Utils
                 //读取连接信息
                 var entry = zipArchive.GetEntry(typeof(TestConnectionInfo).FullName);
                 using (var stream = entry.Open())
-                    testConnectionInfo = JsonSerializer.Deserialize(stream, TestConnectionInfoSerializerContext.Default.TestConnectionInfo);
+                    testConnectionInfo = JsonSerializer.Deserialize(stream, TestConnectionInfoSerializerContext.Default2.TestConnectionInfo);
                 //读取客户端配置信息
                 entry = zipArchive.GetEntry(typeof(QpClientOptions).FullName);
                 using (var stream = entry.Open())

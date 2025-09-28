@@ -6,7 +6,7 @@ namespace Quick.Protocol.Commands.HandShake
     [DisplayName("握手")]
     public class Request : AbstractQpSerializer<Request>, IQpCommandRequest<Request, Response>
     {
-        protected override JsonTypeInfo<Request> GetTypeInfo() => HandShakeCommandSerializerContext.Default.Request;
+        protected override JsonTypeInfo<Request> GetTypeInfo() => HandShakeCommandSerializerContext.Default2.Request;
 
         /// <summary>
         /// 传输超时(默认15秒)

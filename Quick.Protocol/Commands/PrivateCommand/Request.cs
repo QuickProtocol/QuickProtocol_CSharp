@@ -9,7 +9,7 @@ namespace Quick.Protocol.Commands.PrivateCommand
     [DisplayName("私有命令")]
     public class Request : AbstractQpSerializer<Request>, IQpCommandRequest<Request, Response>
     {
-        protected override JsonTypeInfo<Request> GetTypeInfo() => PrivateCommandCommandSerializerContext.Default.Request;
+        protected override JsonTypeInfo<Request> GetTypeInfo() => PrivateCommandCommandSerializerContext.Default2.Request;
         /// <summary>
         /// 动作
         /// </summary>

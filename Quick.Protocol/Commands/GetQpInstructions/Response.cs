@@ -7,7 +7,7 @@ namespace Quick.Protocol.Commands.GetQpInstructions
     /// </summary>
     public class Response: AbstractQpSerializer<Response>
     {
-        protected override JsonTypeInfo<Response> GetTypeInfo() => GetQpInstructionsCommandSerializerContext.Default.Response;
+        protected override JsonTypeInfo<Response> GetTypeInfo() => GetQpInstructionsCommandSerializerContext.Default2.Response;
         /// <summary>
         /// 指令集数据
         /// </summary>
