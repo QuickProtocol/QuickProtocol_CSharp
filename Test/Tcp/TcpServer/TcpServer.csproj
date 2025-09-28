@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <RollForward>Major</RollForward>
     <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
