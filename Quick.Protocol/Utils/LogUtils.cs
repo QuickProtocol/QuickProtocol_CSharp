@@ -19,6 +19,7 @@ namespace Quick.Protocol.Utils
         public static bool LogContent { get; set; } = false;
         public static bool LogSplit { get; set; } = false;
         public static bool LogConnection { get; set; } = false;
+        public static bool LogRaw { get; set; } = false;
 
         private static Action<string> LogHandler = null;
 

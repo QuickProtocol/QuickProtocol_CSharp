@@ -196,8 +196,6 @@ namespace Quick.Protocol
             var packageTotalLength = 0;
             //解密相关变量
             Pipe decryptPipe = null;
-            byte[] decryptBuffer1 = null;
-            byte[] decryptBuffer2 = null;
             //解压相关变量
             Pipe decompressPipe = null;
 
@@ -224,9 +222,19 @@ namespace Quick.Protocol
                 if (ret.Buffer.Length < packageTotalLength)
                     throw new ProtocolException(ret.Buffer, $"包读取错误！包总长度：{packageTotalLength}，读取数据长度：{ret.Buffer.Length}");
                 var packageBuffer = ret.Buffer.Slice(0, packageTotalLength);
+                if (LogUtils.LogRaw)
+                {
+                    var sb = new StringBuilder();
+                    sb.Append($"{DateTime.Now}: [Recv-Raw]Length: {packageBuffer.Length}");
+                    if (LogUtils.LogContent)
+                        sb.Append(", Content: " + Convert.ToHexString(packageBuffer.ToArray()));
+                    else
+                        sb.Append(LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                    LogUtils.Log(sb.ToString());
+                }
 
-                //如果设置了压缩或者加密
-                if (options.InternalCompress || options.InternalEncrypt)
+                //如果不是心跳包，则启用了压缩或者加密
+                if (packageTotalLength > PACKAGE_HEAD_LENGTH && (options.InternalCompress || options.InternalEncrypt))
                 {
                     //如果设置了加密
                     if (options.InternalEncrypt)

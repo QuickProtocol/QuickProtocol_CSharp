@@ -59,8 +59,8 @@ namespace Quick.Protocol
             var packageTotalLength = 0;
             Memory<byte> packageHeadMemory = default;
 
-            //如果压缩或者加密
-            if (!ignoreCompressAndEncrypt && (options.InternalCompress || options.InternalEncrypt))
+            //如果不是心跳包，则启用了压缩或者加密
+            if (packageType !=  QpPackageType.Heartbeat && !ignoreCompressAndEncrypt && (options.InternalCompress || options.InternalEncrypt))
             {
                 //如果压缩
                 if (options.InternalCompress)
@@ -151,6 +151,16 @@ namespace Quick.Protocol
                 BytesSent += packageHeadMemory.Length + packageBodyBuffer.Length;
                 if (BytesSent > LONG_HALF_MAX_VALUE)
                     BytesSent = 0;
+            }
+            if (LogUtils.LogRaw)
+            {
+                var sb = new StringBuilder();
+                sb.Append($"{DateTime.Now}: [Send-Raw]Length: {packageHeadMemory.Length + packageBodyBuffer.Length}");
+                if (LogUtils.LogContent)
+                    sb.Append(", Content: " + Convert.ToHexString(packageHeadMemory.Span) + Convert.ToHexString(packageBodyBuffer.ToArray()));
+                else
+                    sb.Append(LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                LogUtils.Log(sb.ToString());
             }
             currentReader?.AdvanceTo(packageBodyBuffer.End);
             await stream.FlushAsync().ConfigureAwait(false);
