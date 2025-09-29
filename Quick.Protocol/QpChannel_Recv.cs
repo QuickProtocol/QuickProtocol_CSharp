@@ -168,16 +168,16 @@ namespace Quick.Protocol
 
         private async Task FillRecvPipeAsync(Stream stream, PipeWriter writer, CancellationToken token)
         {
+            var readBuffer = new byte[minimumBufferSize];
             while (!token.IsCancellationRequested)
             {
-                Memory<byte> memory = writer.GetMemory(minimumBufferSize);
-                var readTask = stream.ReadAsync(memory, token).AsTask()
-                    .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
-                    .ConfigureAwait(false);;
+                var readTask = stream.ReadAsync(readBuffer, 0, readBuffer.Length, token)
+                    .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout), token)
+                    .ConfigureAwait(false);
                 int bytesRead = await readTask;
                 if (bytesRead == 0)
                     continue;
-                writer.Advance(bytesRead);
+                writer.Write(new ReadOnlySpan<byte>(readBuffer, 0, bytesRead));
                 if (options.EnableNetstat)
                 {
                     BytesReceived += bytesRead;
@@ -204,7 +204,7 @@ namespace Quick.Protocol
                 var currentReader = recvReader;
                 var readTask = currentReader.ReadAtLeastAsync(PACKAGE_TOTAL_LENGTH_LENGTH, token);
                 var ret = await readTask.AsTask()
-                    .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
+                    .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout), token)
                     .ConfigureAwait(false);
                 if (ret.IsCanceled)
                     return;
