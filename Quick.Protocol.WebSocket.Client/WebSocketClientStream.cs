@@ -66,7 +66,7 @@ namespace Quick.Protocol.WebSocket.Client
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return client.SendAsync(new ArraySegment<byte>(buffer, offset, count), System.Net.WebSockets.WebSocketMessageType.Binary, true, CancellationToken.None);
+            return client.SendAsync(new ArraySegment<byte>(buffer, offset, count), System.Net.WebSockets.WebSocketMessageType.Binary, true, cancellationToken);
         }
 
         protected override void Dispose(bool disposing)

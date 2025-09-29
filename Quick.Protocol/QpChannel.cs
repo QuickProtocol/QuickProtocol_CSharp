@@ -271,47 +271,39 @@ namespace Quick.Protocol
             await SendCommandRequestPackage(CommandContext.GenerateNewId(), typeName, requestContent).ConfigureAwait(false);
         }
 
-        protected void BeginHeartBeat(CancellationToken cancellationToken)
+        protected async Task BeginHeartBeat(CancellationToken cancellationToken)
         {
-            if (options.HeartBeatInterval > 0)
-                _ = Task.Delay(options.HeartBeatInterval, cancellationToken).ContinueWith(t =>
+            if (options.HeartBeatInterval < 0)
+                return;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(options.HeartBeatInterval, cancellationToken);
+                if (QpPackageHandler_Stream == null)
+                    return;
+                var lastSendPackageToNowSeconds = (DateTime.Now - lastSendPackageTime).TotalMilliseconds;
+                //如果离最后一次发送数据包的时间大于心跳间隔，则发送心跳包
+                if (lastSendPackageToNowSeconds > options.HeartBeatInterval)
                 {
-                    if (t.IsCanceled)
-                        return;
-                    if (QpPackageHandler_Stream == null)
-                        return;
-
-                    var lastSendPackageToNowSeconds = (DateTime.Now - lastSendPackageTime).TotalMilliseconds;
-
-                    //如果离最后一次发送数据包的时间大于心跳间隔，则发送心跳包
-                    if (lastSendPackageToNowSeconds > options.HeartBeatInterval)
-                    {
-                        _ = SendHeartbeatPackage();
-                    }
-                    BeginHeartBeat(cancellationToken);
-                });
+                    await SendHeartbeatPackage();
+                }
+            }
         }
 
-        protected void BeginNetstat(CancellationToken cancellationToken)
+        protected async Task BeginNetstat(CancellationToken cancellationToken)
         {
             if (!options.EnableNetstat)
                 return;
-            if (cancellationToken.IsCancellationRequested)
-                return;
 
-            long preBytesReceived = BytesReceived;
-            long preBytesSent = BytesSent;
-
-            _ = Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ContinueWith(t =>
+            while (!cancellationToken.IsCancellationRequested)
             {
-                if (t.IsCanceled)
-                    return;
+                long preBytesReceived = BytesReceived;
+                long preBytesSent = BytesSent;
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
                 if (QpPackageHandler_Stream == null)
                     return;
                 BytesReceivedPerSec = BytesReceived - preBytesReceived;
                 BytesSentPerSec = BytesSent - preBytesSent;
-                BeginNetstat(cancellationToken);
-            });
+            }
         }
 
 

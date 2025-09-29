@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,7 +48,7 @@ namespace Quick.Protocol
         public virtual void Start()
         {
             cts = new CancellationTokenSource();
-            beginAccept(cts.Token);
+            _ = beginAccept(cts.Token);
         }
 
         internal void RemoveChannel(QpServerChannel channel)
@@ -95,19 +94,12 @@ namespace Quick.Protocol
 
         protected abstract Task InnerAcceptAsync(CancellationToken token);
 
-        private void beginAccept(CancellationToken token)
+        private async Task beginAccept(CancellationToken token)
         {
-            if (token.IsCancellationRequested)
-                return;
-
-            InnerAcceptAsync(token).ContinueWith(task =>
+            while (!token.IsCancellationRequested)
             {
-                if (task.IsCanceled)
-                    return;
-                if (task.IsFaulted)
-                    return;
-                beginAccept(token);
-            });
+                await InnerAcceptAsync(token);
+            }
         }
 
         public virtual void Stop()

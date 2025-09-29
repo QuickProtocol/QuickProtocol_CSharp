@@ -40,7 +40,7 @@ namespace Quick.Protocol
             //开始读取其他数据包
             BeginReadPackage(token);
             //开始统计网络数据
-            BeginNetstat(token);
+            _ = BeginNetstat(token);
 
             var repConnect = await SendCommand(new Commands.Connect.Request()
             {
@@ -67,7 +67,7 @@ namespace Quick.Protocol
             if (Options.HeartBeatInterval > 0)
             {
                 //定时发送心跳包
-                BeginHeartBeat(token);
+                _ = BeginHeartBeat(token);
             }
         }
         protected override void OnWriteError(Exception exception)

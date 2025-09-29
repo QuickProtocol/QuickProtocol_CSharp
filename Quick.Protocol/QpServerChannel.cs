@@ -40,7 +40,7 @@ namespace Quick.Protocol
             this.authedNoticeHandlerManagerList = options.NoticeHandlerManagerList;
 
             cts = new CancellationTokenSource();
-            cancellationToken.Register(() => Stop());
+            cancellationToken.Register(Stop);
 
             //初始化连接相关指令处理器
             var connectAndAuthCommandExecuterManager = new CommandExecuterManager();
@@ -56,7 +56,7 @@ namespace Quick.Protocol
             //开始读取其他数据包
             BeginReadPackage(token);
             //开始统计网络数据
-            BeginNetstat(token);
+            _ = BeginNetstat(token);
 
             //如果认证超时时间后没有通过认证，则断开连接
             if (options.AuthenticateTimeout > 0)
@@ -71,13 +71,9 @@ namespace Quick.Protocol
 
                     if (stream != null)
                     {
-                        try
-                        {
-                            stream.Close();
-                            stream.Dispose();
-                            stream = null;
-                        }
+                        try { stream.Dispose(); }
                         catch { }
+                        stream = null;
                     }
                     AuchenticateTimeout?.Invoke(this, EventArgs.Empty);
                 });
@@ -128,7 +124,7 @@ namespace Quick.Protocol
 
             //开始心跳
             if (options.HeartBeatInterval > 0)
-                BeginHeartBeat(cts.Token);
+                _ = BeginHeartBeat(cts.Token);
             return new Commands.HandShake.Response();
         }
 
@@ -148,7 +144,6 @@ namespace Quick.Protocol
             try
             {
                 cts?.Cancel();
-                stream?.Close();
                 stream?.Dispose();
             }
             catch { }
