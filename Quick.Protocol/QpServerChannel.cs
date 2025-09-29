@@ -13,6 +13,7 @@ namespace Quick.Protocol
     {
         private readonly Stream stream;
         private readonly CancellationTokenSource cts;
+        private readonly CancellationToken serverCancellationToken;
         private readonly QpServerOptions options;
         private readonly string channelName;
         //通过认证后，才允许使用的命令执行管理器列表
@@ -38,9 +39,9 @@ namespace Quick.Protocol
             this.options = options;
             this.authedCommandExecuterManagerList = options.CommandExecuterManagerList;
             this.authedNoticeHandlerManagerList = options.NoticeHandlerManagerList;
+            serverCancellationToken = cancellationToken;
 
             cts = new CancellationTokenSource();
-            cancellationToken.Register(Stop);
 
             //初始化连接相关指令处理器
             var connectAndAuthCommandExecuterManager = new CommandExecuterManager();
@@ -57,6 +58,8 @@ namespace Quick.Protocol
             BeginReadPackage(token);
             //开始统计网络数据
             _ = BeginNetstat(token);
+            //开始检查服务端的取消令牌
+            _ = BeginCheckServerCancellationToken(token);
 
             //如果认证超时时间后没有通过认证，则断开连接
             if (options.AuthenticateTimeout > 0)
@@ -77,6 +80,16 @@ namespace Quick.Protocol
                     }
                     AuchenticateTimeout?.Invoke(this, EventArgs.Empty);
                 });
+        }
+
+        private async Task BeginCheckServerCancellationToken(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(1000, cancellationToken);
+                if (serverCancellationToken.IsCancellationRequested)
+                    Stop();
+            }
         }
 
         private Commands.Connect.Response connect(QpChannel handler, Commands.Connect.Request request)
