@@ -200,80 +200,72 @@ namespace Quick.Protocol
 
         private async Task ReadRecvPipeAsync(PipeReader recvReader, CancellationToken token)
         {
+            //包体长度
+            var packageBodyLength = 0;
+            QpPackageType packageType;
             //暂存包头缓存
             var packageHeadBuffer = new byte[PACKAGE_HEAD_LENGTH];
-            //包总长度
-            var packageTotalLength = 0;
-            //解密相关变量
-            Pipe decryptPipe = null;
+            ReadOnlySequence<byte> packageBodyBuffer = default;
+
             //解压相关变量
             Pipe decompressPipe = null;
 
             while (!token.IsCancellationRequested)
             {
+                //读取包
                 var currentReader = recvReader;
-                var readTask = currentReader.ReadAtLeastAsync(PACKAGE_TOTAL_LENGTH_LENGTH, token);
-                var ret = await readTask.AsTask()
-                    .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout), token)
-                    .ConfigureAwait(false);
-                if (ret.IsCanceled)
-                    return;
-                if (ret.Buffer.Length < PACKAGE_TOTAL_LENGTH_LENGTH)
-                    throw new ProtocolException(ret.Buffer, $"包头读取错误！包头长度：{PACKAGE_TOTAL_LENGTH_LENGTH}，读取数据长度：{ret.Buffer.Length}");
-
-                //解析包总长度
-                packageTotalLength = parsePackageTotalLength(ret.Buffer, packageHeadBuffer);
-                currentReader.AdvanceTo(ret.Buffer.Start);
-
-                //读取完整包
-                ret = await currentReader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
-                if (ret.IsCanceled)
-                    return;
-                if (ret.Buffer.Length < packageTotalLength)
-                    throw new ProtocolException(ret.Buffer, $"包读取错误！包总长度：{packageTotalLength}，读取数据长度：{ret.Buffer.Length}");
-                var packageBuffer = ret.Buffer.Slice(0, packageTotalLength);
-                if (LogUtils.LogRaw)
                 {
-                    var sb = new StringBuilder();
-                    sb.Append($"{DateTime.Now}: [Recv-Raw]Length: {packageBuffer.Length}");
-                    if (LogUtils.LogContent)
-                        sb.Append(", Content: " + Convert.ToHexString(packageBuffer.ToArray()));
-                    else
-                        sb.Append(LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-                    LogUtils.Log(sb.ToString());
-                }
+                    var readTask = currentReader.ReadAtLeastAsync(PACKAGE_HEAD_LENGTH, token);
+                    var ret = await readTask.AsTask()
+                        .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout), token)
+                        .ConfigureAwait(false);
+                    if (ret.IsCanceled)
+                        return;
+                    if (ret.Buffer.Length < PACKAGE_HEAD_LENGTH)
+                        throw new ProtocolException(ret.Buffer, $"包头读取错误！包头长度：{PACKAGE_HEAD_LENGTH}，读取数据长度：{ret.Buffer.Length}");
 
-                //如果不是心跳包，则启用了压缩或者加密
-                if (packageTotalLength > PACKAGE_HEAD_LENGTH && (options.InternalCompress || options.InternalEncrypt))
+                    //解析包总长度
+                    var packageTotalLength = parsePackageTotalLength(ret.Buffer, packageHeadBuffer);
+                    packageBodyLength = packageTotalLength - PACKAGE_HEAD_LENGTH;
+
+                    packageType = (QpPackageType)packageHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH];
+                    currentReader.AdvanceTo(ret.Buffer.Start);
+
+                    //读取完整包
+                    ret = await currentReader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
+                    if (ret.IsCanceled)
+                        return;
+                    if (ret.Buffer.Length < packageTotalLength)
+                        throw new ProtocolException(ret.Buffer, $"包读取错误！包总长度：{packageTotalLength}，读取数据长度：{ret.Buffer.Length}");
+                    var packageBuffer = ret.Buffer.Slice(0, packageTotalLength);
+                    if (LogUtils.LogRaw)
+                    {
+                        var sb = new StringBuilder();
+                        sb.Append($"{DateTime.Now}: [Recv-Raw]Length: {packageBuffer.Length}");
+                        if (LogUtils.LogContent)
+                            sb.Append(", Content: " + Convert.ToHexString(packageBuffer.ToArray()));
+                        else
+                            sb.Append(LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                        LogUtils.Log(sb.ToString());
+                    }
+                    packageBodyBuffer = packageBuffer.Slice(PACKAGE_HEAD_LENGTH);
+                }
+                //如果有包体，且启用了压缩或者加密
+                if (packageBodyLength > 0 && (options.InternalCompress || options.InternalEncrypt))
                 {
                     //如果设置了加密
                     if (options.InternalEncrypt)
                     {
-                        //准备管道
-                        if (decryptPipe == null)
-                            decryptPipe = new Pipe();
-
-                        //写入包头
-                        decryptPipe.Writer.GetMemory(PACKAGE_TOTAL_LENGTH_LENGTH);
-                        decryptPipe.Writer.Advance(PACKAGE_TOTAL_LENGTH_LENGTH);
-                        packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH;
-
                         //开始解密
-                        var encryptedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH).ToArray();
+                        var encryptedBuffer = packageBodyBuffer.ToArray();
                         var decryptBuffer = dec.TransformFinalBlock(encryptedBuffer, 0, encryptedBuffer.Length);
-                        packageTotalLength += decryptBuffer.Length;
-
-                        decryptBuffer.CopyTo(decryptPipe.Writer.GetMemory(decryptBuffer.Length));
-                        decryptPipe.Writer.Advance(decryptBuffer.Length);
-
-                        _ = decryptPipe.Writer.FlushAsync();
-                        ret = await decryptPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
+                        packageBodyLength = decryptBuffer.Length;
 
                         //解密完成，释放缓存
-                        currentReader?.AdvanceTo(packageBuffer.End);
+                        currentReader?.AdvanceTo(packageBodyBuffer.End);
 
-                        packageBuffer = ret.Buffer;
-                        currentReader = decryptPipe.Reader;
+                        packageBodyBuffer = new ReadOnlySequence<byte>(decryptBuffer);
+                        currentReader = null;
                     }
 
                     //如果设置了压缩
@@ -283,14 +275,9 @@ namespace Quick.Protocol
                         if (decompressPipe == null)
                             decompressPipe = new Pipe();
 
-                        //写入包头
-                        decompressPipe.Writer.GetMemory(PACKAGE_TOTAL_LENGTH_LENGTH);
-                        decompressPipe.Writer.Advance(PACKAGE_TOTAL_LENGTH_LENGTH);
-                        packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH;
-
+                        packageBodyLength = 0;
                         //开始解压
-                        var compressedBuffer = packageBuffer.Slice(PACKAGE_TOTAL_LENGTH_LENGTH);
-                        using (var readMs = new ReadOnlySequenceByteStream(compressedBuffer))
+                        using (var readMs = new ReadOnlySequenceByteStream(packageBodyBuffer))
                         using (var gzStream = new GZipStream(readMs, CompressionMode.Decompress, true))
                         {
                             while (true)
@@ -299,31 +286,24 @@ namespace Quick.Protocol
                                 if (count <= 0)
                                     break;
                                 decompressPipe.Writer.Advance(count);
-                                packageTotalLength += count;
+                                packageBodyLength += count;
                             }
                         }
                         _ = decompressPipe.Writer.FlushAsync();
-                        ret = await decompressPipe.Reader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
+                        var ret = await decompressPipe.Reader.ReadAtLeastAsync(packageBodyLength, token).ConfigureAwait(false);
                         //解压完成，释放缓存
-                        currentReader?.AdvanceTo(packageBuffer.End);
-                        packageBuffer = ret.Buffer;
+                        currentReader?.AdvanceTo(packageBodyBuffer.End);
+                        packageBodyBuffer = ret.Buffer;
                         currentReader = decompressPipe.Reader;
                     }
                 }
-
-                //包类型
-                packageBuffer.Slice(0, PACKAGE_HEAD_LENGTH).CopyTo(packageHeadBuffer);
-                var packageType = (QpPackageType)packageHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH];
-
-                HandlePackage(packageType, packageBuffer);
-                currentReader?.AdvanceTo(packageBuffer.End);
+                HandlePackage(packageType, packageBodyBuffer);
+                currentReader?.AdvanceTo(packageBodyBuffer.End);
             }
         }
 
-        protected void HandlePackage(QpPackageType packageType, ReadOnlySequence<byte> packageBuffer)
+        protected void HandlePackage(QpPackageType packageType, ReadOnlySequence<byte> bodyBuffer)
         {
-            //不带包长度和包类型的包体
-            var bodyBuffer = packageBuffer.Slice(PACKAGE_HEAD_LENGTH);
             if (LogUtils.LogPackage)
             {
                 var sb = new StringBuilder();
@@ -451,7 +431,7 @@ namespace Quick.Protocol
         //解析包总长度
         private int parsePackageTotalLength(ReadOnlySequence<byte> sequence, byte[] buffer)
         {
-            sequence.Slice(0, PACKAGE_TOTAL_LENGTH_LENGTH).CopyTo(buffer);
+            sequence.Slice(0, PACKAGE_HEAD_LENGTH).CopyTo(buffer);
             var packageTotalLength = ByteUtils.B2I_BE(buffer, 0);
             if (packageTotalLength < PACKAGE_HEAD_LENGTH)
                 throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]必须大于等于{PACKAGE_HEAD_LENGTH}！");
