@@ -16,6 +16,7 @@ namespace Quick.Protocol
 {
     public abstract partial class QpChannel
     {
+        private DateTime lastReadDataTime;
         /// <summary>
         /// 当读取出错时
         /// </summary>
@@ -166,24 +167,33 @@ namespace Quick.Protocol
                 commandContext.SetResponse(new CommandException(code, message));
         }
 
-        private async Task FillRecvPipeAsync(Stream stream, PipeWriter writer, CancellationToken token)
+        private async Task CheckRecvTimeoutAsync(CancellationToken token)
         {
-            var readBuffer = new byte[minimumBufferSize];
             while (!token.IsCancellationRequested)
             {
-                var readTask = stream.ReadAsync(readBuffer, 0, readBuffer.Length, token)
-                    .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout), token)
-                    .ConfigureAwait(false);
-                int bytesRead = await readTask;
+                await Task.Delay(1000, token);
+                var sp = DateTime.Now - lastReadDataTime;
+                if (sp.TotalMilliseconds > options.InternalTransportTimeout)
+                    throw new TimeoutException();
+            }
+        }
+
+        private async Task FillRecvPipeAsync(Stream stream, PipeWriter writer, CancellationToken token)
+        {
+            var readBufferMemory = new Memory<byte>(new byte[minimumBufferSize]);
+            while (!token.IsCancellationRequested)
+            {
+                int bytesRead = await stream.ReadAsync(readBufferMemory, token);
                 if (bytesRead == 0)
                     continue;
-                writer.Write(new ReadOnlySpan<byte>(readBuffer, 0, bytesRead));
+                lastReadDataTime = DateTime.Now;
                 if (options.EnableNetstat)
                 {
                     BytesReceived += bytesRead;
                     if (BytesReceived > LONG_HALF_MAX_VALUE)
                         BytesReceived = 0;
                 }
+                await writer.WriteAsync(readBufferMemory.Slice(0, bytesRead), token);
                 await writer.FlushAsync(token);
             }
         }
@@ -417,6 +427,7 @@ namespace Quick.Protocol
 
         protected void BeginReadPackage(CancellationToken token)
         {
+            lastReadDataTime = DateTime.Now;
             var pipe = new Pipe();
             FillRecvPipeAsync(QpPackageHandler_Stream, pipe.Writer, token).ContinueWith(task =>
             {
@@ -429,6 +440,11 @@ namespace Quick.Protocol
                 if (task.IsFaulted)
                     OnReadError(task.Exception);
                 pipe.Reader.CompleteAsync(task.Exception);
+            });
+            CheckRecvTimeoutAsync(token).ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                    OnReadError(task.Exception);
             });
         }
 
