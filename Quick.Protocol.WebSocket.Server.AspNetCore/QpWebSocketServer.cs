@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Quick.Protocol.Utils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,11 +16,13 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
         {
             public string ConnectionInfo { get; set; }
             public System.Net.WebSockets.WebSocket WebSocket { get; set; }
+            public CancellationTokenSource Cts { get; set; }
 
             public WebSocketContext(string connectionInfo, System.Net.WebSockets.WebSocket webSocket, CancellationTokenSource cts)
             {
                 ConnectionInfo = connectionInfo;
                 WebSocket = webSocket;
+                Cts = cts;
             }
         }
 
@@ -29,17 +30,24 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
         public override void Start()
         {
-            isStarted=true;
+            isStarted = true;
             lock (webSocketContextQueue)
+            {
+                foreach (var webSocket in webSocketContextQueue)
+                    webSocket.Cts.Cancel();
                 webSocketContextQueue.Clear();
+            }
             base.Start();
         }
 
-        public Task OnNewConnection(System.Net.WebSockets.WebSocket webSocket, ConnectionInfo connectionInfo)
+        public async Task OnNewConnection(System.Net.WebSockets.WebSocket webSocket, ConnectionInfo connectionInfo)
         {
             //如果还没有开始接收，则直接关闭
             if (!isStarted)
-                return webSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+            {
+                await webSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                return;
+            }
 
             var connectionInfoStr = $"WebSocket:{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
             var cts = new CancellationTokenSource();
@@ -49,7 +57,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                         connectionInfoStr,
                         webSocket,
                         cts));
-            return Task.Delay(-1, cts.Token).ContinueWith(t =>
+            await Task.Delay(-1, cts.Token).ContinueWith(t =>
              {
                  if (LogUtils.LogConnection)
                      LogUtils.Log("[Connection]{0} disconnected.", connectionInfoStr);
@@ -58,9 +66,13 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
         public override void Stop()
         {
-            isStarted=false;
+            isStarted = false;
             lock (webSocketContextQueue)
+            {
+                foreach (var webSocket in webSocketContextQueue)
+                    webSocket.Cts.Cancel();
                 webSocketContextQueue.Clear();
+            }
             base.Stop();
         }
 
@@ -73,7 +85,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 webSocketContextQueue.Clear();
             }
             //如果当前没有WebSocket连接，则等待0.1秒后再返回
-            if (webSocketContexts == null || webSocketContexts.Length==0)
+            if (webSocketContexts == null || webSocketContexts.Length == 0)
             {
                 await Task.Delay(100).ConfigureAwait(false);
                 return;
@@ -84,15 +96,19 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 {
                     if (LogUtils.LogConnection)
                         LogUtils.Log("[Connection]{0} connected.", context.ConnectionInfo);
-                    OnNewChannelConnected(new WebSocketServerStream(context.WebSocket, token), context.ConnectionInfo, token);
+                    OnNewChannelConnected(new WebSocketServerStream(context.WebSocket, context.Cts), context.ConnectionInfo, token);
                 }
                 catch (Exception ex)
                 {
+                    context.Cts.Cancel();
                     if (LogUtils.LogConnection)
                         LogUtils.Log("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
-                    try { await context.WebSocket
+                    try
+                    {
+                        await context.WebSocket
                             .CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.InternalServerError, ex.Message, CancellationToken.None)
-                            .ConfigureAwait(false); }
+                            .ConfigureAwait(false);
+                    }
                     catch { }
                 }
             }

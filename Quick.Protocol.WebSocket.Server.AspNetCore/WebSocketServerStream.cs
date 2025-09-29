@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,12 +8,12 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
     internal class WebSocketServerStream : Stream
     {
         private System.Net.WebSockets.WebSocket webSocket;
-        private CancellationToken cancellationToken;
+        private CancellationTokenSource cts;
 
-        public WebSocketServerStream(System.Net.WebSockets.WebSocket webSocket, CancellationToken cancellationToken)
+        public WebSocketServerStream(System.Net.WebSockets.WebSocket webSocket, CancellationTokenSource cts)
         {
             this.webSocket = webSocket;
-            this.cancellationToken = cancellationToken;
+            this.cts = cts;
         }
 
         public override bool CanSeek => throw new NotImplementedException();
@@ -33,7 +30,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            var result = webSocket.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken).Result;
+            var result = webSocket.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), CancellationToken.None).Result;
             return result.Count;
         }
 
@@ -50,7 +47,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 new ArraySegment<byte>(buffer, offset, count),
                 System.Net.WebSockets.WebSocketMessageType.Binary,
                 true,
-                cancellationToken)
+                CancellationToken.None)
                 .Wait();
         }
 
@@ -66,6 +63,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
         protected override void Dispose(bool disposing)
         {
+            cts.Dispose();
             webSocket.Dispose();
             base.Dispose(disposing);
         }
