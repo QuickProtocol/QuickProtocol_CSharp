@@ -15,6 +15,7 @@ namespace Quick.Protocol
     public abstract partial class QpChannel
     {
         private readonly Pipe sendPipe = new Pipe();
+        private readonly Pipe sendRawPipe = new Pipe();
         private readonly byte[] sendHeadBuffer = new byte[5];
 
         /// <summary>
@@ -30,37 +31,39 @@ namespace Quick.Protocol
 
         //压缩相关变量
         private Pipe writeCompressPipe = null;
-        
+
         private async Task writePackageBuffer(PipeReader currentReader, QpPackageType packageType, int packageBodyLength, bool ignoreCompressAndEncrypt = false)
         {
             var stream = QpPackageHandler_Stream;
             if (stream == null)
                 throw new IOException("Not connected.");
 
-            var readRet = await currentReader.ReadAtLeastAsync(packageBodyLength);
-            //不带包长度的包体
-            var packageBodyBuffer = readRet.Buffer;
+            //不带包头的包体
+            ReadOnlySequence<byte> packageBodyBuffer = ReadOnlySequence<byte>.Empty;
+            ReadResult readRet;
+            if (packageBodyLength > 0)
+            {
+                readRet = await currentReader.ReadAtLeastAsync(packageBodyLength);
+                packageBodyBuffer = readRet.Buffer;
+            }
+            int packageTotalLength = PACKAGE_HEAD_LENGTH + packageBodyLength;
 
             if (LogUtils.LogPackage)
             {
-                //不带包长度和包类型的包体
-                var bodyBuffer = packageBodyBuffer.Slice(1);
                 var sb = new StringBuilder();
                 sb.Append($"{DateTime.Now}: [Send-Package]Type: {packageType}");
-                if (bodyBuffer.Length > 0)
+                if (packageBodyLength > 0)
                 {
                     if (LogUtils.LogContent)
-                        sb.Append(", Content: "+Convert.ToHexString(bodyBuffer.ToArray()));
+                        sb.Append(", Content: " + Convert.ToHexString(packageBodyBuffer.ToArray()));
                     else
                         sb.Append(LogUtils.NOT_SHOW_CONTENT_MESSAGE);
                 }
                 LogUtils.Log(sb.ToString());
             }
-            var packageTotalLength = 0;
-            Memory<byte> packageHeadMemory = default;
 
-            //如果不是心跳包，则启用了压缩或者加密
-            if (packageType !=  QpPackageType.Heartbeat && !ignoreCompressAndEncrypt && (options.InternalCompress || options.InternalEncrypt))
+            //如果有包体，且启用了压缩或者加密
+            if (packageBodyLength > 0 && !ignoreCompressAndEncrypt && (options.InternalCompress || options.InternalEncrypt))
             {
                 //如果压缩
                 if (options.InternalCompress)
@@ -74,21 +77,16 @@ namespace Quick.Protocol
                         {
                             await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
                         }
-                        packageTotalLength = Convert.ToInt32(outStream.Length);
+                        packageBodyLength = Convert.ToInt32(outStream.Length);
                         _ = writeCompressPipe.Writer.FlushAsync();
                     }
                     //压缩完成，释放资源
                     currentReader?.AdvanceTo(packageBodyBuffer.End);
-
-                    readRet = await writeCompressPipe.Reader.ReadAtLeastAsync(packageTotalLength).ConfigureAwait(false);
-                    
+                    readRet = await writeCompressPipe.Reader.ReadAtLeastAsync(packageBodyLength).ConfigureAwait(false);
                     packageBodyBuffer = readRet.Buffer;
 
                     //包总长度
-                    packageTotalLength += PACKAGE_TOTAL_LENGTH_LENGTH;
-                    //准备包头
-                    writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
-                    packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
+                    packageTotalLength = PACKAGE_HEAD_LENGTH + packageBodyLength;
                     currentReader = writeCompressPipe.Reader;
                 }
                 //如果加密
@@ -102,13 +100,10 @@ namespace Quick.Protocol
                         currentReader?.AdvanceTo(packageBodyBuffer.End);
 
                         packageBodyBuffer = new ReadOnlySequence<byte>(ret);
-                        packageTotalLength = ret.Length;
+                        packageBodyLength = ret.Length;
 
                         //包总长度
-                        packageTotalLength += PACKAGE_TOTAL_LENGTH_LENGTH;
-                        //准备包头
-                        writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
-                        packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
+                        packageTotalLength = PACKAGE_HEAD_LENGTH + packageBodyLength;
                         currentReader = null;
                     }
                     catch (Exception ex)
@@ -117,61 +112,68 @@ namespace Quick.Protocol
                     }
                 }
             }
-            else
+            //发送数据
             {
-                //包总长度
-                packageTotalLength = PACKAGE_TOTAL_LENGTH_LENGTH + Convert.ToInt32(packageBodyBuffer.Length);
-                //准备包头
-                writePackageTotalLengthToBuffer(sendHeadBuffer, 0, packageTotalLength);
-                packageHeadMemory = new Memory<byte>(sendHeadBuffer, 0, PACKAGE_TOTAL_LENGTH_LENGTH);
-            }
-            //写入包头
-            var writeTask = stream.WriteAsync(packageHeadMemory).AsTask();
-            await writeTask
-                    .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
-                    .ConfigureAwait(false);
-                    
-            //如果有包内容，写入包内容
-            if (packageBodyBuffer.Length > 0)
-            {
-                using (var sequenceByteStream = new ReadOnlySequenceByteStream(packageBodyBuffer))
-                    writeTask = sequenceByteStream.CopyToAsync(stream);
-                await writeTask
-                    .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
-                    .ConfigureAwait(false);
+                var writer = sendRawPipe.Writer;
+                var headMemory = writer.GetMemory(PACKAGE_HEAD_LENGTH);
+                //包头
+                writePackageTotalLengthToBuffer(headMemory, packageTotalLength);
+                headMemory.Span[4] = (byte)packageType;
+                writer.Advance(PACKAGE_HEAD_LENGTH);
+                //包体
+                if (packageBodyLength > 0)
+                {
+                    var bodyMemory = writer.GetMemory(packageBodyLength);
+                    packageBodyBuffer.CopyTo(bodyMemory.Span);
+                    writer.Advance(packageBodyLength);
+                }
+                await writer.FlushAsync();
 
-                if (writeTask.IsCanceled)
-                    return;
-                if (writeTask.Exception != null)
-                    throw new IOException("Write error from stream.", writeTask.Exception.InnerException);
+                //发送
+                var reader = sendRawPipe.Reader;
+                var rawRet = await reader.ReadAtLeastAsync(packageTotalLength);
+                using (var sequenceByteStream = new ReadOnlySequenceByteStream(rawRet.Buffer))
+                    await sequenceByteStream.CopyToAsync(stream)
+                        .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
+                        .ConfigureAwait(false);
+                if (options.EnableNetstat)
+                {
+                    BytesSent += packageTotalLength;
+                    if (BytesSent > LONG_HALF_MAX_VALUE)
+                        BytesSent = 0;
+                }
+                if (LogUtils.LogRaw)
+                {
+                    var sb = new StringBuilder();
+                    sb.Append($"{DateTime.Now}: [Send-Raw]Length: {packageTotalLength}");
+                    if (LogUtils.LogContent)
+                        sb.Append(", Content: " + Convert.ToHexString(rawRet.Buffer.ToArray()));
+                    else
+                        sb.Append(LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                    LogUtils.Log(sb.ToString());
+                }
+                reader.AdvanceTo(rawRet.Buffer.End);
             }
-
-            if (options.EnableNetstat)
-            {
-                BytesSent += packageHeadMemory.Length + packageBodyBuffer.Length;
-                if (BytesSent > LONG_HALF_MAX_VALUE)
-                    BytesSent = 0;
-            }
-            if (LogUtils.LogRaw)
-            {
-                var sb = new StringBuilder();
-                sb.Append($"{DateTime.Now}: [Send-Raw]Length: {packageHeadMemory.Length + packageBodyBuffer.Length}");
-                if (LogUtils.LogContent)
-                    sb.Append(", Content: " + Convert.ToHexString(packageHeadMemory.Span) + Convert.ToHexString(packageBodyBuffer.ToArray()));
-                else
-                    sb.Append(LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-                LogUtils.Log(sb.ToString());
-            }
-            currentReader?.AdvanceTo(packageBodyBuffer.End);
+            if (packageBodyLength > 0)
+                currentReader?.AdvanceTo(packageBodyBuffer.End);
             await stream.FlushAsync().ConfigureAwait(false);
         }
 
         private static void writePackageTotalLengthToBuffer(byte[] buffer, int offset, int packageTotalLength)
         {
-            BitConverter.TryWriteBytes(new Span<byte>(buffer, offset, sizeof(int)), packageTotalLength);
-            //如果是小端字节序，则交换
+            writePackageTotalLengthToBuffer(new Span<byte>(buffer, offset, sizeof(int)), packageTotalLength);
+        }
+
+        private static void writePackageTotalLengthToBuffer(Span<byte> span, int packageTotalLength)
+        {
+            BitConverter.TryWriteBytes(span, packageTotalLength);
             if (BitConverter.IsLittleEndian)
-                Array.Reverse(buffer, offset, sizeof(int));
+                span.Slice(0, sizeof(int)).Reverse();
+        }
+
+        private static void writePackageTotalLengthToBuffer(Memory<byte> memory, int packageTotalLength)
+        {
+            writePackageTotalLengthToBuffer(memory.Span, packageTotalLength);
         }
 
         private async Task UseSendPipe(Func<Pipe, Task> handler)
@@ -203,12 +205,7 @@ namespace Quick.Protocol
         {
             await UseSendPipe(async pipe =>
             {
-                var writer = pipe.Writer;
-                //写入包类型
-                writer.GetSpan(1)[0] = (byte)QpPackageType.Heartbeat;
-                writer.Advance(1);
-                var bodyLength = 1;
-                _ = writer.FlushAsync();
+                var bodyLength = 0;
                 await writePackageBuffer(pipe.Reader,
                     QpPackageType.Heartbeat,
                     bodyLength).ConfigureAwait(false);
@@ -220,13 +217,10 @@ namespace Quick.Protocol
             await UseSendPipe(async pipe =>
             {
                 var writer = pipe.Writer;
-                //写入包类型
-                writer.GetSpan(1)[0] = (byte)QpPackageType.Notice;
-                writer.Advance(1);
 
                 var typeName = noticePackageTypeName;
                 var content = noticePackageContent;
-                var bodyLength = 1;
+                var bodyLength = 0;
                 //写入类名和长度
                 {
                     var typeNameByteLength = encoding.GetByteCount(typeName);
@@ -275,11 +269,7 @@ namespace Quick.Protocol
             await UseSendPipe(async pipe =>
             {
                 var writer = pipe.Writer;
-                //写入包类型
-                writer.GetSpan(1)[0] = (byte)QpPackageType.CommandRequest;
-                writer.Advance(1);
-
-                var bodyLength = 1;
+                var bodyLength = 0;
                 //写入指令编号
                 {
                     var commandIdLength = commandId.Length / 2;
@@ -325,11 +315,7 @@ namespace Quick.Protocol
             await UseSendPipe(async pipe =>
             {
                 var writer = pipe.Writer;
-                //写入包类型
-                writer.GetSpan(1)[0] = (byte)QpPackageType.CommandResponse;
-                writer.Advance(1);
-
-                var bodyLength = 1;
+                var bodyLength = 0;
                 //写入指令编号
                 {
                     var commandIdLength = commandId.Length / 2;
