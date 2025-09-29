@@ -63,6 +63,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
         protected override void Dispose(bool disposing)
         {
+            cts.Cancel();
             cts.Dispose();
             webSocket.Dispose();
             base.Dispose(disposing);
