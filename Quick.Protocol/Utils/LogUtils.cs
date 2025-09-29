@@ -16,8 +16,6 @@ namespace Quick.Protocol.Utils
         public static bool LogHeartbeat { get; set; } = false;
         public static bool LogNotice { get; set; } = false;
         public static bool LogCommand { get; set; } = false;
-        public static bool LogContent { get; set; } = false;
-        public static bool LogSplit { get; set; } = false;
         public static bool LogConnection { get; set; } = false;
         public static bool LogRaw { get; set; } = false;
 
