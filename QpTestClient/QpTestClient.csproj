@@ -8,7 +8,7 @@
 		<Product>[QuickProtocol]测试客户端</Product>
 		<AssemblyTitle>[QuickProtocol]测试客户端</AssemblyTitle>
 		<Authors>scbeta</Authors>
-		<Version>2.6.2</Version>
+		<Version>2.6.3</Version>
 		<IsPackable>false</IsPackable>
 		<ApplicationIcon>logo.ico</ApplicationIcon>
 		<Description>用于测试连接到[QuickProtocol]服务端的客户端。
