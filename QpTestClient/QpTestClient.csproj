@@ -11,6 +11,7 @@
 		<Version>2.6.3</Version>
 		<IsPackable>false</IsPackable>
 		<ApplicationIcon>logo.ico</ApplicationIcon>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
 		<Description>用于测试连接到[QuickProtocol]服务端的客户端。
 项目地址：https://github.com/QuickProtocol</Description>
 		<Copyright>Apache License</Copyright>
