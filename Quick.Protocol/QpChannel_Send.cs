@@ -127,7 +127,7 @@ namespace Quick.Protocol
                     packageBodyBuffer.CopyTo(bodyMemory.Span);
                     writer.Advance(packageBodyLength);
                 }
-                await writer.FlushAsync();
+                _ = writer.FlushAsync();
 
                 //发送
                 var reader = sendRawPipe.Reader;
@@ -244,7 +244,7 @@ namespace Quick.Protocol
                         bodyLength += byteCount;
                     }
                 }
-                await writer.FlushAsync();
+                _ = writer.FlushAsync();
                 if (LogUtils.LogNotice)
                     LogUtils.Log("{0}: [Send-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
                 return bodyLength;
@@ -290,8 +290,7 @@ namespace Quick.Protocol
                     writer.Advance(contentLength);
                     bodyLength += contentLength;
                 }
-                await writer.FlushAsync();
-
+                _ = writer.FlushAsync();
                 if (LogUtils.LogCommand)
                     LogUtils.Log("{0}: [Send-CommandRequestPackage]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandId, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
 
