@@ -292,21 +292,27 @@ namespace QpTestClient
             {
                 var instructionNode = connectionNode.Nodes.Add(instruction.Id, instruction.Name, 2, 2);
                 instructionNode.Tag = instruction;
-                var noticesNode = instructionNode.Nodes.Add("Notice", "通知", 3, 3);
-                noticesNode.Tag = instruction.NoticeInfos;
-                foreach (var noticeInfo in instruction.NoticeInfos)
+                if (instruction.NoticeInfos != null)
                 {
-                    var noticeNode = noticesNode.Nodes.Add(noticeInfo.NoticeTypeName, noticeInfo.Name, 3, 3);
-                    noticeNode.ContextMenuStrip = cmsNotice;
-                    noticeNode.Tag = noticeInfo;
+                    var noticesNode = instructionNode.Nodes.Add("Notice", "通知", 3, 3);
+                    noticesNode.Tag = instruction.NoticeInfos;
+                    foreach (var noticeInfo in instruction.NoticeInfos)
+                    {
+                        var noticeNode = noticesNode.Nodes.Add(noticeInfo.NoticeTypeName, noticeInfo.Name, 3, 3);
+                        noticeNode.ContextMenuStrip = cmsNotice;
+                        noticeNode.Tag = noticeInfo;
+                    }
                 }
-                var commandsNode = instructionNode.Nodes.Add("Command", "命令", 4, 4);
-                commandsNode.Tag = instruction.CommandInfos;
-                foreach (var commandInfo in instruction.CommandInfos)
+                if (instruction.CommandInfos != null)
                 {
-                    var commandNode = commandsNode.Nodes.Add(commandInfo.RequestTypeName, commandInfo.Name, 4, 4);
-                    commandNode.ContextMenuStrip = cmsCommand;
-                    commandNode.Tag = commandInfo;
+                    var commandsNode = instructionNode.Nodes.Add("Command", "命令", 4, 4);
+                    commandsNode.Tag = instruction.CommandInfos;
+                    foreach (var commandInfo in instruction.CommandInfos)
+                    {
+                        var commandNode = commandsNode.Nodes.Add(commandInfo.RequestTypeName, commandInfo.Name, 4, 4);
+                        commandNode.ContextMenuStrip = cmsCommand;
+                        commandNode.Tag = commandInfo;
+                    }
                 }
             }
         }
