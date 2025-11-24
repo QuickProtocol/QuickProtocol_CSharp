@@ -96,7 +96,7 @@ namespace Quick.Protocol
             {
                 //如果在字典中未找到此类型名称，则直接返回
                 if (!commandRequestTypeDict.ContainsKey(typeName))
-                    throw new CommandException(255, $"Unknown RequestType: {typeName}.");
+                    throw new CommandException(255, $"Unknown RequestType[{typeName}].");
 
                 var cmdRequestType = commandRequestTypeDict[typeName];
                 var cmdResponseType = commandRequestTypeResponseTypeDict[cmdRequestType];
@@ -125,7 +125,7 @@ namespace Quick.Protocol
                         }
                     }
                 if (!hasCommandExecuter)
-                    throw new CommandException(255, $"No CommandExecuter for RequestType:{typeName}");
+                    throw new CommandException(255, $"No CommandExecuter for RequestType[{typeName}]");
             }
             catch (CommandException ex)
             {
