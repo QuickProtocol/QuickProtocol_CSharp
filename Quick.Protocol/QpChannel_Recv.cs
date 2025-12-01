@@ -412,6 +412,11 @@ namespace Quick.Protocol
         {
             lastReadDataTime = DateTime.Now;
             var pipe = new Pipe();
+            CheckRecvTimeoutAsync(token).ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                    OnReadError(task.Exception);
+            });
             FillRecvPipeAsync(QpPackageHandler_Stream, pipe.Writer, token).ContinueWith(task =>
             {
                 if (task.IsFaulted)
@@ -423,11 +428,6 @@ namespace Quick.Protocol
                 if (task.IsFaulted)
                     OnReadError(task.Exception);
                 pipe.Reader.CompleteAsync(task.Exception);
-            });
-            CheckRecvTimeoutAsync(token).ContinueWith(task =>
-            {
-                if (task.IsFaulted)
-                    OnReadError(task.Exception);
             });
         }
 
