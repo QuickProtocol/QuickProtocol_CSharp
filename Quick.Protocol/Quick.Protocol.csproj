@@ -12,6 +12,8 @@
 		<PackageIcon>logo.png</PackageIcon>
 		<PackageTags>QuickProtocol</PackageTags>
 		<IsAotCompatible>true</IsAotCompatible>
+		<IncludeSymbols>true</IncludeSymbols>
+    	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
 
 	<ItemGroup>

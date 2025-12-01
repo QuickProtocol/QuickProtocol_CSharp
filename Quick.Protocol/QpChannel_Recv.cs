@@ -185,7 +185,10 @@ namespace Quick.Protocol
             {
                 int bytesRead = await stream.ReadAsync(readBufferMemory, token);
                 if (bytesRead == 0)
+                {
+                    await Task.Delay(100, token);
                     continue;
+                }
                 lastReadDataTime = DateTime.Now;
                 if (options.EnableNetstat)
                 {
