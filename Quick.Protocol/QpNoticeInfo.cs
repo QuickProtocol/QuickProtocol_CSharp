@@ -1,10 +1,6 @@
-﻿using System.Text.Json;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel;
 using System.Reflection;
-using System.Text;
-using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
 
 namespace Quick.Protocol
@@ -46,7 +42,7 @@ namespace Quick.Protocol
             this.noticeType = noticeType;
             NoticeTypeName = noticeType.FullName;
             this.noticeSerializer = noticeSerializer;
-            NoticeTypeSchemaSample = JsonNode.Parse(noticeSerializer.Serialize(defaultNoticeTypeInstance)).ToString();
+            NoticeTypeSchemaSample = noticeSerializer.Serialize(defaultNoticeTypeInstance);
         }
 
         /// <summary>
