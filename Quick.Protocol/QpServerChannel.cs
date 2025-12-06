@@ -31,8 +31,9 @@ namespace Quick.Protocol
         /// 认证超时
         /// </summary>
         public event EventHandler AuchenticateTimeout;
+        protected override bool ReadFromStreamReturnZeroMeansFault { get; }
 
-        public QpServerChannel(Stream stream, string channelName, CancellationToken cancellationToken, QpServerOptions options) : base(options)
+        public QpServerChannel(Stream stream, string channelName, CancellationToken cancellationToken, QpServerOptions options, bool readFromStreamReturnZeroMeansFault = true) : base(options)
         {
             this.stream = stream;
             this.channelName = channelName;
@@ -40,6 +41,7 @@ namespace Quick.Protocol
             this.authedCommandExecuterManagerList = options.CommandExecuterManagerList;
             this.authedNoticeHandlerManagerList = options.NoticeHandlerManagerList;
             serverCancellationToken = cancellationToken;
+            ReadFromStreamReturnZeroMeansFault = readFromStreamReturnZeroMeansFault;
 
             cts = new CancellationTokenSource();
 

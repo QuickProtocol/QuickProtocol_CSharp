@@ -13,6 +13,7 @@ namespace Quick.Protocol.SerialPort
     {
         private QpSerialPortClientOptions options;
         private System.IO.Ports.SerialPort serialPort;
+        protected override bool ReadFromStreamReturnZeroMeansFault => false;
         public QpSerialPortClient(QpSerialPortClientOptions options) : base(options)
         {
             this.options = options;

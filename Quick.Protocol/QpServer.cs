@@ -61,9 +61,9 @@ namespace Quick.Protocol
                 }
         }
 
-        protected void OnNewChannelConnected(Stream stream, string channelName, CancellationToken token)
+        protected void OnNewChannelConnected(Stream stream, string channelName, CancellationToken token, bool readFromStreamReturnZeroMeansFault = true)
         {
-            var channel = new QpServerChannel(stream, channelName, token, options.Clone());
+            var channel = new QpServerChannel(stream, channelName, token, options.Clone(), readFromStreamReturnZeroMeansFault);
 
             //认证超时
             channel.AuchenticateTimeout += (sender, e) =>

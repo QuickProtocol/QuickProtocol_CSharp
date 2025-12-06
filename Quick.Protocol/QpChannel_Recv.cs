@@ -16,6 +16,10 @@ namespace Quick.Protocol
 {
     public abstract partial class QpChannel
     {
+        /// <summary>
+        /// 从流中读取返回0是否代表错误
+        /// </summary>
+        protected virtual bool ReadFromStreamReturnZeroMeansFault { get; } = true;
         private DateTime lastReadDataTime;
         /// <summary>
         /// 当读取出错时
@@ -184,8 +188,12 @@ namespace Quick.Protocol
             while (!token.IsCancellationRequested)
             {
                 int bytesRead = await stream.ReadAsync(readBufferMemory, token);
+                if (bytesRead < 0)
+                    throw new EndOfStreamException();
                 if (bytesRead == 0)
                 {
+                    if (ReadFromStreamReturnZeroMeansFault)
+                        throw new EndOfStreamException();
                     await Task.Delay(100, token);
                     continue;
                 }
