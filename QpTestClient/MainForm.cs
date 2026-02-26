@@ -1,6 +1,7 @@
 ﻿using QpTestClient.Utils;
 using Quick.Protocol;
 using Quick.Protocol.Utils;
+using Quick.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

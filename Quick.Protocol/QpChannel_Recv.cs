@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Quick.Protocol.Streams;
+using Quick.Utils;
 
 namespace Quick.Protocol
 {

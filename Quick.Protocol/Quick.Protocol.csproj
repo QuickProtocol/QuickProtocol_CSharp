@@ -24,6 +24,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="Quick.Utils" Version="2026.1.226" />
 	  <PackageReference Include="System.IO.Pipelines" Version="10.0.0" />
 	</ItemGroup>
 </Project>

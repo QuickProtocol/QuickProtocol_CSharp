@@ -1,4 +1,5 @@
 ﻿using Quick.Protocol.Utils;
+using Quick.Utils;
 using System;
 using System.ComponentModel;
 using System.Drawing;
