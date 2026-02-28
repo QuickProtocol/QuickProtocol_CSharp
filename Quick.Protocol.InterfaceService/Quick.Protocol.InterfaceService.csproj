@@ -7,8 +7,9 @@
 	  <RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
 	  <Copyright />
 	  <Authors>scbeta</Authors>
-	  <Version>2.6.7</Version>
+	  <Version>2.6.7.1</Version>
 	  <Company />
+    <Description>Utils for interface service.</Description>
 	  <PackageIcon>logo.png</PackageIcon>
 	  <PackageTags>QuickProtocol</PackageTags>
   </PropertyGroup>
@@ -27,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Quick.Fields" Version="2026.2.226" />
     <PackageReference Include="Quick.Utils" Version="2026.1.226" />
   </ItemGroup>
 
