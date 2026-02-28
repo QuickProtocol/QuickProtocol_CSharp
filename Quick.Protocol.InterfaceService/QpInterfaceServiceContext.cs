@@ -16,14 +16,17 @@ namespace Quick.Protocol.InterfaceService
         public QpInterfaceServiceContext(QpInterfaceServiceContextOptions options)
         {
             this.options = options;
-            webSocketServerOptions = new QpWebSocketServerOptions()
+            if (options.Config.WebSocketEnable)
             {
-                Path = options.Config.WebSocketPath,
-                InstructionSet = options.InstructionSet
-            };
-            options.WebBuilder.UseQuickProtocol(webSocketServerOptions, out webSocketServer);
-            options.WebSocketServer = webSocketServer;
-            options.WebSocketServerOptions = webSocketServerOptions;
+                webSocketServerOptions = new QpWebSocketServerOptions()
+                {
+                    Path = options.Config.WebSocketPath,
+                    InstructionSet = options.InstructionSet
+                };
+                options.WebBuilder.UseQuickProtocol(webSocketServerOptions, out webSocketServer);
+                options.WebSocketServer = webSocketServer;
+                options.WebSocketServerOptions = webSocketServerOptions;
+            }
         }
 
         public QpChannel[] GetAllChannels()
