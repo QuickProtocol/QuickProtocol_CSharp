@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Text.Json;
 using Quick.Protocol;
 using Quick.Protocol.WebSocket.Server.AspNetCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
-using System.Threading;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -38,8 +35,8 @@ namespace Microsoft.AspNetCore.Builder
     <body>
         <p>Welcome to use <b>Quick.Protocol {qpLibVersion.ToString(3)}</b></p>
         <p>Source Code:<a href=""https://github.com/QuickProtocol/"">https://github.com/QuickProtocol/</a></p>
-        <p>ServerProgram:{string.Join(" | ", options.InstructionSet.Select(t => $"{t.Name}({t.Id})"))}</p>
-        <p>InstructionSet:{DateTime.Now}</p>
+        <p>InstructionSet:{string.Join(" | ", options.InstructionSet.Select(t => $"{t.Name}({t.Id})"))}</p>
+        <p>ServerProgram:{options.ServerProgram}</p>
         <p>MaxPackageSize:{options.MaxPackageSize}</p>
         <p>HeartBeatInterval:{options.HeartBeatInterval}</p>
         <p>Time:{DateTime.Now}</p>
