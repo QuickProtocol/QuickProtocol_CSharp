@@ -29,6 +29,11 @@ public class QpInterfaceServiceConfig
 
     public FieldForGet GetConfigGroup(bool isReadOnly, string id, string name, QpInterfaceServiceConfig defaultModel)
     {
+        //WebSocket
+        var webSocketPath = WebSocketPath ?? defaultModel.WebSocketPath;
+        var pipeName = PipeName ?? defaultModel.PipeName;
+        var tcpListenPort = TcpListenPort > 0 ? TcpListenPort : defaultModel.TcpListenPort;
+
         var list = new List<FieldForGet>
         {
             new()
@@ -40,96 +45,108 @@ public class QpInterfaceServiceConfig
                 Type = FieldType.InputPassword,
                 Value = Password,
                 Input_ReadOnly = isReadOnly
+            },
+            new ()
+            {
+                Name = "WebSocket",
+                Type = FieldType.ContainerGroup,
+                MarginBottom = 1,
+                Children =
+                [
+                    new()
+                    {
+                        Id = nameof(WebSocketEnable),
+                        Name = "启用",
+                        Description = WebSocketEnable ? "接口地址示例：qp.ws://127.0.0.1:8094" + webSocketPath : null,
+                        Input_AllowBlank = false,
+                        Type = FieldType.InputSelect,
+                        Value = WebSocketEnable.ToString(),
+                        PostOnChanged = true,
+                        InputSelect_Options = enableDisableDict,
+                        Input_ReadOnly = isReadOnly
+                    },
+                    new()
+                    {
+                        Id = nameof(WebSocketPath),
+                        Name = "WebSocket路径",
+                        Input_AllowBlank = false,
+                        Type = WebSocketEnable? FieldType.InputText: FieldType.InputHidden,
+                        Value = webSocketPath,
+                        Input_ReadOnly = isReadOnly
+                    }
+                ]
+            },
+            new ()
+            {
+                Name = "管道",
+                Type = FieldType.ContainerGroup,
+                MarginBottom = 1,
+                Children =
+                [
+                    new()
+                    {
+                        Id = nameof(PipeEnable),
+                        Name = "启用",
+                        Description = PipeEnable ? $"接口地址示例：qp.pipe://./{pipeName}" : null,
+                        Input_AllowBlank = false,
+                        Type = FieldType.InputSelect,
+                        Value = PipeEnable.ToString(),
+                        PostOnChanged = true,
+                        InputSelect_Options = enableDisableDict,
+                        Input_ReadOnly = isReadOnly
+                    },
+                    new()
+                    {
+                        Id = nameof(PipeName),
+                        Name = "管道名称",
+                        Description = "默认密码：123456",
+                        Input_AllowBlank = false,
+                        Type = PipeEnable? FieldType.InputText: FieldType.InputHidden,
+                        Value = pipeName,
+                        Input_ReadOnly = isReadOnly
+                    }
+                ]
+            },
+            new ()
+            {
+                Name = "TCP",
+                Type = FieldType.ContainerGroup,
+                MarginBottom = 1,
+                Children =
+                [
+                    new()
+                    {
+                        Id = nameof(TcpEnable),
+                        Name = "启用",
+                        Description = TcpEnable ? $"接口地址示例：qp.tcp://127.0.0.1:{tcpListenPort}" : null,
+                        Input_AllowBlank = false,
+                        Type = FieldType.InputSelect,
+                        Value = TcpEnable.ToString(),
+                        PostOnChanged = true,
+                        InputSelect_Options = enableDisableDict,
+                        Input_ReadOnly = isReadOnly
+                    },
+                    new()
+                    {
+                        Id = nameof(TcpListenAddress),
+                        Name = "主机",
+                        Input_AllowBlank = false,
+                        Type = TcpEnable? FieldType.InputText: FieldType.InputHidden,
+                        Value = TcpListenAddress ?? defaultModel.TcpListenAddress,
+                        Input_ReadOnly = isReadOnly
+                    },
+                    new()
+                    {
+                        Id = nameof(TcpListenPort),
+                        Name = "端口",
+                        Input_AllowBlank = false,
+                        Type = TcpEnable? FieldType.InputNumber: FieldType.InputHidden,
+                        Value = tcpListenPort.ToString(),
+                        Input_ReadOnly = isReadOnly
+                    }
+                ]
             }
         };
-        //WebSocket
-        var webSocketPath = WebSocketPath ?? defaultModel.WebSocketPath;
-        list.Add(new()
-        {
-            Id = nameof(WebSocketEnable),
-            Name = "WebSocket",
-            Description = WebSocketEnable ? "接口地址示例：qp.ws://127.0.0.1:8094" + webSocketPath : null,
-            Input_AllowBlank = false,
-            Type = FieldType.InputSelect,
-            Value = WebSocketEnable.ToString(),
-            PostOnChanged = true,
-            InputSelect_Options = enableDisableDict,
-            Input_ReadOnly = isReadOnly
-        });
-        if (WebSocketEnable)
-        {
-            list.Add(new()
-            {
-                Id = nameof(WebSocketPath),
-                Name = "WebSocket路径",
-                Input_AllowBlank = false,
-                Type = FieldType.InputText,
-                Value = webSocketPath,
-                Input_ReadOnly = isReadOnly
-            });
-        }
-        //管道
-        var pipeName = PipeName ?? defaultModel.PipeName;
-        list.Add(new()
-        {
-            Id = nameof(PipeEnable),
-            Name = "管道",
-            Description = PipeEnable ? $"接口地址示例：qp.pipe://./{pipeName}" : null,
-            Input_AllowBlank = false,
-            Type = FieldType.InputSelect,
-            Value = PipeEnable.ToString(),
-            PostOnChanged = true,
-            InputSelect_Options = enableDisableDict,
-            Input_ReadOnly = isReadOnly
-        });
-        if (PipeEnable)
-        {
-            list.Add(new()
-            {
-                Id = nameof(PipeName),
-                Name = "管道名称",
-                Description = "默认密码：123456",
-                Input_AllowBlank = false,
-                Type = FieldType.InputText,
-                Value = pipeName,
-                Input_ReadOnly = isReadOnly
-            });
-        }
-        //TCP
-        var tcpListenPort = TcpListenPort > 0 ? TcpListenPort : defaultModel.TcpListenPort;
-        list.Add(new()
-        {
-            Id = nameof(TcpEnable),
-            Name = "TCP",
-            Description = TcpEnable ? $"接口地址示例：qp.tcp://127.0.0.1:{tcpListenPort}" : null,
-            Input_AllowBlank = false,
-            Type = FieldType.InputSelect,
-            Value = TcpEnable.ToString(),
-            PostOnChanged = true,
-            InputSelect_Options = enableDisableDict,
-            Input_ReadOnly = isReadOnly
-        });
-        if (TcpEnable)
-        {
-            list.Add(new()
-            {
-                Id = nameof(TcpListenAddress),
-                Name = "主机",
-                Input_AllowBlank = false,
-                Type = FieldType.InputText,
-                Value = TcpListenAddress ?? defaultModel.TcpListenAddress,
-                Input_ReadOnly = isReadOnly
-            });
-            list.Add(new()
-            {
-                Id = nameof(TcpListenPort),
-                Name = "端口",
-                Input_AllowBlank = false,
-                Type = FieldType.InputNumber,
-                Value = tcpListenPort.ToString(),
-                Input_ReadOnly = isReadOnly
-            });
-        }
         return new FieldForGet()
         {
             Id = id,
