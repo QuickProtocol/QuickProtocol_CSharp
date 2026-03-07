@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.InteropServices;
 
 namespace Quick.Protocol.Utils
 {
@@ -33,16 +32,14 @@ namespace Quick.Protocol.Utils
         /// <returns></returns>
         public static int B2I_BE(byte[] buffer, int startIndex = 0)
         {
-            //如果是小端字节序，则交换
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(buffer, startIndex, sizeof(int));
-
             var ret = BitConverter.ToInt32(buffer, startIndex);
-
             //如果是小端字节序，则交换
             if (BitConverter.IsLittleEndian)
-                Array.Reverse(buffer, startIndex, sizeof(int));
-
+            {
+                var intSpan = MemoryMarshal.CreateSpan(ref ret, 1);
+                var byteSpan = MemoryMarshal.AsBytes(intSpan);
+                byteSpan.Reverse();
+            }
             return ret;
         }
 
@@ -54,16 +51,14 @@ namespace Quick.Protocol.Utils
         /// <returns></returns>
         public static int B2I_LE(byte[] buffer, int startIndex = 0)
         {
-            //如果是大端字节序，则交换
-            if (!BitConverter.IsLittleEndian)
-                Array.Reverse(buffer, startIndex, sizeof(int));
-
             var ret = BitConverter.ToInt32(buffer, startIndex);
-
             //如果是大端字节序，则交换
             if (!BitConverter.IsLittleEndian)
-                Array.Reverse(buffer, startIndex, sizeof(int));
-
+            {
+                var intSpan = MemoryMarshal.CreateSpan(ref ret, 1);
+                var byteSpan = MemoryMarshal.AsBytes(intSpan);
+                byteSpan.Reverse();
+            }
             return ret;
         }
     }
