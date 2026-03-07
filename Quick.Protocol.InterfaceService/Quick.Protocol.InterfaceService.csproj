@@ -7,7 +7,7 @@
 	  <RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
 	  <Copyright />
 	  <Authors>scbeta</Authors>
-	  <Version>2.6.7.2</Version>
+	  <Version>2.6.8</Version>
 	  <Company />
     <Description>Utils for interface service.</Description>
 	  <PackageIcon>logo.png</PackageIcon>
