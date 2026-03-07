@@ -5,22 +5,16 @@ namespace Quick.Protocol.Utils
 {
     public class ByteUtils
     {
-        public static byte[] HexDecode(string data)
-        {
-            var buffer = new byte[data.Length / 2];
-            for (var i = 0; i < data.Length; i += 2)
-            {
-                buffer[i / 2] = byte.Parse(data.Substring(i, 2), System.Globalization.NumberStyles.HexNumber);
-            }
-            return buffer;
-        }
+        public static byte[] HexDecode(string data) => Convert.FromHexString(data);
 
-        public static void HexDecode(string data,Memory<byte> memory)
+        public static void HexDecode(string data, Memory<byte> memory)
         {
             var span = memory.Span;
+            var charSpan = data.AsSpan();
             for (var i = 0; i < data.Length; i += 2)
             {
-                span[i / 2] = byte.Parse(data.Substring(i, 2), System.Globalization.NumberStyles.HexNumber);
+                span[i / 2] = byte.Parse(charSpan.Slice(0, 2), System.Globalization.NumberStyles.HexNumber);
+                charSpan = charSpan.Slice(2);
             }
         }
 
