@@ -27,6 +27,10 @@ public class QpInterfaceServiceConfig
     [JsonConverter(typeof(QpJsonInt32Converter))]
     public int MaxPackageSize { get; set; } = 100 * 1024 * 1024;
 
+    public static bool CanEnableWebSocket { get; set; } = true;
+    public static bool CanEnablePipe { get; set; } = true;
+    public static bool CanEnableTcp { get; set; } = true;
+
     public FieldForGet GetConfigGroup(bool isReadOnly, string id, string name, QpInterfaceServiceConfig defaultModel)
     {
         //WebSocket
@@ -49,7 +53,7 @@ public class QpInterfaceServiceConfig
             new ()
             {
                 Name = "WebSocket",
-                Type = FieldType.ContainerGroup,
+                Type = CanEnableWebSocket? FieldType.ContainerGroup: FieldType.InputHidden,
                 MarginBottom = 1,
                 Children =
                 [
@@ -79,7 +83,7 @@ public class QpInterfaceServiceConfig
             new ()
             {
                 Name = "管道",
-                Type = FieldType.ContainerGroup,
+                Type = CanEnablePipe? FieldType.ContainerGroup: FieldType.InputHidden,
                 MarginBottom = 1,
                 Children =
                 [
@@ -110,7 +114,7 @@ public class QpInterfaceServiceConfig
             new ()
             {
                 Name = "TCP",
-                Type = FieldType.ContainerGroup,
+                Type = CanEnableTcp? FieldType.ContainerGroup: FieldType.InputHidden,
                 MarginBottom = 1,
                 Children =
                 [
