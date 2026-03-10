@@ -8,8 +8,8 @@ public class QpInterfaceServiceConfig
 {
     private Dictionary<string, string> enableDisableDict = new Dictionary<string, string>()
     {
-        [true.ToString()] = "启用",
-        [false.ToString()] = "禁用"
+        [true.ToString()] = "是",
+        [false.ToString()] = "否"
     };
 
     public string Password { get; set; } = "123456";
@@ -103,7 +103,6 @@ public class QpInterfaceServiceConfig
                     {
                         Id = nameof(PipeName),
                         Name = "管道名称",
-                        Description = "默认密码：123456",
                         Input_AllowBlank = false,
                         Type = PipeEnable? FieldType.InputText: FieldType.InputHidden,
                         Value = pipeName,
