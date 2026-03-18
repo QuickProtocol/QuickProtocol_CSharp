@@ -33,6 +33,7 @@ public class QpHttpClient : QpClient
                 throw new IOException($"{rep.StatusCode} {rep.ReasonPhrase}");
             var channelId = await rep.Content.ReadAsStringAsync();
             recvClient.DefaultRequestHeaders.Add(QP_CHANNEL_ID, channelId);
+            sendClient = new();
             sendClient.DefaultRequestHeaders.Add(QP_CHANNEL_ID, channelId);
         }
         catch

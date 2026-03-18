@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
+		<Version>2.6.8</Version>
+		<Authors>scbeta</Authors>
+		<Company />
+		<Product>Quick.Protocol</Product>
+		<Description>Http server support for Quick.Protocol(Use ASP.NET Core)</Description>
+		<PackageIcon>logo.png</PackageIcon>
+		<PackageTags>QuickProtocol</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\logo.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Quick.Protocol\Quick.Protocol.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+</Project>
