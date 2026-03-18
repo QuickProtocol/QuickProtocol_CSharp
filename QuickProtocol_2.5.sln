@@ -51,6 +51,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleTest", "Test\Console
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quick.Protocol.InterfaceService", "Quick.Protocol.InterfaceService\Quick.Protocol.InterfaceService.csproj", "{D0692938-6902-4692-B045-9910C8C62D3B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quick.Protocol.Http.Client", "Quick.Protocol.Http.Client\Quick.Protocol.Http.Client.csproj", "{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -277,6 +279,18 @@ Global
 		{D0692938-6902-4692-B045-9910C8C62D3B}.Release|x64.Build.0 = Release|Any CPU
 		{D0692938-6902-4692-B045-9910C8C62D3B}.Release|x86.ActiveCfg = Release|Any CPU
 		{D0692938-6902-4692-B045-9910C8C62D3B}.Release|x86.Build.0 = Release|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Debug|x64.Build.0 = Debug|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Debug|x86.Build.0 = Debug|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Release|x64.ActiveCfg = Release|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Release|x64.Build.0 = Release|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Release|x86.ActiveCfg = Release|Any CPU
+		{2A7ECA36-7FE1-4B46-A4A8-4A6C0F11EB5B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

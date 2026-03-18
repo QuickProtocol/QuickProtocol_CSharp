@@ -36,7 +36,7 @@ namespace Quick.Protocol.WebSocket.Client
             if (Url == null)
                 throw new ArgumentNullException(nameof(Url));
             if (!Url.StartsWith(URI_SCHEMA_WS + "://") && !Url.StartsWith(URI_SCHEMA_WSS + "://"))
-                throw new ArgumentException("Url must start with qp.ws:// or qp.wss://", nameof(Url));
+                throw new ArgumentException($"Url must start with {URI_SCHEMA_WS}:// or {URI_SCHEMA_WSS}://", nameof(Url));
         }
 
         public override QpClient CreateClient()
