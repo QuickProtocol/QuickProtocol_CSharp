@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Quick.Protocol.Utils;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
@@ -24,22 +25,56 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
         private class QpHttpContext
         {
-            private Pipe pipe;
+            private Pipe readPipe;
+            private Pipe writePipe;
             public string ConnectionInfo { get; set; }
-            public CancellationTokenSource Cts { get; set; }
             public Stream Stream { get; set; }
 
             public QpHttpContext(string connectionInfo, CancellationTokenSource cts)
             {
                 ConnectionInfo = connectionInfo;
-                pipe = new();
-                Cts = cts;
+                readPipe = new();
+                writePipe = new();
+                Stream = new PipesStream(readPipe, writePipe);
             }
 
             public async Task OnDataRecvAsync(Stream body)
             {
-                using (var writerStream = pipe.Writer.AsStream())
+                using (var writerStream = readPipe.Writer.AsStream())
                     await body.CopyToAsync(writerStream);
+            }
+
+            public async Task OnGetData(HttpResponse rep)
+            {
+                var beginTime = DateTime.Now;
+                var buffer = new byte[100 * 1024];
+                while (true)
+                {
+                    if ((DateTime.Now - beginTime).TotalSeconds > 10)
+                    {
+                        rep.StatusCode = 200;
+                        rep.ContentLength = 0;
+                        await rep.CompleteAsync();
+                        return;
+                    }
+                    var readResult = await writePipe.Reader.ReadAsync();
+                    if (readResult.Buffer.Length > 0)
+                    {
+                        rep.ContentType = "application/octet-stream";
+                        rep.ContentLength = readResult.Buffer.Length;
+                        var currentSeq = readResult.Buffer;
+                        while (currentSeq.Length > 0)
+                        {
+                            var length = Math.Min(buffer.Length, (int)currentSeq.Length);
+                            currentSeq.CopyTo(buffer);
+                            await rep.Body.WriteAsync(buffer, 0, length);
+                            currentSeq = currentSeq.Slice(length);
+                        }
+                        writePipe.Reader.AdvanceTo(readResult.Buffer.GetPosition(readResult.Buffer.Length));
+                        return;
+                    }
+                    await Task.Delay(100);
+                }
             }
         }
 
@@ -52,11 +87,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
         {
             isStarted = true;
             lock (httpContextQueue)
-            {
-                foreach (var webSocket in httpContextQueue)
-                    webSocket.Cts.Cancel();
                 httpContextQueue.Clear();
-            }
             base.Start();
         }
 
@@ -83,14 +114,10 @@ namespace Quick.Protocol.Http.Server.AspNetCore
         {
             isStarted = false;
             lock (httpContextQueue)
-            {
-                foreach (var webSocket in httpContextQueue)
-                    webSocket.Cts.Cancel();
                 httpContextQueue.Clear();
-            }
             base.Stop();
         }
-        
+
         protected override async Task InnerAcceptAsync(CancellationToken token)
         {
             QpHttpContext[] qpHttpContexts = null;
@@ -111,11 +138,10 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                 {
                     if (LogUtils.LogConnection)
                         LogUtils.Log("[Connection]{0} connected.", context.ConnectionInfo);
-                    OnNewChannelConnected(context.Stream,context.ConnectionInfo, token);
+                    OnNewChannelConnected(context.Stream, context.ConnectionInfo, token);
                 }
                 catch (Exception ex)
                 {
-                    context.Cts.Cancel();
                     if (LogUtils.LogConnection)
                         LogUtils.Log("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                 }
@@ -124,7 +150,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
         public async Task HandleRequest(HttpContext context, Func<Task> next)
         {
-            if(!isStarted)
+            if (!isStarted)
             {
                 await next().ConfigureAwait(false);
                 return;
@@ -135,7 +161,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
             if (!req.Headers.ContainsKey(QP_CHANNEL_ID))
             {
-                switch(req.Method)
+                switch (req.Method)
                 {
                     case "GET":
                         var qpLibVersion = typeof(QpChannel).Assembly.GetName().Version;
@@ -154,7 +180,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
         <p>Time:{DateTime.Now}</p>
     </body>
 </html>";
-                        
+
                         rep.ContentType = "text/html; charset=utf-8";
                         rep.ContentLength = Encoding.UTF8.GetByteCount(message);
                         await rep.WriteAsync(message, Encoding.UTF8).ConfigureAwait(false);
@@ -181,11 +207,18 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                 await rep.WriteAsync($"Unknown channel: {channelId}");
                 return;
             }
-            await httpContext.OnDataRecvAsync(req.Body);
-            rep.StatusCode = 200;
-            rep.ContentLength = 0;
-            await rep.CompleteAsync();
-            return;
+            switch (req.Method)
+            {
+                case "GET":
+                    await httpContext.OnGetData(rep);
+                    return;
+                case "POST":
+                    await httpContext.OnDataRecvAsync(req.Body);
+                    rep.StatusCode = 200;
+                    rep.ContentLength = 0;
+                    await rep.CompleteAsync();
+                    return;
+            }
         }
     }
 }
