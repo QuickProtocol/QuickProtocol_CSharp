@@ -54,13 +54,13 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            using (var stream = writePipe.Writer.AsStream())
+            using (var stream = writePipe.Writer.AsStream(true))
                 stream.Write(buffer, offset, count);
         }
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            using (var stream = writePipe.Writer.AsStream())
+            using (var stream = writePipe.Writer.AsStream(true))
                 await stream.WriteAsync(buffer, offset, count, cancellationToken);
         }
     }

@@ -43,7 +43,7 @@ public class HttpClientsStream : Stream
             try
             {
                 using (var stream = await recvClient.GetStreamAsync(url, cancellationToken))
-                using (var pipeStream = writer.AsStream())
+                using (var pipeStream = writer.AsStream(true))
                     await stream.CopyToAsync(pipeStream, cancellationToken);
             }
             catch

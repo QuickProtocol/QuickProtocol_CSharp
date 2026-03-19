@@ -41,7 +41,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
             public async Task OnDataRecvAsync(Stream body)
             {
-                using (var writerStream = readPipe.Writer.AsStream())
+                using (var writerStream = readPipe.Writer.AsStream(true))
                     await body.CopyToAsync(writerStream);
             }
 
