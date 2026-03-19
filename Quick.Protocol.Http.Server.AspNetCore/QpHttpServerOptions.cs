@@ -44,6 +44,10 @@ namespace Quick.Protocol.Http.Server.AspNetCore
         /// 长轮循超时时间
         /// </summary>
         public int LongPollingTimeout { get; set; } = 100 * 1000;
+        /// <summary>
+        /// 最大HTTP响应大小
+        /// </summary>
+        public int MaxHttpResponseSize { get; set; } = 100 * 1024;
 
         public override QpServer CreateServer()
         {

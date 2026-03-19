@@ -33,6 +33,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             private Pipe readPipe;
             private Pipe writePipe;
             private QpHttpServerOptions options;
+            private byte[] buffer;
 
             public QpHttpContext(QpHttpServerOptions options, string channelId, string connectionInfo, CancellationTokenSource cts)
             {
@@ -42,6 +43,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                 readPipe = new();
                 writePipe = new();
                 Stream = new PipesStream(channelId, readPipe, writePipe);
+                buffer = new byte[options.MaxHttpResponseSize];
             }
 
             public async Task OnDataRecvAsync(Stream body)
@@ -54,11 +56,8 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             {
                 try
                 {
-                    var beginTime = DateTime.Now;
-                    var buffer = new byte[100 * 1024];
                     var readCts = new CancellationTokenSource();
                     var readCancallationToken = readCts.Token;
-
                     _ = Task.Delay(options.LongPollingTimeout, readCancallationToken).ContinueWith(t =>
                     {
                         if (t.IsCanceled)
@@ -66,6 +65,8 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                         readCts.Cancel();
                     });
                     var readResult = await writePipe.Reader.ReadAsync(readCancallationToken);
+                    readCts.Cancel();
+
                     rep.ContentType = "application/octet-stream";
                     rep.ContentLength = readResult.Buffer.Length;
                     var currentSeq = readResult.Buffer;
@@ -73,11 +74,10 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                     {
                         var length = Math.Min(buffer.Length, (int)currentSeq.Length);
                         currentSeq.CopyTo(buffer);
-                        await rep.Body.WriteAsync(buffer, 0, length, readCancallationToken);
+                        await rep.Body.WriteAsync(buffer, 0, length);
                         currentSeq = currentSeq.Slice(length);
                     }
                     writePipe.Reader.AdvanceTo(readResult.Buffer.GetPosition(readResult.Buffer.Length));
-                    readCts.Cancel();
                 }
                 catch (OperationCanceledException)
                 {
