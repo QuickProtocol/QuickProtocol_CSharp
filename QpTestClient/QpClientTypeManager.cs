@@ -1,12 +1,8 @@
 ﻿using QpTestClient.Controls;
 using Quick.Protocol;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Windows.Forms;
-using System.Xml.Linq;
 
 namespace QpTestClient
 {
@@ -24,8 +20,8 @@ namespace QpTestClient
         {
             propertyGrid.RegisterProperty("密码", "", () => options.Password, t => options.Password = t);
             propertyGrid.RegisterGroup("高级");
-            propertyGrid.RegisterProperty("连接超时", "单位：秒", () => options.ConnectionTimeout, t => options.ConnectionTimeout = t);
-            propertyGrid.RegisterProperty("传输超时", "单位：秒", () => options.TransportTimeout, t => options.TransportTimeout = t);
+            propertyGrid.RegisterProperty("连接超时", "单位：毫秒", () => options.ConnectionTimeout, t => options.ConnectionTimeout = t);
+            propertyGrid.RegisterProperty("传输超时", "单位：毫秒", () => options.TransportTimeout, t => options.TransportTimeout = t);
             propertyGrid.RegisterProperty("加密", "", () => options.EnableEncrypt, t => options.EnableEncrypt = t);
             propertyGrid.RegisterProperty("压缩", "", () => options.EnableCompress, t => options.EnableCompress = t);
             propertyGrid.RegisterProperty("最大包大小", "单位：字节", () => options.MaxPackageSize, t => options.MaxPackageSize = t);
@@ -97,6 +93,21 @@ namespace QpTestClient
                     var websocketClientOptions = (Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions)options;
                     propertyGrid.RegisterGroup("常用");
                     propertyGrid.RegisterProperty("URL", "", () => websocketClientOptions.Url, t => websocketClientOptions.Url = t);
+                    EditCommonClientOptions(propertyGrid, options);
+                }
+            });
+            register(new QpClientTypeInfo()
+            {
+                TypeName = typeof(Quick.Protocol.Http.Client.QpHttpClient).FullName,
+                Name = "Http",
+                CreateOptionsInstanceFunc = () => new Quick.Protocol.Http.Client.QpHttpClientOptions(),
+                DeserializeQpClientOptions = stream => JsonSerializer.Deserialize(stream, Quick.Protocol.Http.Client.QpHttpClientOptionsSerializerContext.Default.QpHttpClientOptions),
+                EditOptions = (propertyGrid, options) =>
+                {
+                    var httpClientOptions = (Quick.Protocol.Http.Client.QpHttpClientOptions)options;
+                    propertyGrid.RegisterGroup("常用");
+                    propertyGrid.RegisterProperty("URL", "", () => httpClientOptions.Url, t => httpClientOptions.Url = t);
+                    propertyGrid.RegisterProperty("Http客户端超时时间", "单位：毫秒", () => httpClientOptions.HttpClientTimeout, t => httpClientOptions.HttpClientTimeout = t);
                     EditCommonClientOptions(propertyGrid, options);
                 }
             });
