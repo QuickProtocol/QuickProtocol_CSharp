@@ -24,8 +24,7 @@ namespace QpHttpServer.Core
             {
                 Path = "/qp_test",
                 Password = "HelloQP",
-                ServerProgram = nameof(QpHttpServer) + " 1.0",
-                LongPollingTimeout = 2000,
+                ServerProgram = nameof(QpHttpServer) + " 1.0"
             }, out server);
 
             server.ChannelConnected += Server_ChannelConnected;
