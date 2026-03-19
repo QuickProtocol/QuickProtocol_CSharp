@@ -42,9 +42,9 @@ public class HttpClientsStream : Stream
         {
             try
             {
-                using (var stream = await recvClient.GetStreamAsync(url))
+                using (var stream = await recvClient.GetStreamAsync(url, cancellationToken))
                 using (var pipeStream = writer.AsStream())
-                    await stream.CopyToAsync(pipeStream);
+                    await stream.CopyToAsync(pipeStream, cancellationToken);
             }
             catch
             {
@@ -67,7 +67,7 @@ public class HttpClientsStream : Stream
 
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        var readRet = await recvPipe.Reader.ReadAsync(cts.Token);
+        var readRet = await recvPipe.Reader.ReadAsync(cancellationToken);
         if (readRet.Buffer.IsEmpty)
             return 0;
         var ret = Math.Min((int)readRet.Buffer.Length, count);
@@ -88,7 +88,7 @@ public class HttpClientsStream : Stream
     public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         var httpContent = new ByteArrayContent(buffer, offset, count);
-        var rep = await sendClient.PostAsync(url, httpContent);
+        var rep = await sendClient.PostAsync(url, httpContent, cancellationToken);
         if (!rep.IsSuccessStatusCode)
             throw new IOException($"{rep.StatusCode} {rep.ReasonPhrase}");
     }

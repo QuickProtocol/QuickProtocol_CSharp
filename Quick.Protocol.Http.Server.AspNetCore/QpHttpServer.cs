@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Quick.Protocol.Utils;
 using System;
 using System.Buffers;
@@ -46,18 +47,21 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
             public async Task OnGetData(HttpResponse rep)
             {
-                var beginTime = DateTime.Now;
+                var readCts = new CancellationTokenSource();
+                var readCancallationToken = readCts.Token;
                 var buffer = new byte[100 * 1024];
-                while (true)
+                _ = Task.Delay(10 * 1000, readCancallationToken).ContinueWith(t =>
                 {
-                    if ((DateTime.Now - beginTime).TotalSeconds > 10)
-                    {
-                        rep.StatusCode = 200;
-                        rep.ContentLength = 0;
-                        await rep.CompleteAsync();
+                    if (t.IsCanceled)
                         return;
-                    }
-                    var readResult = await writePipe.Reader.ReadAsync();
+                    readCts.Cancel();
+                    rep.StatusCode = 200;
+                    rep.ContentLength = 0;
+                    _ = rep.CompleteAsync();
+                });
+                while (!readCancallationToken.IsCancellationRequested)
+                {
+                    var readResult = await writePipe.Reader.ReadAsync(readCancallationToken);
                     if (readResult.Buffer.Length > 0)
                     {
                         rep.ContentType = "application/octet-stream";
@@ -67,10 +71,11 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                         {
                             var length = Math.Min(buffer.Length, (int)currentSeq.Length);
                             currentSeq.CopyTo(buffer);
-                            await rep.Body.WriteAsync(buffer, 0, length);
+                            await rep.Body.WriteAsync(buffer, 0, length, readCancallationToken);
                             currentSeq = currentSeq.Slice(length);
                         }
                         writePipe.Reader.AdvanceTo(readResult.Buffer.GetPosition(readResult.Buffer.Length));
+                        readCts.Cancel();
                         return;
                     }
                     await Task.Delay(100);
@@ -98,11 +103,11 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                 return;
             var connectionInfoStr = $"HTTP:{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
             var cts = new CancellationTokenSource();
+            var qpHttpContext = new QpHttpContext(connectionInfoStr, cts);
+            lock (httpContextDict)
+                httpContextDict[channelId] = qpHttpContext;
             lock (httpContextQueue)
-                httpContextQueue.Enqueue(
-                    new QpHttpContext(
-                        connectionInfoStr,
-                        cts));
+                httpContextQueue.Enqueue(qpHttpContext);
             await Task.Delay(-1, cts.Token).ContinueWith(t =>
              {
                  if (LogUtils.LogConnection)
@@ -138,7 +143,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                 {
                     if (LogUtils.LogConnection)
                         LogUtils.Log("[Connection]{0} connected.", context.ConnectionInfo);
-                    OnNewChannelConnected(context.Stream, context.ConnectionInfo, token);
+                    OnNewChannelConnected(context.Stream, context.ConnectionInfo, token, false);
                 }
                 catch (Exception ex)
                 {
@@ -187,7 +192,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                         return;
                     case "POST":
                         var newChannelId = Guid.NewGuid().ToString("N");
-                        await OnNewConnection(newChannelId, context.Connection);
+                        _ = OnNewConnection(newChannelId, context.Connection);
                         rep.ContentType = "text/plain; charset=utf-8";
                         rep.ContentLength = Encoding.UTF8.GetByteCount(newChannelId);
                         await rep.WriteAsync(newChannelId, Encoding.UTF8).ConfigureAwait(false);

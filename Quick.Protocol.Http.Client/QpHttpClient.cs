@@ -9,6 +9,7 @@ namespace Quick.Protocol.Http.Client;
 [DisplayName("Http")]
 public class QpHttpClient : QpClient
 {
+    protected override bool ReadFromStreamReturnZeroMeansFault => false;
     public const string QP_CHANNEL_ID = nameof(QP_CHANNEL_ID);
     private QpHttpClientOptions options;
     private HttpClient sendClient;
