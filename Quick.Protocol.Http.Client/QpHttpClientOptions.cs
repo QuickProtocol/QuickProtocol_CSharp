@@ -24,9 +24,13 @@ public class QpHttpClientOptions : QpClientOptions
     public const string URI_SCHEMA_HTTPS = "qp.https";
 
     /// <summary>
-    /// WebSocket的URL地址
+    /// Http的URL地址
     /// </summary>
     public string Url { get; set; } = "qp.http://127.0.0.1:3011/qp_test";
+    /// <summary>
+    /// HTTP客户端超时时间
+    /// </summary>
+    public int HttpClientTimeout { get; set; } = 100 * 1000;
 
     public override void Check()
     {

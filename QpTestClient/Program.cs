@@ -11,7 +11,10 @@ namespace QpTestClient
         [STAThread]
         static void Main()
         {
-            Quick.Protocol.QpAllClients.RegisterUriSchema();
+            Quick.Protocol.Pipeline.QpPipelineClientOptions.RegisterUriSchema();
+            Quick.Protocol.Tcp.QpTcpClientOptions.RegisterUriSchema();
+            Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions.RegisterUriSchema();
+            Quick.Protocol.Http.Client.QpHttpClientOptions.RegisterUriSchema();
             Quick.Protocol.SerialPort.QpSerialPortClientOptions.RegisterUriSchema();
 
             QpClientTypeManager.Instance.Init();

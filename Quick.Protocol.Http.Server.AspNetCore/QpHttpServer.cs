@@ -4,6 +4,7 @@ using Quick.Protocol.Utils;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -26,17 +27,21 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
         private class QpHttpContext
         {
-            private Pipe readPipe;
-            private Pipe writePipe;
+            public string ChannelId { get; set; }
             public string ConnectionInfo { get; set; }
             public Stream Stream { get; set; }
+            private Pipe readPipe;
+            private Pipe writePipe;
+            private QpHttpServerOptions options;
 
-            public QpHttpContext(string connectionInfo, CancellationTokenSource cts)
+            public QpHttpContext(QpHttpServerOptions options, string channelId, string connectionInfo, CancellationTokenSource cts)
             {
+                this.options = options;
+                ChannelId = channelId;
                 ConnectionInfo = connectionInfo;
                 readPipe = new();
                 writePipe = new();
-                Stream = new PipesStream(readPipe, writePipe);
+                Stream = new PipesStream(channelId, readPipe, writePipe);
             }
 
             public async Task OnDataRecvAsync(Stream body)
@@ -47,38 +52,38 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
             public async Task OnGetData(HttpResponse rep)
             {
-                var readCts = new CancellationTokenSource();
-                var readCancallationToken = readCts.Token;
-                var buffer = new byte[100 * 1024];
-                _ = Task.Delay(10 * 1000, readCancallationToken).ContinueWith(t =>
+                try
                 {
-                    if (t.IsCanceled)
-                        return;
+                    var beginTime = DateTime.Now;
+                    var buffer = new byte[100 * 1024];
+                    var readCts = new CancellationTokenSource();
+                    var readCancallationToken = readCts.Token;
+
+                    _ = Task.Delay(options.LongPollingTimeout, readCancallationToken).ContinueWith(t =>
+                    {
+                        if (t.IsCanceled)
+                            return;
+                        readCts.Cancel();
+                    });
+                    var readResult = await writePipe.Reader.ReadAsync(readCancallationToken);
+                    rep.ContentType = "application/octet-stream";
+                    rep.ContentLength = readResult.Buffer.Length;
+                    var currentSeq = readResult.Buffer;
+                    while (currentSeq.Length > 0)
+                    {
+                        var length = Math.Min(buffer.Length, (int)currentSeq.Length);
+                        currentSeq.CopyTo(buffer);
+                        await rep.Body.WriteAsync(buffer, 0, length, readCancallationToken);
+                        currentSeq = currentSeq.Slice(length);
+                    }
+                    writePipe.Reader.AdvanceTo(readResult.Buffer.GetPosition(readResult.Buffer.Length));
                     readCts.Cancel();
+                }
+                catch (OperationCanceledException)
+                {
                     rep.StatusCode = 200;
                     rep.ContentLength = 0;
-                    _ = rep.CompleteAsync();
-                });
-                while (!readCancallationToken.IsCancellationRequested)
-                {
-                    var readResult = await writePipe.Reader.ReadAsync(readCancallationToken);
-                    if (readResult.Buffer.Length > 0)
-                    {
-                        rep.ContentType = "application/octet-stream";
-                        rep.ContentLength = readResult.Buffer.Length;
-                        var currentSeq = readResult.Buffer;
-                        while (currentSeq.Length > 0)
-                        {
-                            var length = Math.Min(buffer.Length, (int)currentSeq.Length);
-                            currentSeq.CopyTo(buffer);
-                            await rep.Body.WriteAsync(buffer, 0, length, readCancallationToken);
-                            currentSeq = currentSeq.Slice(length);
-                        }
-                        writePipe.Reader.AdvanceTo(readResult.Buffer.GetPosition(readResult.Buffer.Length));
-                        readCts.Cancel();
-                        return;
-                    }
-                    await Task.Delay(100);
+                    await rep.CompleteAsync();
                 }
             }
         }
@@ -93,7 +98,21 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             isStarted = true;
             lock (httpContextQueue)
                 httpContextQueue.Clear();
+            ChannelAuchenticateTimeout += OnChannelAuchenticateTimeoutOrDisconnected;
+            ChannelDisconnected += OnChannelAuchenticateTimeoutOrDisconnected;
             base.Start();
+        }
+
+        private void OnChannelAuchenticateTimeoutOrDisconnected(object sender, QpServerChannel e)
+        {
+            var stream = e.GetStream();
+            if (stream == null)
+                return;
+            if (stream is not PipesStream pipesStream)
+                return;
+            var channelId = pipesStream.ChannelId;
+            lock (httpContextDict)
+                httpContextDict.Remove(channelId);
         }
 
         public async Task OnNewConnection(string channelId, ConnectionInfo connectionInfo)
@@ -103,7 +122,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                 return;
             var connectionInfoStr = $"HTTP:{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
             var cts = new CancellationTokenSource();
-            var qpHttpContext = new QpHttpContext(connectionInfoStr, cts);
+            var qpHttpContext = new QpHttpContext(options, channelId, connectionInfoStr, cts);
             lock (httpContextDict)
                 httpContextDict[channelId] = qpHttpContext;
             lock (httpContextQueue)
@@ -118,6 +137,8 @@ namespace Quick.Protocol.Http.Server.AspNetCore
         public override void Stop()
         {
             isStarted = false;
+            ChannelAuchenticateTimeout -= OnChannelAuchenticateTimeoutOrDisconnected;
+            ChannelDisconnected -= OnChannelAuchenticateTimeoutOrDisconnected;
             lock (httpContextQueue)
                 httpContextQueue.Clear();
             base.Stop();

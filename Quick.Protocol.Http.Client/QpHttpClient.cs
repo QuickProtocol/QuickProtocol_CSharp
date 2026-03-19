@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -22,7 +23,7 @@ public class QpHttpClient : QpClient
 
     protected override async Task<Stream> InnerConnectAsync()
     {
-        recvClient = new();
+        recvClient = new() { Timeout = TimeSpan.FromMilliseconds(options.HttpClientTimeout) };
         var url = options.Url;
         if (url.StartsWith("qp."))
             url = url.Substring(3);
@@ -34,7 +35,7 @@ public class QpHttpClient : QpClient
                 throw new IOException($"{rep.StatusCode} {rep.ReasonPhrase}");
             var channelId = await rep.Content.ReadAsStringAsync();
             recvClient.DefaultRequestHeaders.Add(QP_CHANNEL_ID, channelId);
-            sendClient = new();
+            sendClient = new() { Timeout = TimeSpan.FromMilliseconds(options.HttpClientTimeout) };
             sendClient.DefaultRequestHeaders.Add(QP_CHANNEL_ID, channelId);
         }
         catch

@@ -9,11 +9,13 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 {
     internal class PipesStream : Stream
     {
+        public string ChannelId { get; private set; }
         private Pipe readPipe;
         private Pipe writePipe;
 
-        public PipesStream(Pipe readPipe, Pipe writePipe)
+        public PipesStream(string channelId, Pipe readPipe, Pipe writePipe)
         {
+            ChannelId = channelId;
             this.readPipe = readPipe;
             this.writePipe = writePipe;
         }

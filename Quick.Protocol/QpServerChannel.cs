@@ -22,6 +22,7 @@ namespace Quick.Protocol
         private readonly List<NoticeHandlerManager> authedNoticeHandlerManagerList = null;
 
         public override string ChannelName => channelName;
+        public Stream GetStream() => stream;
 
         /// <summary>
         /// 通过认证时
