@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 using Quick.Fields;
-using Quick.Protocol.InterfaceService.JsonConverters;
+using Quick.Protocol.JsonConverters;
 
 namespace Quick.Protocol.InterfaceService;
 

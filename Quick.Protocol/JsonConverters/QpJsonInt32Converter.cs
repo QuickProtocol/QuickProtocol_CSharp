@@ -3,7 +3,7 @@ using System.Text;
 using System;
 using System.Text.Json.Serialization;
 
-namespace Quick.Protocol.InterfaceService.JsonConverters
+namespace Quick.Protocol.JsonConverters
 {
     public class QpJsonInt32Converter : JsonConverter<int>
     {
