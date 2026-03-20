@@ -14,14 +14,8 @@ namespace Quick.Protocol.InterfaceService.Interfaces
         public TcpInterface(QpInterfaceServiceContextOptions interfaceOptions)
         {
             this.interfaceOptions = interfaceOptions;
-            options = new QpTcpServerOptions()
-            {
-                Address = System.Net.IPAddress.Parse(interfaceOptions.Config.TcpListenAddress),
-                Port = interfaceOptions.Config.TcpListenPort,
-                Password = interfaceOptions.Config.Password,
-                InstructionSet = interfaceOptions.InstructionSet,
-                MaxPackageSize = interfaceOptions.Config.MaxPackageSize
-            };
+            options =interfaceOptions.Config.TcpServerOptions;
+            options.InstructionSet = interfaceOptions.InstructionSet;
             if (interfaceOptions.CommandExecuterManager != null)
                 options.RegisterCommandExecuterManager(interfaceOptions.CommandExecuterManager);
             if (interfaceOptions.NoticeHandlerManager != null)
@@ -34,11 +28,11 @@ namespace Quick.Protocol.InterfaceService.Interfaces
             try
             {
                 server.Start();
-                interfaceOptions.Logger?.Invoke($"[{interfaceOptions.InterfaceName}][{INTERFACE_TYPE}]已启动，地址：qp.tcp://{interfaceOptions.Config.TcpListenAddress}:{interfaceOptions.Config.TcpListenPort}");
+                interfaceOptions.Logger?.Invoke($"[{interfaceOptions.InterfaceName}][{INTERFACE_TYPE}]已启动，地址：qp.tcp://{options.Address}:{options.Port}");
             }
             catch (Exception ex)
             {
-                interfaceOptions.Logger?.Invoke($"[{interfaceOptions.InterfaceName}][{INTERFACE_TYPE}]启动失败，地址：qp.tcp://{interfaceOptions.Config.TcpListenAddress}:{interfaceOptions.Config.TcpListenPort}，原因：{ExceptionUtils.GetExceptionMessage(ex)}。");
+                interfaceOptions.Logger?.Invoke($"[{interfaceOptions.InterfaceName}][{INTERFACE_TYPE}]启动失败，地址：qp.tcp://{options.Address}:{options.Port}，原因：{ExceptionUtils.GetExceptionMessage(ex)}。");
                 Stop();
                 return;
             }

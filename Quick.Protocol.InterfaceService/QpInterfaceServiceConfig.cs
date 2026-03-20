@@ -12,150 +12,295 @@ public class QpInterfaceServiceConfig
         [false.ToString()] = "否"
     };
 
-    public string Password { get; set; } = "123456";
-    [JsonConverter(typeof(QpJsonBoolConverter))]
-    public bool WebSocketEnable { get; set; } = false;
-    public string WebSocketPath { get; set; }
-    [JsonConverter(typeof(QpJsonBoolConverter))]
-    public bool PipeEnable { get; set; } = true;
-    public string PipeName { get; set; }
-    [JsonConverter(typeof(QpJsonBoolConverter))]
-    public bool TcpEnable { get; set; } = false;
-    public string TcpListenAddress { get; set; } = "0.0.0.0";
-    [JsonConverter(typeof(QpJsonInt32Converter))]
-    public int TcpListenPort { get; set; }
-    [JsonConverter(typeof(QpJsonInt32Converter))]
-    public int MaxPackageSize { get; set; } = 100 * 1024 * 1024;
+    public WebSocket.Server.AspNetCore.QpWebSocketServerOptions WebSocketServerOptions { get; set; }
+    [JsonIgnore]
+    public bool EnableWebSocket => CanEnableWebSocket && WebSocketServerOptions != null;
+
+    public Pipeline.QpPipelineServerOptions PipelineServerOptions { get; set; }
+    [JsonIgnore]
+    public bool EnablePipeline => CanEnablePipeline && PipelineServerOptions != null;
+
+    public Tcp.QpTcpServerOptions TcpServerOptions { get; set; }
+    [JsonIgnore]
+    public bool EnableTcp => CanEnableTcp && TcpServerOptions != null;
+    public Http.Server.AspNetCore.QpHttpServerOptions HttpServerOptions { get; set; }
+    [JsonIgnore]
+    public bool EnableHttp => CanEnableHttp && HttpServerOptions != null;
 
     public static bool CanEnableWebSocket { get; set; } = true;
-    public static bool CanEnablePipe { get; set; } = true;
+    public static bool CanEnablePipeline { get; set; } = true;
     public static bool CanEnableTcp { get; set; } = true;
+    public static bool CanEnableHttp { get; set; } = true;
 
-    public FieldForGet GetConfigGroup(bool isReadOnly, string id, string name, QpInterfaceServiceConfig defaultModel)
+    public FieldForGet GetCommonConfigGroup(FieldsForPostContainer request, bool isReadOnly, string id, QpInterfaceServiceConfig defaultModel)
     {
-        //WebSocket
-        var webSocketPath = WebSocketPath ?? defaultModel.WebSocketPath;
-        var pipeName = PipeName ?? defaultModel.PipeName;
-        var tcpListenPort = TcpListenPort > 0 ? TcpListenPort : defaultModel.TcpListenPort;
-
-        var list = new List<FieldForGet>
+        var list = new List<FieldForGet>();
+        if (CanEnableWebSocket)
         {
-            new()
+            if(request!=null)
             {
-                Id = nameof(Password),
-                Name = "密码",
-                Description = "默认密码：123456",
-                Input_AllowBlank = false,
-                Type = FieldType.InputPassword,
-                Value = Password,
-                Input_ReadOnly = isReadOnly
-            },
-            new ()
-            {
-                Name = "WebSocket",
-                Type = CanEnableWebSocket? FieldType.ContainerGroup: FieldType.InputHidden,
-                MarginBottom = 1,
-                Children =
-                [
-                    new()
-                    {
-                        Id = nameof(WebSocketEnable),
-                        Name = "启用",
-                        Description = WebSocketEnable ? "接口地址示例：qp.ws://127.0.0.1:8094" + webSocketPath : null,
-                        Input_AllowBlank = false,
-                        Type = FieldType.InputSelect,
-                        Value = WebSocketEnable.ToString(),
-                        PostOnChanged = true,
-                        InputSelect_Options = enableDisableDict,
-                        Input_ReadOnly = isReadOnly
-                    },
-                    new()
-                    {
-                        Id = nameof(WebSocketPath),
-                        Name = "WebSocket路径",
-                        Input_AllowBlank = false,
-                        Type = WebSocketEnable? FieldType.InputText: FieldType.InputHidden,
-                        Value = webSocketPath,
-                        Input_ReadOnly = isReadOnly
-                    }
-                ]
-            },
-            new ()
-            {
-                Name = "管道",
-                Type = CanEnablePipe? FieldType.ContainerGroup: FieldType.InputHidden,
-                MarginBottom = 1,
-                Children =
-                [
-                    new()
-                    {
-                        Id = nameof(PipeEnable),
-                        Name = "启用",
-                        Description = PipeEnable ? $"接口地址示例：qp.pipe://./{pipeName}" : null,
-                        Input_AllowBlank = false,
-                        Type = FieldType.InputSelect,
-                        Value = PipeEnable.ToString(),
-                        PostOnChanged = true,
-                        InputSelect_Options = enableDisableDict,
-                        Input_ReadOnly = isReadOnly
-                    },
-                    new()
-                    {
-                        Id = nameof(PipeName),
-                        Name = "管道名称",
-                        Input_AllowBlank = false,
-                        Type = PipeEnable? FieldType.InputText: FieldType.InputHidden,
-                        Value = pipeName,
-                        Input_ReadOnly = isReadOnly
-                    }
-                ]
-            },
-            new ()
-            {
-                Name = "TCP",
-                Type = CanEnableTcp? FieldType.ContainerGroup: FieldType.InputHidden,
-                MarginBottom = 1,
-                Children =
-                [
-                    new()
-                    {
-                        Id = nameof(TcpEnable),
-                        Name = "启用",
-                        Description = TcpEnable ? $"接口地址示例：qp.tcp://127.0.0.1:{tcpListenPort}" : null,
-                        Input_AllowBlank = false,
-                        Type = FieldType.InputSelect,
-                        Value = TcpEnable.ToString(),
-                        PostOnChanged = true,
-                        InputSelect_Options = enableDisableDict,
-                        Input_ReadOnly = isReadOnly
-                    },
-                    new()
-                    {
-                        Id = nameof(TcpListenAddress),
-                        Name = "主机",
-                        Input_AllowBlank = false,
-                        Type = TcpEnable? FieldType.InputText: FieldType.InputHidden,
-                        Value = TcpListenAddress ?? defaultModel.TcpListenAddress,
-                        Input_ReadOnly = isReadOnly
-                    },
-                    new()
-                    {
-                        Id = nameof(TcpListenPort),
-                        Name = "端口",
-                        Input_AllowBlank = false,
-                        Type = TcpEnable? FieldType.InputNumber: FieldType.InputHidden,
-                        Value = tcpListenPort.ToString(),
-                        Input_ReadOnly = isReadOnly
-                    }
-                ]
+                var currentEnable = bool.Parse(request.GetFieldValue(id, nameof(EnableWebSocket)));
+                if (currentEnable != EnableWebSocket)
+                    WebSocketServerOptions = currentEnable ? new() : null;
             }
+            list.Add(new()
+            {
+                Id = nameof(EnableWebSocket),
+                Name = "启用WebSocket",
+                Input_AllowBlank = false,
+                Type = FieldType.InputSelect,
+                Value = EnableWebSocket.ToString(),
+                PostOnChanged = true,
+                InputSelect_Options = enableDisableDict,
+                Input_ReadOnly = isReadOnly
+            });
+        }
+        if (CanEnablePipeline)
+        {
+            if(request!=null)
+            {
+                var currentEnable = bool.Parse(request.GetFieldValue(id, nameof(EnablePipeline)));
+                if (currentEnable != EnablePipeline)
+                    PipelineServerOptions = currentEnable ? new() : null;
+            }
+            list.Add(new()
+            {
+                Id = nameof(EnablePipeline),
+                Name = "启用管道",
+                Input_AllowBlank = false,
+                Type = FieldType.InputSelect,
+                Value = EnablePipeline.ToString(),
+                PostOnChanged = true,
+                InputSelect_Options = enableDisableDict,
+                Input_ReadOnly = isReadOnly
+            });
+        }
+        if (CanEnableTcp)
+        {
+            if(request!=null)
+            {
+                var currentEnable = bool.Parse(request.GetFieldValue(id, nameof(EnableTcp)));
+                if (currentEnable != EnableTcp)
+                    TcpServerOptions = currentEnable ? new() : null;
+            }
+            list.Add(new()
+            {
+                Id = nameof(EnableTcp),
+                Name = "启用TCP",
+                Input_AllowBlank = false,
+                Type = FieldType.InputSelect,
+                Value = EnableTcp.ToString(),
+                PostOnChanged = true,
+                InputSelect_Options = enableDisableDict,
+                Input_ReadOnly = isReadOnly
+            });
+        }
+        if (CanEnableHttp)
+        {
+            if (request != null)
+            {
+                var currentEnable = bool.Parse(request.GetFieldValue(id, nameof(EnableHttp)));
+                if (currentEnable != EnableHttp)
+                    HttpServerOptions = currentEnable ? new() : null;
+            }
+            list.Add(new()
+            {
+                Id = nameof(EnableHttp),
+                Name = "启用HTTP",
+                Input_AllowBlank = false,
+                Type = FieldType.InputSelect,
+                Value = EnableHttp.ToString(),
+                PostOnChanged = true,
+                InputSelect_Options = enableDisableDict,
+                Input_ReadOnly = isReadOnly
+            });
+        }
+        return new FieldForGet()
+        {
+            Type = FieldType.ContainerGroup,
+            Name = "通用",
+            Children = list.ToArray()
         };
+    }
+
+    public FieldForGet GetWebSocketConfigGroup(bool isReadOnly, QpInterfaceServiceConfig defaultModel)
+    {
+        var password = WebSocketServerOptions?.Password ?? defaultModel?.WebSocketServerOptions?.Password;
+        var path = WebSocketServerOptions?.Path ?? defaultModel?.WebSocketServerOptions?.Path;
+        return new FieldForGet()
+        {
+            Id = nameof(WebSocketServerOptions),
+            Type = FieldType.ContainerGroup,
+            Name = "WebSocket",
+            Children =
+            [
+                new()
+                {
+                    Id = nameof(WebSocketServerOptions.Password),
+                    Name = "密码",
+                    Description = "默认密码：123456",
+                    Input_AllowBlank = false,
+                    Type = FieldType.InputPassword,
+                    Value = password,
+                    Input_ReadOnly = isReadOnly
+                },
+                new()
+                {
+                    Id = nameof(WebSocketServerOptions.Path),
+                    Name = "WebSocket路径",
+                    Description = "接口地址示例：qp.ws://127.0.0.1:8094" + path,
+                    Input_AllowBlank = false,
+                    Type = FieldType.InputText,
+                    Value = path,
+                    Input_ReadOnly = isReadOnly
+                }
+            ]
+        };
+    }
+
+    public FieldForGet GetPipelineConfigGroup(bool isReadOnly, QpInterfaceServiceConfig defaultModel)
+    {
+        var password = PipelineServerOptions?.Password ?? defaultModel?.PipelineServerOptions?.Password;
+        var pipeName = PipelineServerOptions?.PipeName ?? defaultModel?.PipelineServerOptions?.PipeName;
+        return new FieldForGet()
+        {
+            Id = nameof(PipelineServerOptions),
+            Type = FieldType.ContainerGroup,
+            Name = "管道",
+            Children =
+            [
+                new()
+                {
+                    Id = nameof(PipelineServerOptions.Password),
+                    Name = "密码",
+                    Description = "默认密码：123456",
+                    Input_AllowBlank = false,
+                    Type = FieldType.InputPassword,
+                    Value = password,
+                    Input_ReadOnly = isReadOnly
+                },
+                new()
+                {
+                    Id = nameof(PipelineServerOptions.PipeName),
+                    Name = "管道名称",
+                    Description = $"接口地址示例：qp.pipe://./{pipeName}",
+                    Input_AllowBlank = false,
+                    Type = FieldType.InputText,
+                    Value = pipeName,
+                    Input_ReadOnly = isReadOnly
+                }
+            ]
+        };
+    }
+
+    public FieldForGet GetTcpConfigGroup(bool isReadOnly, QpInterfaceServiceConfig defaultModel)
+    {
+        var password = TcpServerOptions?.Password ?? defaultModel?.TcpServerOptions?.Password;
+        var address = TcpServerOptions?.Address ?? defaultModel?.TcpServerOptions?.Address;
+        var port = TcpServerOptions?.Port ?? defaultModel?.TcpServerOptions?.Port;
+        return new FieldForGet()
+        {
+            Id = nameof(TcpServerOptions),
+            Type = FieldType.ContainerGroup,
+            Name = "TCP",
+            Children =
+            [
+                new()
+                {
+                    Id = nameof(TcpServerOptions.Password),
+                    Name = "密码",
+                    Description = "默认密码：123456",
+                    Input_AllowBlank = false,
+                    Type = FieldType.InputPassword,
+                    Value = password,
+                    Input_ReadOnly = isReadOnly
+                },
+                new()
+                {
+                    Id = nameof(TcpServerOptions.Address),
+                    Name = "地址",
+                    Input_AllowBlank = false,
+                    Type = FieldType.InputText,
+                    Value = address,
+                    Input_ReadOnly = isReadOnly
+                },
+                new()
+                {
+                    Id = nameof(TcpServerOptions.Port),
+                    Name = "端口",
+                    Description = $"接口地址示例：qp.tcp://127.0.0.1:{port}",
+                    Input_AllowBlank = false,
+                    Type = FieldType.InputNumber,
+                    Value = port.ToString(),
+                    Input_ReadOnly = isReadOnly
+                }
+            ]
+        };
+    }
+
+    public FieldForGet GetHttpConfigGroup(bool isReadOnly, QpInterfaceServiceConfig defaultModel)
+    {
+        var password = HttpServerOptions?.Password ?? defaultModel?.HttpServerOptions?.Password;
+        var path = HttpServerOptions?.Path ?? defaultModel?.HttpServerOptions?.Path;
+        return new FieldForGet()
+        {
+            Id = nameof(HttpServerOptions),
+            Type = FieldType.ContainerGroup,
+            Name = "HTTP",
+            Children =
+            [
+                new()
+                {
+                    Id = nameof(HttpServerOptions.Password),
+                    Name = "密码",
+                    Description = "默认密码：123456",
+                    Input_AllowBlank = false,
+                    Type = FieldType.InputPassword,
+                    Value = password,
+                    Input_ReadOnly = isReadOnly
+                },
+                new()
+                {
+                    Id = nameof(HttpServerOptions.Path),
+                    Name = "Http路径",
+                    Description = "接口地址示例：qp.http://127.0.0.1:8094" + path,
+                    Input_AllowBlank = false,
+                    Type = FieldType.InputText,
+                    Value = path,
+                    Input_ReadOnly = isReadOnly
+                }
+            ]
+        };
+    }
+
+    public FieldForGet GetConfigGroup(FieldsForPostContainer request, bool isReadOnly, string id, string name, QpInterfaceServiceConfig defaultModel)
+    {
+        var list = new List<FieldForGet>()
+        {
+            GetCommonConfigGroup(request,isReadOnly,id,defaultModel)
+        };
+        if (EnableWebSocket)
+            list.Add(GetWebSocketConfigGroup(isReadOnly, defaultModel));
+        if (EnablePipeline)
+            list.Add(GetPipelineConfigGroup(isReadOnly, defaultModel));
+        if (EnableTcp)
+            list.Add(GetTcpConfigGroup(isReadOnly, defaultModel));
+        if (EnableHttp)
+            list.Add(GetHttpConfigGroup(isReadOnly, defaultModel));
+
         return new FieldForGet()
         {
             Id = id,
-            Type = FieldType.ContainerGroup,
             Name = name,
-            Children = list.ToArray()
+            Type = FieldType.ContainerGroup,
+            Children =
+            [
+                new()
+                {
+                    Type = FieldType.ContainerTab,
+                    Children = list.ToArray()
+                }
+            ]
         };
     }
 }

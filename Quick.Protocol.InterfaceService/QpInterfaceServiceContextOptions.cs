@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Quick.Protocol;
+using Quick.Protocol.Http.Server.AspNetCore;
 using Quick.Protocol.WebSocket.Server.AspNetCore;
 
 namespace Quick.Protocol.InterfaceService
@@ -11,6 +11,8 @@ namespace Quick.Protocol.InterfaceService
         public IApplicationBuilder WebBuilder { get; set; }
         public QpWebSocketServer WebSocketServer { get; set; }
         public QpWebSocketServerOptions WebSocketServerOptions { get; set; }
+        public QpHttpServer HttpServer { get; set; }
+        public QpHttpServerOptions HttpServerOptions { get; set; }
         public CommandExecuterManager CommandExecuterManager { get; set; }
         public NoticeHandlerManager NoticeHandlerManager { get; set; }
         public Action<string> Logger { get; set; }

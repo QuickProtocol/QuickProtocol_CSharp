@@ -3,6 +3,7 @@ using System.IO.Ports;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Quick.Protocol.JsonConverters;
 
 namespace Quick.Protocol.SerialPort
 {
@@ -26,18 +27,22 @@ namespace Quick.Protocol.SerialPort
         /// <summary>
         /// 波特率
         /// </summary>
+        [JsonConverter(typeof(QpJsonInt32Converter))]
         public int BaudRate { get; internal set; } = 9600;
         /// <summary>
         /// 奇偶校验位
         /// </summary>
+        [JsonConverter(typeof(JsonStringEnumConverter<Parity>))]
         public Parity Parity { get; internal set; } = Parity.None;
         /// <summary>
         /// 数据位
         /// </summary>
+        [JsonConverter(typeof(QpJsonInt32Converter))]
         public int DataBits { get; internal set; } = 8;
         /// <summary>
         /// 停止位
         /// </summary>
+        [JsonConverter(typeof(JsonStringEnumConverter<StopBits>))]
         public StopBits StopBits { get; internal set; } = StopBits.One;
 
         public override void Check()

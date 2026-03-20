@@ -1,6 +1,7 @@
 ﻿using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Quick.Protocol.JsonConverters;
 
 namespace Quick.Protocol.Http.Server.AspNetCore
 {
@@ -43,10 +44,12 @@ namespace Quick.Protocol.Http.Server.AspNetCore
         /// <summary>
         /// 长轮循超时时间
         /// </summary>
+        [JsonConverter(typeof(QpJsonInt32Converter))]
         public int LongPollingTimeout { get; set; } = 100 * 1000;
         /// <summary>
         /// 最大HTTP响应大小
         /// </summary>
+        [JsonConverter(typeof(QpJsonInt32Converter))]
         public int MaxHttpResponseSize { get; set; } = 100 * 1024;
 
         public override QpServer CreateServer()

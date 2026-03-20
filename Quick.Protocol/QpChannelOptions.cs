@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Quick.Protocol.JsonConverters;
 
 namespace Quick.Protocol
 {
@@ -29,6 +30,7 @@ namespace Quick.Protocol
         /// 心跳间隔，为发送或接收超时中小的值的三分一
         /// </summary>
         [Browsable(false)]
+        [JsonIgnore]
         public int HeartBeatInterval => InternalTransportTimeout / 3;
 
         /// <summary>
@@ -64,10 +66,12 @@ namespace Quick.Protocol
         /// </summary>
         [Category("高级")]
         [DisplayName("最大包大小")]
+        [JsonConverter(typeof(QpJsonInt32Converter))]
         public int MaxPackageSize { get; set; } = 10 * 1024 * 1024;
         
         [Category("高级")]
         [DisplayName("是否启用网络统计")]
+        [JsonConverter(typeof(QpJsonBoolConverter))]
         public bool EnableNetstat { get; set; } = true;
 
         public virtual void Check()
@@ -84,6 +88,7 @@ namespace Quick.Protocol
         /// </summary>
         [Category("高级")]
         [DisplayName("是否触发通知数据包接收事件")]
+        [JsonConverter(typeof(QpJsonBoolConverter))]
         public bool RaiseNoticePackageReceivedEvent { get; set; } = true;
 
         /// <summary>

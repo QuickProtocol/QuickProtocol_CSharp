@@ -11,8 +11,8 @@ namespace Quick.Protocol.InterfaceService.Interfaces
         public WebSocketInterface(QpInterfaceServiceContextOptions interfaceOptions)
         {
             this.interfaceOptions = interfaceOptions;
-            interfaceOptions.WebSocketServerOptions.Password = interfaceOptions.Config.Password;
-            interfaceOptions.WebSocketServerOptions.MaxPackageSize = interfaceOptions.Config.MaxPackageSize;
+            interfaceOptions.WebSocketServerOptions.Password = interfaceOptions.Config.WebSocketServerOptions.Password;
+            interfaceOptions.WebSocketServerOptions.MaxPackageSize = interfaceOptions.Config.WebSocketServerOptions.MaxPackageSize;
             if (interfaceOptions.CommandExecuterManager != null && !interfaceOptions.WebSocketServerOptions.CommandExecuterManagerList.Contains(interfaceOptions.CommandExecuterManager))
                 interfaceOptions.WebSocketServerOptions.RegisterCommandExecuterManager(interfaceOptions.CommandExecuterManager);
             if (interfaceOptions.NoticeHandlerManager != null && !interfaceOptions.WebSocketServerOptions.NoticeHandlerManagerList.Contains(interfaceOptions.NoticeHandlerManager))
@@ -21,7 +21,7 @@ namespace Quick.Protocol.InterfaceService.Interfaces
 
         public void Start()
         {
-            var wsUrl = $"qp.ws://xxx.xxx.xxx.xxx:xxx{interfaceOptions.Config.WebSocketPath}";
+            var wsUrl = $"qp.ws://xxx.xxx.xxx.xxx:xxx{interfaceOptions.Config.WebSocketServerOptions.Path}";
             try
             {
                 interfaceOptions.WebSocketServer.Start();

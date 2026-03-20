@@ -21,7 +21,7 @@ namespace Quick.Protocol.Tcp
 
         public override void Start()
         {
-            tcpListener = new TcpListener(options.Address, options.Port);
+            tcpListener = new TcpListener(IPAddress.Parse(options.Address), options.Port);
             tcpListener.Start();
             ListenEndPoint = tcpListener.LocalEndpoint;
             base.Start();

@@ -25,6 +25,7 @@
     <ProjectReference Include="..\Quick.Protocol.Pipeline\Quick.Protocol.Pipeline.csproj" />
     <ProjectReference Include="..\Quick.Protocol.Tcp\Quick.Protocol.Tcp.csproj" />
     <ProjectReference Include="..\Quick.Protocol.WebSocket.Server.AspNetCore\Quick.Protocol.WebSocket.Server.AspNetCore.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.Http.Server.AspNetCore\Quick.Protocol.Http.Server.AspNetCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

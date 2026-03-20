@@ -14,13 +14,8 @@ namespace Quick.Protocol.InterfaceService.Interfaces
         public PipeInterface(QpInterfaceServiceContextOptions interfaceOptions)
         {
             this.interfaceOptions = interfaceOptions;
-            options = new QpPipelineServerOptions()
-            {
-                PipeName = interfaceOptions.Config.PipeName,
-                Password = interfaceOptions.Config.Password,
-                InstructionSet = interfaceOptions.InstructionSet,
-                MaxPackageSize = interfaceOptions.Config.MaxPackageSize
-            };
+            options = interfaceOptions.Config.PipelineServerOptions;
+            options.InstructionSet = interfaceOptions.InstructionSet;
             if (interfaceOptions.CommandExecuterManager != null)
                 options.RegisterCommandExecuterManager(interfaceOptions.CommandExecuterManager);
             if (interfaceOptions.NoticeHandlerManager != null)
@@ -33,11 +28,11 @@ namespace Quick.Protocol.InterfaceService.Interfaces
             try
             {
                 server.Start();
-                interfaceOptions.Logger?.Invoke($"[{interfaceOptions.InterfaceName}][{INTERFACE_TYPE}]已启动，地址：qp.pipe://./{interfaceOptions.Config.PipeName}");
+                interfaceOptions.Logger?.Invoke($"[{interfaceOptions.InterfaceName}][{INTERFACE_TYPE}]已启动，地址：qp.pipe://./{options.PipeName}");
             }
             catch (Exception ex)
             {
-                interfaceOptions.Logger?.Invoke($"[{interfaceOptions.InterfaceName}][{INTERFACE_TYPE}]启动失败，地址：qp.pipe://./{interfaceOptions.Config.PipeName}，原因：{ExceptionUtils.GetExceptionMessage(ex)}。");
+                interfaceOptions.Logger?.Invoke($"[{interfaceOptions.InterfaceName}][{INTERFACE_TYPE}]启动失败，地址：qp.pipe://./{options.PipeName}，原因：{ExceptionUtils.GetExceptionMessage(ex)}。");
                 Stop();
                 return;
             }

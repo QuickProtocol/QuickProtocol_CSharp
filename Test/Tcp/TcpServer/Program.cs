@@ -21,7 +21,7 @@ namespace TcpServer
 
             var server = new Quick.Protocol.Tcp.QpTcpServer(new Quick.Protocol.Tcp.QpTcpServerOptions()
             {
-                Address = IPAddress.Loopback,
+                Address = IPAddress.Loopback.ToString(),
                 Port = 3011,
                 Password = "HelloQP",
                 ServerProgram = nameof(TcpServer) + " 1.0",
