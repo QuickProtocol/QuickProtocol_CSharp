@@ -6,26 +6,20 @@ namespace Quick.Protocol.InterfaceService;
 
 public class QpInterfaceServiceConfig
 {
-    private Dictionary<string, string> enableDisableDict = new Dictionary<string, string>()
-    {
-        [true.ToString()] = "是",
-        [false.ToString()] = "否"
-    };
-
     public WebSocket.Server.AspNetCore.QpWebSocketServerOptions WebSocketServerOptions { get; set; }
-    [JsonIgnore]
-    public bool EnableWebSocket => CanEnableWebSocket && WebSocketServerOptions != null;
+    [JsonConverter(typeof(QpJsonBoolConverter))]
+    public bool EnableWebSocket { get; set; }
 
     public Pipeline.QpPipelineServerOptions PipelineServerOptions { get; set; }
-    [JsonIgnore]
-    public bool EnablePipeline => CanEnablePipeline && PipelineServerOptions != null;
+    [JsonConverter(typeof(QpJsonBoolConverter))]
+    public bool EnablePipeline{ get; set; }
 
     public Tcp.QpTcpServerOptions TcpServerOptions { get; set; }
-    [JsonIgnore]
-    public bool EnableTcp => CanEnableTcp && TcpServerOptions != null;
+    [JsonConverter(typeof(QpJsonBoolConverter))]
+    public bool EnableTcp{ get; set; }
     public Http.Server.AspNetCore.QpHttpServerOptions HttpServerOptions { get; set; }
-    [JsonIgnore]
-    public bool EnableHttp => CanEnableHttp && HttpServerOptions != null;
+    [JsonConverter(typeof(QpJsonBoolConverter))]
+    public bool EnableHttp{ get; set; }
 
     public static bool CanEnableWebSocket { get; set; } = true;
     public static bool CanEnablePipeline { get; set; } = true;
@@ -37,81 +31,53 @@ public class QpInterfaceServiceConfig
         var list = new List<FieldForGet>();
         if (CanEnableWebSocket)
         {
-            if(request!=null)
-            {
-                var currentEnable = bool.Parse(request.GetFieldValue(id, nameof(EnableWebSocket)));
-                if (currentEnable != EnableWebSocket)
-                    WebSocketServerOptions = currentEnable ? new() : null;
-            }
             list.Add(new()
             {
                 Id = nameof(EnableWebSocket),
                 Name = "启用WebSocket",
                 Input_AllowBlank = false,
-                Type = FieldType.InputSelect,
+                Type = FieldType.InputCheckbox,
                 Value = EnableWebSocket.ToString(),
                 PostOnChanged = true,
-                InputSelect_Options = enableDisableDict,
                 Input_ReadOnly = isReadOnly
             });
         }
         if (CanEnablePipeline)
         {
-            if(request!=null)
-            {
-                var currentEnable = bool.Parse(request.GetFieldValue(id, nameof(EnablePipeline)));
-                if (currentEnable != EnablePipeline)
-                    PipelineServerOptions = currentEnable ? new() : null;
-            }
             list.Add(new()
             {
                 Id = nameof(EnablePipeline),
                 Name = "启用管道",
                 Input_AllowBlank = false,
-                Type = FieldType.InputSelect,
+                Type = FieldType.InputCheckbox,
                 Value = EnablePipeline.ToString(),
                 PostOnChanged = true,
-                InputSelect_Options = enableDisableDict,
                 Input_ReadOnly = isReadOnly
             });
         }
         if (CanEnableTcp)
         {
-            if(request!=null)
-            {
-                var currentEnable = bool.Parse(request.GetFieldValue(id, nameof(EnableTcp)));
-                if (currentEnable != EnableTcp)
-                    TcpServerOptions = currentEnable ? new() : null;
-            }
             list.Add(new()
             {
                 Id = nameof(EnableTcp),
                 Name = "启用TCP",
                 Input_AllowBlank = false,
-                Type = FieldType.InputSelect,
+                Type = FieldType.InputCheckbox,
                 Value = EnableTcp.ToString(),
                 PostOnChanged = true,
-                InputSelect_Options = enableDisableDict,
                 Input_ReadOnly = isReadOnly
             });
         }
         if (CanEnableHttp)
         {
-            if (request != null)
-            {
-                var currentEnable = bool.Parse(request.GetFieldValue(id, nameof(EnableHttp)));
-                if (currentEnable != EnableHttp)
-                    HttpServerOptions = currentEnable ? new() : null;
-            }
             list.Add(new()
             {
                 Id = nameof(EnableHttp),
                 Name = "启用HTTP",
                 Input_AllowBlank = false,
-                Type = FieldType.InputSelect,
+                Type = FieldType.InputCheckbox,
                 Value = EnableHttp.ToString(),
                 PostOnChanged = true,
-                InputSelect_Options = enableDisableDict,
                 Input_ReadOnly = isReadOnly
             });
         }
@@ -279,13 +245,13 @@ public class QpInterfaceServiceConfig
         {
             GetCommonConfigGroup(request,isReadOnly,id,defaultModel)
         };
-        if (EnableWebSocket)
+        if (CanEnableWebSocket && EnableWebSocket)
             list.Add(GetWebSocketConfigGroup(isReadOnly, defaultModel));
-        if (EnablePipeline)
+        if (CanEnablePipeline && EnablePipeline)
             list.Add(GetPipelineConfigGroup(isReadOnly, defaultModel));
-        if (EnableTcp)
+        if (CanEnableTcp && EnableTcp)
             list.Add(GetTcpConfigGroup(isReadOnly, defaultModel));
-        if (EnableHttp)
+        if (CanEnableHttp && EnableHttp)
             list.Add(GetHttpConfigGroup(isReadOnly, defaultModel));
 
         return new FieldForGet()
