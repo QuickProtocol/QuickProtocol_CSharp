@@ -26,7 +26,7 @@ public class QpInterfaceServiceConfig
     public static bool CanEnableTcp { get; set; } = true;
     public static bool CanEnableHttp { get; set; } = true;
 
-    private FieldForGet GetCommonConfigGroup(FieldsForPostContainer request, bool isReadOnly, string id, QpInterfaceServiceConfig defaultModel)
+    private FieldForGet GetCommonConfigGroup(bool isReadOnly)
     {
         var list = new List<FieldForGet>();
         if (CanEnableWebSocket)
@@ -243,7 +243,7 @@ public class QpInterfaceServiceConfig
     {
         var list = new List<FieldForGet>()
         {
-            GetCommonConfigGroup(request,isReadOnly,id,defaultModel)
+            GetCommonConfigGroup(isReadOnly)
         };
         if (CanEnableWebSocket && EnableWebSocket)
             list.Add(GetWebSocketConfigGroup(isReadOnly, defaultModel));
