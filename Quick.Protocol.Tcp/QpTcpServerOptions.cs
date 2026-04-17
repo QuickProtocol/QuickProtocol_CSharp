@@ -34,8 +34,8 @@ namespace Quick.Protocol.Tcp
             base.Check();
             if (Address == null)
                 throw new ArgumentNullException(nameof(Address));
-            if (IPAddress.TryParse(Address, out _))
-                throw new ArgumentException("Address format error.", nameof(Address));
+            if (!IPAddress.TryParse(Address, out _))
+                throw new ArgumentException($"Address[{Address}] format error.", nameof(Address));
             if (Port < 0 || Port > 65535)
                 throw new ArgumentException("Port must between 0 and 65535", nameof(Port));
         }
