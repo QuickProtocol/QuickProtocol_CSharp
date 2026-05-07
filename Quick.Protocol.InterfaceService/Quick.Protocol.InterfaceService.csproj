@@ -30,7 +30,6 @@
 
   <ItemGroup>
     <PackageReference Include="Quick.Fields" Version="2026.3.321" />
-    <PackageReference Include="Quick.Utils" Version="2026.1.226" />
   </ItemGroup>
 
 </Project>
