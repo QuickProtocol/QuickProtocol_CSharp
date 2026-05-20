@@ -1,0 +1,62 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:converters="using:QpTestClient2.Converters"
+		xmlns:vm="using:QpTestClient2.ViewModels"
+		xmlns:quick_sms="using:Quick.Sms"
+		xmlns:controls="using:QpTestClient2.Controls"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		Icon="Logo.ico"
+		Title="{Binding Title}"
+		x:Name="win"
+		x:DataType="vm:MainWindowViewModel"
+        x:Class="QpTestClient2.MainWindow">
+	<Window.Resources>
+		<converters:BooleanReverseConverter x:Key="booleanReverseConverter" />
+	</Window.Resources>
+	<ScrollViewer VerticalScrollBarVisibility="Auto">
+		<Panel>
+			<Grid ColumnDefinitions="*,*"
+				  Height="{Binding #win.Height}"
+				  IsEnabled="{Binding MessageBox.IsVisible,Converter={StaticResource booleanReverseConverter}}">
+				<Grid.Styles>
+					<Style Selector="Border.card">
+						<Setter Property="Padding" Value="8"/>
+					</Style>
+					<Style Selector="Border.row">
+						<Setter Property="Margin" Value="0,2,0,2"/>
+					</Style>
+					<Style Selector="Label">
+						<Setter Property="CornerRadius" Value="4" />
+						<Setter Property="Background" Value="LightGray" />
+						<Setter Property="MinWidth" Value="80"/>
+						<Setter Property="VerticalAlignment" Value="Stretch"/>
+						<Setter Property="VerticalContentAlignment" Value="Center"/>
+					</Style>
+					<Style Selector="Label>AccessText">
+						<Setter Property="HorizontalAlignment" Value="Right"/>
+						<Setter Property="Padding" Value="8,0" />
+					</Style>
+				</Grid.Styles>
+				<Border Classes="card" Grid.Column="0">
+					<TabControl>
+						<TabItem Header="连接">
+							<StackPanel Orientation="Vertical">
+								
+							</StackPanel>
+						</TabItem>
+					</TabControl>
+				</Border>
+				<Border Classes="card" Grid.Column="1">
+					<TabControl>
+						<TabItem Header="内容">
+							
+						</TabItem>
+					</TabControl>
+				</Border>
+			</Grid>
+			<controls:MessageBox DataContext="{Binding MessageBox}"></controls:MessageBox>
+		</Panel>
+	</ScrollViewer>
+</Window>
