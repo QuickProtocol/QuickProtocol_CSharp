@@ -18,7 +18,7 @@ namespace QpTestClient.ViewModels
 
 
 
-        public ObservableCollection<TreeViewItem> treeNodeCollection { get; set; } = new ObservableCollection<TreeViewItem>();
+        public ObservableCollection<ConnectionContext> treeNodeCollection { get; set; } = new ObservableCollection<ConnectionContext>();
         private Window window;
         public string Title { get; set; }
 
@@ -96,15 +96,10 @@ namespace QpTestClient.ViewModels
         {
             if (connectionInfo == null)
                 return;
-            var connectionNode = new TreeViewItem()
-            {
-                 Name = connectionInfo.Name
-            };
-            treeNodeCollection.Add(connectionNode);
-            connectionNode.Tag = new ConnectionContext(connectionInfo);
+            treeNodeCollection.Add(new ConnectionContext(connectionInfo));
             //connectionNode.ContextMenuStrip = cmsConnection;
-            if (connectionInfo.Instructions != null)
-                displayInstructions(connectionNode, connectionInfo.Instructions);
+            //if (connectionInfo.Instructions != null)
+            //    displayInstructions(connectionNode, connectionInfo.Instructions);
         }
 
         private async void executeImportCommand(object e)

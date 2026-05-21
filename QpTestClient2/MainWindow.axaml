@@ -1,10 +1,14 @@
 <Window xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="using:QpTestClient"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="using:QpTestClient.Models"
+        xmlns:qp="using:Quick.Protocol"
 		xmlns:converters="using:QpTestClient.Converters"
 		xmlns:vm="using:QpTestClient.ViewModels"
 		xmlns:quick_sms="using:Quick.Sms"
+        xmlns:system="using:System"
 		xmlns:controls="using:QpTestClient.Controls"
 		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 		Icon="Logo.ico"
@@ -29,7 +33,7 @@
 					<MenuItem Header="关于(_A)"/>
 				</MenuItem>
 			</Menu>
-			<Grid ColumnDefinitions="*,Auto,*">
+			<Grid ColumnDefinitions="*,Auto,3*">
 				<Grid.Styles>
 					<Style Selector="Border.card">
 						<Setter Property="Padding" Value="8"/>
@@ -50,7 +54,25 @@
 					</Style>
 				</Grid.Styles>
 				<Border Classes="card" Grid.Column="0">
-					<TreeView ItemsSource="{Binding treeNodeCollection}"></TreeView>
+					<TreeView ItemsSource="{Binding treeNodeCollection}">						
+						<TreeView.DataTemplates>
+							<TreeDataTemplate DataType="local:ConnectionContext" ItemsSource="{Binding Instructions}">
+								<TextBlock Text="{Binding ConnectionInfo.Name}"></TextBlock>
+							</TreeDataTemplate>
+							<TreeDataTemplate DataType="models:QpInstructionContext" ItemsSource="{Binding Children}">
+								<TextBlock Text="{Binding Model.Name}"></TextBlock>
+							</TreeDataTemplate>
+							<TreeDataTemplate DataType="models:TreeNode" ItemsSource="{Binding Children}">
+								<TextBlock Text="{Binding Name}"></TextBlock>
+							</TreeDataTemplate>
+							<DataTemplate DataType="qp:QpNoticeInfo">
+								<TextBlock Text="{Binding Name}"></TextBlock>
+							</DataTemplate>
+							<DataTemplate DataType="qp:QpCommandInfo">
+								<TextBlock Text="{Binding Name}"></TextBlock>
+							</DataTemplate>
+						</TreeView.DataTemplates>
+					</TreeView>
 				</Border>
 
 				<GridSplitter Grid.Column="1" Background="LightGray" ResizeDirection="Columns" />

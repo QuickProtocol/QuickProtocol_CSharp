@@ -1,6 +1,8 @@
-﻿using Quick.Protocol;
+﻿using QpTestClient.Models;
+using Quick.Protocol;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,9 +29,15 @@ namespace QpTestClient
         public QpClient QpClient { get; private set; }
         public event EventHandler Disconnected;
 
+        public ObservableCollection<QpInstructionContext> Instructions { get; set; }
+
         public ConnectionContext(TestConnectionInfo connectionInfo)
         {
             ConnectionInfo = connectionInfo;
+            Instructions = new ObservableCollection<QpInstructionContext>();
+            if (connectionInfo.Instructions != null)
+                foreach (var item in connectionInfo.Instructions)
+                    Instructions.Add(new QpInstructionContext(item));
         }
 
         public async Task Connect()
