@@ -2,13 +2,13 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 
-namespace QpTestClient2;
+namespace QpTestClient;
 
 public partial class MainWindow : Window
 {
     public MainWindow()
     {
-        var viewModel = new ViewModels.MainWindowViewModel();
+        var viewModel = new ViewModels.MainWindowViewModel(this);
         DataContext = viewModel;
         InitializeComponent();
     }

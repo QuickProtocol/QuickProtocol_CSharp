@@ -1,7 +1,7 @@
 ﻿using Avalonia.Metadata;
 using System;
 
-namespace QpTestClient2.Converters
+namespace QpTestClient.Converters
 {
     //[System.Windows.Data.ValueConversion(typeof(Boolean?), typeof(Boolean?))]
     public class BooleanReverseConverter : BooleanToTConverter<Boolean?>

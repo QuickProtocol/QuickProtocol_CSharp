@@ -2,6 +2,7 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
@@ -10,19 +11,30 @@
 		<Title>QP测试客户端</Title>
 		<Product>QP测试客户端</Product>
 		<PublishAot>true</PublishAot>
+		<RootNamespace>QpTestClient</RootNamespace>
 	</PropertyGroup>
 
 
 	<ItemGroup>
-		<PackageReference Include="Avalonia" Version="12.0.3" />
-		<PackageReference Include="Avalonia.Desktop" Version="12.0.3" />
-		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.3" />
-		<PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.3" />
+		<PackageReference Include="Avalonia" Version="11.3.16" />
+		<PackageReference Include="Avalonia.Desktop" Version="11.3.16" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.16" />
+		<PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.16" />
+		<PackageReference Include="MessageBox.Avalonia" Version="3.3.1.1" />
 		<PackageReference Include="Quick.AvaloniaFonts.SourceHanSansCN.Slim" Version="1.0.0" />
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.16" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\Quick.Protocol.Pipeline\Quick.Protocol.Pipeline.csproj" />
+		<ProjectReference Include="..\Quick.Protocol.SerialPort\Quick.Protocol.SerialPort.csproj" />
+		<ProjectReference Include="..\Quick.Protocol.Tcp\Quick.Protocol.Tcp.csproj" />
+		<ProjectReference Include="..\Quick.Protocol.WebSocket.Client\Quick.Protocol.WebSocket.Client.csproj" />
+		<ProjectReference Include="..\Quick.Protocol.Http.Client\Quick.Protocol.Http.Client.csproj" />
+		<ProjectReference Include="..\Quick.Protocol\Quick.Protocol.csproj" />
+	</ItemGroup>
+	
 	<ItemGroup>
 	  <AvaloniaResource Include="..\resource\Logo.ico" Link="Logo.ico" />
 	</ItemGroup>

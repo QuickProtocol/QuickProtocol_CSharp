@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Input;
 
-namespace QpTestClient2.ViewModels
+namespace QpTestClient.ViewModels
 {
     public class DelegateCommand : ICommand
     {

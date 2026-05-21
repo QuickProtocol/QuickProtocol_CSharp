@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace QpTestClient2.ViewModels
+namespace QpTestClient.ViewModels
 {
     /// <summary>
     /// 通知属性更改的模型基类

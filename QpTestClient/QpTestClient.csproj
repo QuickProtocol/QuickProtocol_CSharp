@@ -57,8 +57,4 @@
 		<ProjectReference Include="..\Quick.Protocol\Quick.Protocol.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Properties\" />
-	</ItemGroup>
-
 </Project>

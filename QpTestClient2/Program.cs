@@ -1,7 +1,7 @@
 ﻿using System;
 using Avalonia;
 
-namespace QpTestClient2;
+namespace QpTestClient;
 
 class Program
 {
@@ -15,6 +15,14 @@ class Program
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
     {
+        Quick.Protocol.Pipeline.QpPipelineClientOptions.RegisterUriSchema();
+        Quick.Protocol.Tcp.QpTcpClientOptions.RegisterUriSchema();
+        Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions.RegisterUriSchema();
+        Quick.Protocol.Http.Client.QpHttpClientOptions.RegisterUriSchema();
+        Quick.Protocol.SerialPort.QpSerialPortClientOptions.RegisterUriSchema();
+
+        QpClientTypeManager.Instance.Init();
+
         var appBuilder = AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .LogToTrace();

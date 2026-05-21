@@ -1,7 +1,7 @@
 ﻿using Avalonia.Data.Converters;
 using System;
 
-namespace QpTestClient2.Converters
+namespace QpTestClient.Converters
 {
     public abstract class BooleanToTConverter<T> : IValueConverter
     {

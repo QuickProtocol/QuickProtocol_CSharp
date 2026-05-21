@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:converters="using:QpTestClient.Converters"
+		xmlns:vm="using:QpTestClient.ViewModels"
+		xmlns:controls="using:QpTestClient.Controls"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="QpTestClient.Controls.AotPropertyGrid">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"></RowDefinition>
+			<RowDefinition Height="Auto" MinHeight="60"></RowDefinition>
+		</Grid.RowDefinitions>
+		<StackPanel x:Name="pnlProperty">
+		</StackPanel>
+		<GridSplitter Grid.Column="1" Background="Gray" ResizeDirection="Columns" />
+		<StackPanel Grid.Row="1">
+			<Label x:Name="lblPropertyName"></Label>
+			<Label x:Name="lblPropertyDescription"></Label>
+		</StackPanel>
+	</Grid>
+</UserControl>
