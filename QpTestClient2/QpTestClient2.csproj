@@ -13,6 +13,13 @@
 		<PublishAot>true</PublishAot>
 		<RootNamespace>QpTestClient</RootNamespace>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Resources\command.svg" />
+	  <None Remove="Resources\connect.svg" />
+	  <None Remove="Resources\folder.svg" />
+	  <None Remove="Resources\instruction.svg" />
+	  <None Remove="Resources\notice.svg" />
+	</ItemGroup>
 
 
 	<ItemGroup>
@@ -24,6 +31,7 @@
 		<PackageReference Include="Quick.AvaloniaFonts.SourceHanSansCN.Slim" Version="1.0.0" />
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.16" />
+		<PackageReference Include="Svg.Controls.Skia.Avalonia" Version="11.3.9.5" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -37,5 +45,10 @@
 	
 	<ItemGroup>
 	  <AvaloniaResource Include="..\resource\Logo.ico" Link="Logo.ico" />
+	  <AvaloniaResource Include="Resources\command.svg" />
+	  <AvaloniaResource Include="Resources\connect.svg" />
+	  <AvaloniaResource Include="Resources\folder.svg" />
+	  <AvaloniaResource Include="Resources\instruction.svg" />
+	  <AvaloniaResource Include="Resources\notice.svg" />
 	</ItemGroup>
 </Project>

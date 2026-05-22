@@ -1,14 +1,10 @@
 ﻿using QpTestClient.Models;
 using Quick.Protocol;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QpTestClient
 {
-    public class ConnectionContext : IDisposable
+    public class ConnectionContext : PropertyNotifyModel, IDisposable
     {
         public TestConnectionInfo ConnectionInfo { get; private set; }
 
@@ -23,6 +19,18 @@ namespace QpTestClient
                 _Connected = value;
                 if (!value)
                     Disconnected?.Invoke(this, EventArgs.Empty);
+                RaisePropertyChanged(nameof(Css));
+                RaisePropertyChanged();
+            }
+        }
+
+        public string Css
+        {
+            get
+            {
+                if(Connected)
+                    return "path {fill:#4DA1FF;}";
+                return "path {fill:#FF4DA1;}";
             }
         }
 

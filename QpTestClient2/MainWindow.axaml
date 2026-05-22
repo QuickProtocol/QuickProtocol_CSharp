@@ -57,19 +57,47 @@
 					<TreeView ItemsSource="{Binding treeNodeCollection}">						
 						<TreeView.DataTemplates>
 							<TreeDataTemplate DataType="local:ConnectionContext" ItemsSource="{Binding Instructions}">
-								<TextBlock Text="{Binding ConnectionInfo.Name}"></TextBlock>
+								<StackPanel Orientation="Horizontal" Background="#00FFFFFF">
+									<StackPanel.ContextMenu>
+										<ContextMenu>
+											<MenuItem Header="连接" IsVisible="{Binding !Connected}" Command="{Binding #win.((vm:MainWindowViewModel)DataContext).ConnectCommand}" CommandParameter="{Binding}" />
+											<MenuItem Header="断开" IsVisible="{Binding Connected}" Command="{Binding #win.((vm:MainWindowViewModel)DataContext).DisconnectCommand}" CommandParameter="{Binding}" />
+											<Separator />
+											<MenuItem Header="编辑" IsVisible="{Binding !Connected}" />
+											<MenuItem Header="删除" IsVisible="{Binding !Connected}" />
+											<MenuItem Header="接收心跳..." IsVisible="{Binding Connected}" Command="{Binding #win.((vm:MainWindowViewModel)DataContext).RecvHeartbeatCommand}" CommandParameter="{Binding}" />
+											<Separator />
+											<MenuItem Header="导出" Command="{Binding #win.((vm:MainWindowViewModel)DataContext).ExportCommand}" CommandParameter="{Binding}" />
+											<MenuItem Header="生成URL" />
+										</ContextMenu>
+									</StackPanel.ContextMenu>
+									<Svg Width="16" Height="16" Margin="0 0 2 0" Path="/Resources/connect.svg" Css="{Binding Css}" />
+									<TextBlock Text="{Binding ConnectionInfo.Name}"></TextBlock>
+								</StackPanel>
 							</TreeDataTemplate>
 							<TreeDataTemplate DataType="models:QpInstructionContext" ItemsSource="{Binding Children}">
-								<TextBlock Text="{Binding Model.Name}"></TextBlock>
+								<StackPanel Orientation="Horizontal">
+									<Svg Width="16" Height="16" Margin="0 0 2 0" Path="/Resources/instruction.svg" />
+									<TextBlock Text="{Binding Model.Name}"></TextBlock>
+								</StackPanel>
 							</TreeDataTemplate>
 							<TreeDataTemplate DataType="models:TreeNode" ItemsSource="{Binding Children}">
-								<TextBlock Text="{Binding Name}"></TextBlock>
+								<StackPanel Orientation="Horizontal">
+									<Svg Width="16" Height="16" Margin="0 0 2 0" Path="/Resources/folder.svg" />
+									<TextBlock Text="{Binding Name}"></TextBlock>
+								</StackPanel>
 							</TreeDataTemplate>
 							<DataTemplate DataType="qp:QpNoticeInfo">
-								<TextBlock Text="{Binding Name}"></TextBlock>
+								<StackPanel Orientation="Horizontal">
+									<Svg Width="16" Height="16" Margin="0 0 2 0" Path="/Resources/notice.svg" />
+									<TextBlock Text="{Binding Name}"></TextBlock>
+								</StackPanel>
 							</DataTemplate>
 							<DataTemplate DataType="qp:QpCommandInfo">
-								<TextBlock Text="{Binding Name}"></TextBlock>
+								<StackPanel Orientation="Horizontal">
+									<Svg Width="16" Height="16" Margin="0 0 2 0" Path="/Resources/command.svg" />
+									<TextBlock Text="{Binding Name}"></TextBlock>
+								</StackPanel>
 							</DataTemplate>
 						</TreeView.DataTemplates>
 					</TreeView>
