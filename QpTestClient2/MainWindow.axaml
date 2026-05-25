@@ -27,7 +27,7 @@
 					<MenuItem Header="添加(_A)..."/>
 					<MenuItem Header="导入(_I)..." Command="{Binding ImportCommand}"/>
 					<Separator/>
-					<MenuItem Header="退出(_E)"/>
+					<MenuItem Header="退出(_E)" Command="{Binding ExitCommand}"/>
 				</MenuItem>
 				<MenuItem Header="帮助(_H)">
 					<MenuItem Header="关于(_A)"/>
@@ -64,7 +64,7 @@
 											<MenuItem Header="断开" IsVisible="{Binding Connected}" Command="{Binding #win.((vm:MainWindowViewModel)DataContext).DisconnectCommand}" CommandParameter="{Binding}" />
 											<Separator />
 											<MenuItem Header="编辑" IsVisible="{Binding !Connected}" />
-											<MenuItem Header="删除" IsVisible="{Binding !Connected}" />
+											<MenuItem Header="删除" IsVisible="{Binding !Connected}" Command="{Binding #win.((vm:MainWindowViewModel)DataContext).DeleteCommand}" CommandParameter="{Binding}" />
 											<MenuItem Header="接收心跳..." IsVisible="{Binding Connected}" Command="{Binding #win.((vm:MainWindowViewModel)DataContext).RecvHeartbeatCommand}" CommandParameter="{Binding}" />
 											<Separator />
 											<MenuItem Header="导出" Command="{Binding #win.((vm:MainWindowViewModel)DataContext).ExportCommand}" CommandParameter="{Binding}" />

@@ -21,8 +21,10 @@ namespace QpTestClient.ViewModels
         public string Title { get; set; }
 
         public ICommand ImportCommand { get; set; }
+        public ICommand ExitCommand { get; set; }        
         public ICommand ConnectCommand { get; set; }
         public ICommand DisconnectCommand { get; set; }
+        public ICommand DeleteCommand { get; set; }        
         public ICommand RecvHeartbeatCommand { get; set; }
         public ICommand ExportCommand { get; set; }
 
@@ -33,8 +35,10 @@ namespace QpTestClient.ViewModels
             Title = $"{assembly.GetCustomAttribute<AssemblyProductAttribute>().Product} v{assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}";
 
             ImportCommand = new DelegateCommand() { ExecuteCommand = executeImportCommand };
+            ExitCommand = new DelegateCommand() { ExecuteCommand = executeExitCommand };
             ConnectCommand = new DelegateCommand() { ExecuteCommand = executeConnectCommand };
             DisconnectCommand = new DelegateCommand() { ExecuteCommand = executeDisconnectCommand };
+            DeleteCommand = new DelegateCommand() { ExecuteCommand = executeDeleteCommand };
             RecvHeartbeatCommand = new DelegateCommand() { ExecuteCommand = executeRecvHeartbeatCommand };
             ExportCommand = new DelegateCommand() { ExecuteCommand = executeExportCommand };
 
@@ -85,6 +89,11 @@ namespace QpTestClient.ViewModels
             }
         }
 
+        private async void executeExitCommand(object obj)
+        {
+            Environment.Exit(0);            
+        }
+
         private async void executeConnectCommand(object obj)
         {
             var connectionContext=  (ConnectionContext)obj;
@@ -107,11 +116,24 @@ namespace QpTestClient.ViewModels
                     .ShowAsPopupAsync(window);
             }
         }
-
+        
         private void executeDisconnectCommand(object obj)
         {
             var connectionContext = (ConnectionContext)obj;
             connectionContext.Dispose();
+        }
+
+        private async void executeDeleteCommand(object obj)
+        {
+            var connectionContext = (ConnectionContext)obj;
+            var ret = await MessageBoxManager.GetMessageBoxStandard(null, $"确定要删除连接[{connectionContext.ConnectionInfo.Name}]?    ", MsBox.Avalonia.Enums.ButtonEnum.OkCancel, MsBox.Avalonia.Enums.Icon.Question)
+                    .ShowAsPopupAsync(window);
+            if (ret == MsBox.Avalonia.Enums.ButtonResult.Cancel)
+                return;
+
+            connectionContext.Dispose();
+            treeNodeCollection.Remove(connectionContext);
+            QpdFileUtils.DeleteQpbFile(connectionContext.ConnectionInfo);
         }
 
         private void executeRecvHeartbeatCommand(object obj)
