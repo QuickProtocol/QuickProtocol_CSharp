@@ -1,25 +1,20 @@
 ﻿using Quick.Protocol.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Quick.Protocol
 {
     public abstract class QpClient : QpChannel
     {
         private CancellationTokenSource cts = null;
-        public QpClientOptions Options { get; private set; }
+
+        public new QpClientOptions Options { get; private set; }
 
         public QpClient(QpClientOptions options)
             : base(options)
         {
             options.Check();
-            this.Options = options;
+            Options = options;
         }
+
         public override string ChannelName => Options.ToUri().ToString();
         protected abstract Task<Stream> InnerConnectAsync();
 
@@ -47,7 +42,7 @@ namespace Quick.Protocol
                 InstructionIds = Options.InstructionSet.Select(t => t.Id).ToArray()
             }).ConfigureAwait(false);
             AuthenticateQuestion = repConnect.Question;
-            
+
             var repAuth = await SendCommand(new Commands.Authenticate.Request()
             {
                 Answer = CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password)
@@ -70,6 +65,7 @@ namespace Quick.Protocol
                 _ = BeginHeartBeat(token);
             }
         }
+
         protected override void OnWriteError(Exception exception)
         {
             base.OnWriteError(exception);

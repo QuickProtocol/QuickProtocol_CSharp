@@ -14,17 +14,23 @@ namespace Quick.Protocol
         /// <summary>
         /// 内部是否压缩
         /// </summary>
-        internal virtual bool InternalCompress { get; set; } = false;
+        [Browsable(false)]
+        [JsonIgnore]
+        public virtual bool InternalCompress { get; internal set; } = false;
 
         /// <summary>
         /// 内部是否加密
         /// </summary>
-        internal virtual bool InternalEncrypt { get; set; } = false;
+        [Browsable(false)]
+        [JsonIgnore]
+        public virtual bool InternalEncrypt { get; internal set; } = false;
 
         /// <summary>
         /// 内部接收超时(默认15秒)
         /// </summary>
-        internal int InternalTransportTimeout { get; set; } = 15 * 1000;
+        [Browsable(false)]
+        [JsonIgnore]
+        public int InternalTransportTimeout { get; internal set; } = 15 * 1000;
 
         [Browsable(false)] [JsonIgnore] public QpLogger Logger { get; set; }
 

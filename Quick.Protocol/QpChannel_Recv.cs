@@ -28,7 +28,7 @@ namespace Quick.Protocol
         protected virtual void OnReadError(Exception exception)
         {
             LastException = exception;
-            options.Logger?.Log("[ReadError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
+            Options.Logger?.Log("[ReadError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
             InitQpPackageHandler_Stream(null);
             Disconnect();
         }
@@ -55,8 +55,8 @@ namespace Quick.Protocol
 
             //处理通知
             var hasNoticeHandler = false;
-            if (options.NoticeHandlerManagerList != null)
-                foreach (var noticeHandlerManager in options.NoticeHandlerManagerList)
+            if (Options.NoticeHandlerManagerList != null)
+                foreach (var noticeHandlerManager in Options.NoticeHandlerManagerList)
                 {
                     if (noticeHandlerManager.CanHandleNoticed(typeName))
                     {
@@ -67,7 +67,7 @@ namespace Quick.Protocol
                 }
 
             //如果配置了触发NoticePackageReceived事件
-            if (options.RaiseNoticePackageReceivedEvent)
+            if (Options.RaiseNoticePackageReceivedEvent)
             {
                 NoticePackageReceived?.Invoke(this, new NoticePackageReceivedEventArgs()
                 {
@@ -115,8 +115,8 @@ namespace Quick.Protocol
                 });
 
                 var hasCommandExecuter = false;
-                if (options.CommandExecuterManagerList != null)
-                    foreach (var commandExecuterManager in options.CommandExecuterManagerList)
+                if (Options.CommandExecuterManagerList != null)
+                    foreach (var commandExecuterManager in Options.CommandExecuterManagerList)
                     {
                         if (commandExecuterManager.CanExecuteCommand(typeName))
                         {
@@ -178,7 +178,7 @@ namespace Quick.Protocol
             {
                 await Task.Delay(1000, token);
                 var sp = DateTime.Now - lastReadDataTime;
-                if (sp.TotalMilliseconds > options.InternalTransportTimeout)
+                if (sp.TotalMilliseconds > Options.InternalTransportTimeout)
                     throw new TimeoutException();
             }
         }
@@ -199,7 +199,7 @@ namespace Quick.Protocol
                     continue;
                 }
                 lastReadDataTime = DateTime.Now;
-                if (options.EnableNetstat)
+                if (Options.EnableNetstat)
                 {
                     BytesReceived += bytesRead;
                     if (BytesReceived > LONG_HALF_MAX_VALUE)
@@ -229,7 +229,7 @@ namespace Quick.Protocol
                 {
                     var readTask = currentReader.ReadAtLeastAsync(PACKAGE_HEAD_LENGTH, token);
                     var ret = await readTask.AsTask()
-                        .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout), token)
+                        .WaitAsync(TimeSpan.FromMilliseconds(Options.InternalTransportTimeout), token)
                         .ConfigureAwait(false);
                     if (ret.IsCanceled)
                         return;
@@ -250,23 +250,23 @@ namespace Quick.Protocol
                     if (ret.Buffer.Length < packageTotalLength)
                         throw new ProtocolException(ret.Buffer, $"包读取错误！包总长度：{packageTotalLength}，读取数据长度：{ret.Buffer.Length}");
                     var packageBuffer = ret.Buffer.Slice(0, packageTotalLength);
-                    if (options.Logger is { LogRaw: true })
+                    if (Options.Logger is { LogRaw: true })
                     {
                         var sb = new StringBuilder();
                         sb.Append($"{DateTime.Now}: [Recv-Raw]Length: {packageBuffer.Length}");
-                        if (options.Logger.LogContent)
+                        if (Options.Logger.LogContent)
                             sb.Append(", Content: " + Convert.ToHexString(packageBuffer.ToArray()));
                         else
                             sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-                        options.Logger.Log(sb.ToString());
+                        Options.Logger.Log(sb.ToString());
                     }
                     packageBodyBuffer = packageBuffer.Slice(PACKAGE_HEAD_LENGTH);
                 }
                 //如果有包体，且启用了压缩或者加密
-                if (packageBodyLength > 0 && (options.InternalCompress || options.InternalEncrypt))
+                if (packageBodyLength > 0 && (Options.InternalCompress || Options.InternalEncrypt))
                 {
                     //如果设置了加密
-                    if (options.InternalEncrypt)
+                    if (Options.InternalEncrypt)
                     {
                         //开始解密
                         var encryptedBuffer = packageBodyBuffer.ToArray();
@@ -281,7 +281,7 @@ namespace Quick.Protocol
                     }
 
                     //如果设置了压缩
-                    if (options.InternalCompress)
+                    if (Options.InternalCompress)
                     {
                         //准备管道
                         if (decompressPipe == null)
@@ -316,25 +316,25 @@ namespace Quick.Protocol
 
         protected void HandlePackage(QpPackageType packageType, ReadOnlySequence<byte> bodyBuffer)
         {
-            if (options.Logger is { LogPackage: true })
+            if (Options.Logger is { LogPackage: true })
             {
                 var sb = new StringBuilder();
                 sb.Append($"{DateTime.Now}: [Recv-Package]Type: {packageType}");
                 if (bodyBuffer.Length > 0)
                 {
-                    if (options.Logger.LogContent)
+                    if (Options.Logger.LogContent)
                         sb.Append(", Content: "+Convert.ToHexString(bodyBuffer.ToArray()));
                     else
                         sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
                 }
-                options.Logger.Log(sb.ToString());
+                Options.Logger.Log(sb.ToString());
             }
             switch (packageType)
             {
                 case QpPackageType.Heartbeat:
                     {
-                        if (options.Logger is { LogHeartbeat: true })
-                            options.Logger.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
+                        if (Options.Logger is { LogHeartbeat: true })
+                            Options.Logger.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
                         HeartbeatPackageReceived?.Invoke(this, EventArgs.Empty);
                         break;
                     }
@@ -348,8 +348,8 @@ namespace Quick.Protocol
 
                         var content = encoding.GetString(bodyBuffer);
 
-                        if (options.Logger is { LogNotice: true })
-                            options.Logger.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, options
+                        if (Options.Logger is { LogNotice: true })
+                            Options.Logger.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
                                 .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
 
                         OnRawNoticePackageReceived(typeName, content);
@@ -371,8 +371,8 @@ namespace Quick.Protocol
 
                         var content = encoding.GetString(bodyBuffer);
 
-                        if (options.Logger!=null && options.Logger.LogCommand)
-                            options.Logger.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, options
+                        if (Options.Logger!=null && Options.Logger.LogCommand)
+                            Options.Logger.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
                                 .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
                         //异步执行命令请求事件处理器
                         Task.Run(() => OnCommandRequestReceived(commandId, typeName, content));
@@ -410,8 +410,8 @@ namespace Quick.Protocol
                             message = encoding.GetString(bodyBuffer);
                         }
 
-                        if (options.Logger is { LogCommand: true })
-                            options.Logger.Log("{0}: [Recv-CommandResponsePackage]Code:{1}，Message：{2}，Type:{3},Content:{4}", DateTime.Now, code, message, typeName, options
+                        if (Options.Logger is { LogCommand: true })
+                            Options.Logger.Log("{0}: [Recv-CommandResponsePackage]Code:{1}，Message：{2}，Type:{3},Content:{4}", DateTime.Now, code, message, typeName, Options
                                 .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
 
                         OnCommandResponseReceived(commandId, code, message, typeName, content);
@@ -450,8 +450,8 @@ namespace Quick.Protocol
             var packageTotalLength = ByteUtils.B2I_BE(buffer, 0);
             if (packageTotalLength < PACKAGE_HEAD_LENGTH)
                 throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]必须大于等于{PACKAGE_HEAD_LENGTH}！");
-            if (packageTotalLength > options.MaxPackageSize)
-                throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]大于最大包大小[{options.MaxPackageSize}]");
+            if (packageTotalLength > Options.MaxPackageSize)
+                throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]大于最大包大小[{Options.MaxPackageSize}]");
             return packageTotalLength;
         }
 

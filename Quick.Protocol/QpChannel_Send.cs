@@ -20,7 +20,7 @@ namespace Quick.Protocol
         protected virtual void OnWriteError(Exception exception)
         {
             LastException = exception;
-            options.Logger?.Log("[WriteError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
+            Options.Logger?.Log("[WriteError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
             InitQpPackageHandler_Stream(null);
             Disconnect();
         }
@@ -46,27 +46,27 @@ namespace Quick.Protocol
 
             int packageTotalLength = PACKAGE_HEAD_LENGTH + packageBodyLength;
 
-            if (options.Logger is { LogPackage: true })
+            if (Options.Logger is { LogPackage: true })
             {
                 var sb = new StringBuilder();
                 sb.Append($"{DateTime.Now}: [Send-Package]Type: {packageType}");
                 if (packageBodyLength > 0)
                 {
-                    if (options.Logger.LogContent)
+                    if (Options.Logger.LogContent)
                         sb.Append(", Content: " + Convert.ToHexString(packageBodyBuffer.ToArray()));
                     else
                         sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
                 }
 
-                options.Logger.Log(sb.ToString());
+                Options.Logger.Log(sb.ToString());
             }
 
             //如果有包体，且启用了压缩或者加密
             if (packageBodyLength > 0 && !ignoreCompressAndEncrypt &&
-                (options.InternalCompress || options.InternalEncrypt))
+                (Options.InternalCompress || Options.InternalEncrypt))
             {
                 //如果压缩
-                if (options.InternalCompress)
+                if (Options.InternalCompress)
                 {
                     if (writeCompressPipe == null)
                         writeCompressPipe = new Pipe();
@@ -93,7 +93,7 @@ namespace Quick.Protocol
                 }
 
                 //如果加密
-                if (options.InternalEncrypt)
+                if (Options.InternalEncrypt)
                 {
                     try
                     {
@@ -140,24 +140,24 @@ namespace Quick.Protocol
                 var rawRet = await reader.ReadAtLeastAsync(packageTotalLength);
                 using (var sequenceByteStream = new ReadOnlySequenceByteStream(rawRet.Buffer))
                     await sequenceByteStream.CopyToAsync(stream)
-                        .WaitAsync(TimeSpan.FromMilliseconds(options.InternalTransportTimeout))
+                        .WaitAsync(TimeSpan.FromMilliseconds(Options.InternalTransportTimeout))
                         .ConfigureAwait(false);
-                if (options.EnableNetstat)
+                if (Options.EnableNetstat)
                 {
                     BytesSent += packageTotalLength;
                     if (BytesSent > LONG_HALF_MAX_VALUE)
                         BytesSent = 0;
                 }
 
-                if (options.Logger != null && options.Logger.LogRaw)
+                if (Options.Logger != null && Options.Logger.LogRaw)
                 {
                     var sb = new StringBuilder();
                     sb.Append($"{DateTime.Now}: [Send-Raw]Length: {packageTotalLength}");
-                    if (options.Logger.LogContent)
+                    if (Options.Logger.LogContent)
                         sb.Append(", Content: " + Convert.ToHexString(rawRet.Buffer.ToArray()));
                     else
                         sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-                    options.Logger.Log(sb.ToString());
+                    Options.Logger.Log(sb.ToString());
                 }
 
                 reader.AdvanceTo(rawRet.Buffer.End);
@@ -187,7 +187,7 @@ namespace Quick.Protocol
         private async Task UseSendPipe(QpPackageType packageType, Func<Pipe, Task<int>> packageBodyHandler = null,
             bool ignoreCompressAndEncrypt = false)
         {
-            if (options.EnableNetstat)
+            if (Options.EnableNetstat)
                 Interlocked.Increment(ref PackageSendQueueCount);
             await sendLock.WaitAsync().ConfigureAwait(false);
             try
@@ -205,7 +205,7 @@ namespace Quick.Protocol
             finally
             {
                 sendLock.Release();
-                if (options.EnableNetstat)
+                if (Options.EnableNetstat)
                     Interlocked.Decrement(ref PackageSendQueueCount);
             }
         }
@@ -254,8 +254,8 @@ namespace Quick.Protocol
                     }
                 }
                 _ = writer.FlushAsync();
-                if (options.Logger != null && options.Logger.LogNotice)
-                    options.Logger.Log("{0}: [Send-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, options
+                if (Options.Logger != null && Options.Logger.LogNotice)
+                    Options.Logger.Log("{0}: [Send-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
                         .Logger.LogContent
                         ? content
                         : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
@@ -304,9 +304,9 @@ namespace Quick.Protocol
                     bodyLength += contentLength;
                 }
                 _ = writer.FlushAsync();
-                if (options.Logger is { LogCommand: true })
-                    options.Logger.Log("{0}: [Send-CommandRequestPackage]CommandId:{1},Type:{2},Content:{3}",
-                        DateTime.Now, commandId, typeName, options
+                if (Options.Logger is { LogCommand: true })
+                    Options.Logger.Log("{0}: [Send-CommandRequestPackage]CommandId:{1},Type:{2},Content:{3}",
+                        DateTime.Now, commandId, typeName, Options
                             .Logger.LogContent
                             ? content
                             : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
@@ -360,10 +360,10 @@ namespace Quick.Protocol
                         bodyLength += contentLength;
                     }
 
-                    if (options.Logger is { LogCommand: true })
-                        options.Logger.Log(
+                    if (Options.Logger is { LogCommand: true })
+                        Options.Logger.Log(
                             "{0}: [Send-CommandResponsePackage]CommandId:{1},Code:{2},Type:{3},Content:{4}",
-                            DateTime.Now, commandId, code, typeName, options
+                            DateTime.Now, commandId, code, typeName, Options
                                 .Logger.LogContent
                                 ? content
                                 : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
@@ -378,8 +378,8 @@ namespace Quick.Protocol
                         writer.Advance(messageLength);
                         bodyLength += messageLength;
                     }
-                    if (options.Logger is { LogNotice: true })
-                        options.Logger.Log("{0}: [Send-CommandResponsePackage]CommandId:{1},Code:{2},Message:{3}",
+                    if (Options.Logger is { LogNotice: true })
+                        Options.Logger.Log("{0}: [Send-CommandResponsePackage]CommandId:{1},Code:{2},Message:{3}",
                             DateTime.Now, commandId, code, message);
                 }
 

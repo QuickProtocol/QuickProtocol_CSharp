@@ -1,15 +1,7 @@
 ﻿using Quick.Protocol.Utils;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Buffers;
 
 
 namespace Quick.Protocol
@@ -28,15 +20,10 @@ namespace Quick.Protocol
         /// 命令编号长度(字节数)
         /// </summary>
         public const int COMMAND_ID_LENGTH = 16;
-
-        /// <summary>
-        /// 心跳包
-        /// </summary>
-        private static readonly byte[] HEARTBEAT_PACKAGHE = new byte[] { 0, 0, 0, 5, 0 };
         private const int minimumBufferSize = 1024;
         
         private Stream QpPackageHandler_Stream;
-        private readonly QpChannelOptions options;
+        public QpChannelOptions Options { get; }
         private DateTime lastSendPackageTime = DateTime.MinValue;
 
         private readonly byte[] passwordMd5Buffer;
@@ -175,8 +162,8 @@ namespace Quick.Protocol
             var stream = QpPackageHandler_Stream;
             if (stream != null && stream.CanTimeout)
             {
-                stream.WriteTimeout = options.InternalTransportTimeout;
-                stream.ReadTimeout = options.InternalTransportTimeout;
+                stream.WriteTimeout = Options.InternalTransportTimeout;
+                stream.ReadTimeout = Options.InternalTransportTimeout;
             }
         }
 
@@ -196,7 +183,7 @@ namespace Quick.Protocol
 
         public QpChannel(QpChannelOptions options)
         {
-            this.options = options;
+            this.Options = options;
             passwordMd5Buffer = CryptographyUtils.ComputeMD5Hash(Encoding.UTF8.GetBytes(options.Password)).Take(8).ToArray();
 
             DES des = DES.Create();
@@ -241,8 +228,8 @@ namespace Quick.Protocol
             try { preStream?.Dispose(); }
             catch { }
 
-            options.InternalCompress = false;
-            options.InternalEncrypt = false;
+            Options.InternalCompress = false;
+            Options.InternalEncrypt = false;
             ChangeTransportTimeout();
         }
 
@@ -273,16 +260,16 @@ namespace Quick.Protocol
 
         protected async Task BeginHeartBeat(CancellationToken cancellationToken)
         {
-            if (options.HeartBeatInterval < 0)
+            if (Options.HeartBeatInterval < 0)
                 return;
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(options.HeartBeatInterval, cancellationToken);
+                await Task.Delay(Options.HeartBeatInterval, cancellationToken);
                 if (QpPackageHandler_Stream == null)
                     return;
                 var lastSendPackageToNowSeconds = (DateTime.Now - lastSendPackageTime).TotalMilliseconds;
                 //如果离最后一次发送数据包的时间大于心跳间隔，则发送心跳包
-                if (lastSendPackageToNowSeconds > options.HeartBeatInterval)
+                if (lastSendPackageToNowSeconds > Options.HeartBeatInterval)
                 {
                     await SendHeartbeatPackage();
                 }
@@ -291,7 +278,7 @@ namespace Quick.Protocol
 
         protected async Task BeginNetstat(CancellationToken cancellationToken)
         {
-            if (!options.EnableNetstat)
+            if (!Options.EnableNetstat)
                 return;
 
             while (!cancellationToken.IsCancellationRequested)
@@ -313,7 +300,7 @@ namespace Quick.Protocol
         /// <param name="commandExecuterManager"></param>
         public void AddCommandExecuterManager(CommandExecuterManager commandExecuterManager)
         {
-            options.RegisterCommandExecuterManager(commandExecuterManager);
+            Options.RegisterCommandExecuterManager(commandExecuterManager);
         }
 
         /// <summary>
@@ -322,7 +309,7 @@ namespace Quick.Protocol
         /// <param name="noticeHandlerManager"></param>
         public void AddNoticeHandlerManager(NoticeHandlerManager noticeHandlerManager)
         {
-            options.RegisterNoticeHandlerManager(noticeHandlerManager);
+            Options.RegisterNoticeHandlerManager(noticeHandlerManager);
         }
 
         public Task<CommandResponseTypeNameAndContent> SendCommand(string requestTypeName, string requestContent, int timeout = 30 * 1000)
@@ -351,11 +338,11 @@ namespace Quick.Protocol
                 }
                 catch
                 {
-                    if (options.Logger is { LogCommand: true })
-                        options.Logger.Log(
+                    if (Options.Logger is { LogCommand: true })
+                        Options.Logger.Log(
                             "{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now,
                             commandContext.Id, requestTypeName,
-                            options.Logger.LogContent ? requestContent : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                            Options.Logger.LogContent ? requestContent : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
 
                     if (commandContext.ResponseTask.Status == TaskStatus.Created)
                     {
@@ -401,8 +388,8 @@ namespace Quick.Protocol
                 }
                 catch
                 {
-                    if (options.Logger is { LogCommand: true })
-                        options.Logger.Log("{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandContext.Id, typeName, options.Logger.LogContent ? requestContent : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                    if (Options.Logger is { LogCommand: true })
+                        Options.Logger.Log("{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandContext.Id, typeName, Options.Logger.LogContent ? requestContent : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
 
                     if (commandContext.ResponseTask.Status == TaskStatus.Created)
                     {

@@ -1,11 +1,4 @@
 ﻿using Quick.Protocol.Exceptions;
-using Quick.Protocol.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Quick.Protocol
 {
@@ -14,7 +7,7 @@ namespace Quick.Protocol
         private readonly Stream stream;
         private readonly CancellationTokenSource cts;
         private readonly CancellationToken serverCancellationToken;
-        private readonly QpServerOptions options;
+        public new QpServerOptions Options { get; }
         private readonly string channelName;
         //通过认证后，才允许使用的命令执行管理器列表
         private readonly List<CommandExecuterManager> authedCommandExecuterManagerList = null;
@@ -38,7 +31,7 @@ namespace Quick.Protocol
         {
             this.stream = stream;
             this.channelName = channelName;
-            this.options = options;
+            Options = options;
             this.authedCommandExecuterManagerList = options.CommandExecuterManagerList;
             this.authedNoticeHandlerManagerList = options.NoticeHandlerManagerList;
             serverCancellationToken = cancellationToken;
@@ -101,7 +94,7 @@ namespace Quick.Protocol
             {
                 foreach (var id in request.InstructionIds.Where(t => !string.IsNullOrEmpty(t)))
                 {
-                    if (!options.InstructionSet.Any(t => t.Id == id))
+                    if (!Options.InstructionSet.Any(t => t.Id == id))
                         throw new CommandException(255, $"Unknown instruction: {id}");
                 }
             }
@@ -114,7 +107,7 @@ namespace Quick.Protocol
 
         private Commands.Authenticate.Response authenticate(QpChannel handler, Commands.Authenticate.Request request)
         {
-            if (Utils.CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + options.Password) != request.Answer)
+            if (Utils.CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password) != request.Answer)
             {
                 _ = Task.Delay(1000).ContinueWith(t =>
                 {
@@ -129,17 +122,17 @@ namespace Quick.Protocol
 
         private Commands.HandShake.Response handShake(QpChannel handler, Commands.HandShake.Request request)
         {
-            options.CommandExecuterManagerList.AddRange(authedCommandExecuterManagerList);
-            options.NoticeHandlerManagerList = authedNoticeHandlerManagerList;
-            options.InternalCompress = request.EnableCompress;
-            options.InternalEncrypt = request.EnableEncrypt;
-            options.InternalTransportTimeout = request.TransportTimeout;
+            Options.CommandExecuterManagerList.AddRange(authedCommandExecuterManagerList);
+            Options.NoticeHandlerManagerList = authedNoticeHandlerManagerList;
+            Options.InternalCompress = request.EnableCompress;
+            Options.InternalEncrypt = request.EnableEncrypt;
+            Options.InternalTransportTimeout = request.TransportTimeout;
 
             //改变传输超时时间
             ChangeTransportTimeout();
 
             //开始心跳
-            if (options.HeartBeatInterval > 0)
+            if (Options.HeartBeatInterval > 0)
                 _ = BeginHeartBeat(cts.Token);
             return new Commands.HandShake.Response();
         }
@@ -148,7 +141,7 @@ namespace Quick.Protocol
         {
             return new Commands.GetQpInstructions.Response()
             {
-                Data = options.InstructionSet
+                Data = Options.InstructionSet
             };
         }
 
@@ -172,14 +165,14 @@ namespace Quick.Protocol
 
         protected override void OnReadError(Exception exception)
         {
-            if (options.ProtocolErrorHandler != null)
+            if (Options.ProtocolErrorHandler != null)
             {
                 if (exception is ProtocolException protocolException)
                 {
-                    if (options.Logger is { LogConnection: true })
-                        options.Logger.Log("[ProtocolErrorHandler]{0}: Begin ProtocolErrorHandler invoke...", DateTime.Now);
+                    if (Options.Logger is { LogConnection: true })
+                        Options.Logger.Log("[ProtocolErrorHandler]{0}: Begin ProtocolErrorHandler invoke...", DateTime.Now);
 
-                    options.ProtocolErrorHandler.Invoke(stream, protocolException.ReadBuffer);
+                    Options.ProtocolErrorHandler.Invoke(stream, protocolException.ReadBuffer);
                     return;
                 }
             }
