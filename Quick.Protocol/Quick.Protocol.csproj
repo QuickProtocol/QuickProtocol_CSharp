@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>true</ImplicitUsings>
 		<PackageProjectUrl>https://github.com/QuickProtocol</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
 		<Copyright />

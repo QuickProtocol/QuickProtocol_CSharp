@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace QpHttpClient
 {
@@ -8,13 +6,6 @@ namespace QpHttpClient
     {
         static void Main(string[] args)
         {
-            Quick.Protocol.Utils.LogUtils.SetConsoleLogHandler();
-            Quick.Protocol.Utils.LogUtils.LogPackage=true;
-            Quick.Protocol.Utils.LogUtils.LogContent=true;
-            Quick.Protocol.Utils.LogUtils.LogConnection = true;
-            Quick.Protocol.Utils.LogUtils.LogHeartbeat = true;
-            Quick.Protocol.Utils.LogUtils.LogCommand  =true;
-
             var client = new Quick.Protocol.Http.Client.QpHttpClient(new Quick.Protocol.Http.Client.QpHttpClientOptions()
             {
                 Url = "qp.http://127.0.0.1:3011/qp_test",

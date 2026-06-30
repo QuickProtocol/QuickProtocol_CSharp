@@ -6,13 +6,6 @@ namespace TcpClient
     {
         static void Main(string[] args)
         {
-            Quick.Protocol.Utils.LogUtils.LogConnection = true;
-            //Quick.Protocol.Utils.LogUtils.LogPackage = true;
-            Quick.Protocol.Utils.LogUtils.LogHeartbeat = true;
-            //Quick.Protocol.Utils.LogUtils.LogNotice = true;
-            //Quick.Protocol.Utils.LogUtils.LogSplit = true;
-            //Quick.Protocol.Utils.LogUtils.LogContent = true;
-
             var client = new Quick.Protocol.Tcp.QpTcpClient(new Quick.Protocol.Tcp.QpTcpClientOptions()
             {
                 Host = "127.0.0.1",

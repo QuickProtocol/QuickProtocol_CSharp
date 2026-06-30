@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Quick.Protocol;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace QpHttpServer.Core
 {
@@ -12,14 +9,7 @@ namespace QpHttpServer.Core
         private Quick.Protocol.Http.Server.AspNetCore.QpHttpServer server;
 
         public QpTestContext(IApplicationBuilder app)
-        {
-            Quick.Protocol.Utils.LogUtils.SetConsoleLogHandler();
-            Quick.Protocol.Utils.LogUtils.LogPackage=true;
-            Quick.Protocol.Utils.LogUtils.LogContent=true;
-            Quick.Protocol.Utils.LogUtils.LogConnection = true;
-            Quick.Protocol.Utils.LogUtils.LogHeartbeat = true;
-            Quick.Protocol.Utils.LogUtils.LogCommand  =true;
-            
+        {            
             app.UseQuickProtocolHttp(new Quick.Protocol.Http.Server.AspNetCore.QpHttpServerOptions()
             {
                 Path = "/qp_test",

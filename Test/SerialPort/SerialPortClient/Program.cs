@@ -6,11 +6,6 @@ namespace SerialPortClient
     {
         static void Main(string[] args)
         {
-            Quick.Protocol.Utils.LogUtils.SetConsoleLogHandler();
-            Quick.Protocol.Utils.LogUtils.LogConnection = true;
-            Quick.Protocol.Utils.LogUtils.LogPackage = true;
-            Quick.Protocol.Utils.LogUtils.LogContent = true;
-
             var client = new Quick.Protocol.SerialPort.QpSerialPortClient(new Quick.Protocol.SerialPort.QpSerialPortClientOptions()
             {
                 PortName = "COM3",

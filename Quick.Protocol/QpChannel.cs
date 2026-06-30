@@ -351,8 +351,11 @@ namespace Quick.Protocol
                 }
                 catch
                 {
-                    if (LogUtils.LogCommand)
-                        LogUtils.Log("{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandContext.Id, requestTypeName, LogUtils.LogContent ? requestContent : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                    if (options.Logger is { LogCommand: true })
+                        options.Logger.Log(
+                            "{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now,
+                            commandContext.Id, requestTypeName,
+                            options.Logger.LogContent ? requestContent : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
 
                     if (commandContext.ResponseTask.Status == TaskStatus.Created)
                     {
@@ -398,8 +401,8 @@ namespace Quick.Protocol
                 }
                 catch
                 {
-                    if (LogUtils.LogCommand)
-                        LogUtils.Log("{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandContext.Id, typeName, LogUtils.LogContent ? requestContent : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                    if (options.Logger is { LogCommand: true })
+                        options.Logger.Log("{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandContext.Id, typeName, options.Logger.LogContent ? requestContent : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
 
                     if (commandContext.ResponseTask.Status == TaskStatus.Created)
                     {

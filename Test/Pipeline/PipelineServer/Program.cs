@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Quick.Protocol;
+﻿using Quick.Protocol;
 using System;
 
 namespace PipelineServer
@@ -8,13 +7,6 @@ namespace PipelineServer
     {
         static void Main(string[] args)
         {
-            Quick.Protocol.Utils.LogUtils.LogConnection = true;
-            //Quick.Protocol.Utils.LogUtils.LogPackage = true;
-            //Quick.Protocol.Utils.LogUtils.LogHeartbeat = true;
-            //Quick.Protocol.Utils.LogUtils.LogNotice = true;
-            //Quick.Protocol.Utils.LogUtils.LogSplit = true;
-            //Quick.Protocol.Utils.LogUtils.LogContent = true;
-
             var commandExecuterManager = new CommandExecuterManager();
             commandExecuterManager.Register<Quick.Protocol.Commands.PrivateCommand.Request, Quick.Protocol.Commands.PrivateCommand.Response>(
                 (handler, req) =>

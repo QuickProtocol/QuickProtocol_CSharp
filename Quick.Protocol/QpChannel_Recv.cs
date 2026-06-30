@@ -28,7 +28,7 @@ namespace Quick.Protocol
         protected virtual void OnReadError(Exception exception)
         {
             LastException = exception;
-            LogUtils.Log("[ReadError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
+            options.Logger?.Log("[ReadError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
             InitQpPackageHandler_Stream(null);
             Disconnect();
         }
@@ -250,15 +250,15 @@ namespace Quick.Protocol
                     if (ret.Buffer.Length < packageTotalLength)
                         throw new ProtocolException(ret.Buffer, $"包读取错误！包总长度：{packageTotalLength}，读取数据长度：{ret.Buffer.Length}");
                     var packageBuffer = ret.Buffer.Slice(0, packageTotalLength);
-                    if (LogUtils.LogRaw)
+                    if (options.Logger is { LogRaw: true })
                     {
                         var sb = new StringBuilder();
                         sb.Append($"{DateTime.Now}: [Recv-Raw]Length: {packageBuffer.Length}");
-                        if (LogUtils.LogContent)
+                        if (options.Logger.LogContent)
                             sb.Append(", Content: " + Convert.ToHexString(packageBuffer.ToArray()));
                         else
-                            sb.Append(LogUtils.NOT_SHOW_CONTENT_MESSAGE);
-                        LogUtils.Log(sb.ToString());
+                            sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                        options.Logger.Log(sb.ToString());
                     }
                     packageBodyBuffer = packageBuffer.Slice(PACKAGE_HEAD_LENGTH);
                 }
@@ -316,26 +316,26 @@ namespace Quick.Protocol
 
         protected void HandlePackage(QpPackageType packageType, ReadOnlySequence<byte> bodyBuffer)
         {
-            if (LogUtils.LogPackage)
+            if (options.Logger is { LogPackage: true })
             {
                 var sb = new StringBuilder();
                 sb.Append($"{DateTime.Now}: [Recv-Package]Type: {packageType}");
                 if (bodyBuffer.Length > 0)
                 {
-                    if (LogUtils.LogContent)
+                    if (options.Logger.LogContent)
                         sb.Append(", Content: "+Convert.ToHexString(bodyBuffer.ToArray()));
                     else
-                        sb.Append(LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                        sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
                 }
-                LogUtils.Log(sb.ToString());
+                options.Logger.Log(sb.ToString());
             }
             switch (packageType)
             {
                 case QpPackageType.Heartbeat:
                     {
-                        if (LogUtils.LogHeartbeat)
-                            LogUtils.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
-                        HeartbeatPackageReceived?.Invoke(this, QpEventArgs.Empty);
+                        if (options.Logger is { LogHeartbeat: true })
+                            options.Logger.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
+                        HeartbeatPackageReceived?.Invoke(this, EventArgs.Empty);
                         break;
                     }
                 case QpPackageType.Notice:
@@ -348,8 +348,9 @@ namespace Quick.Protocol
 
                         var content = encoding.GetString(bodyBuffer);
 
-                        if (LogUtils.LogNotice)
-                            LogUtils.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                        if (options.Logger is { LogNotice: true })
+                            options.Logger.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, options
+                                .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
 
                         OnRawNoticePackageReceived(typeName, content);
                         break;
@@ -370,8 +371,9 @@ namespace Quick.Protocol
 
                         var content = encoding.GetString(bodyBuffer);
 
-                        if (LogUtils.LogCommand)
-                            LogUtils.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                        if (options.Logger!=null && options.Logger.LogCommand)
+                            options.Logger.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, options
+                                .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
                         //异步执行命令请求事件处理器
                         Task.Run(() => OnCommandRequestReceived(commandId, typeName, content));
                         break;
@@ -408,8 +410,9 @@ namespace Quick.Protocol
                             message = encoding.GetString(bodyBuffer);
                         }
 
-                        if (LogUtils.LogCommand)
-                            LogUtils.Log("{0}: [Recv-CommandResponsePackage]Code:{1}，Message：{2}，Type:{3},Content:{4}", DateTime.Now, code, message, typeName, LogUtils.LogContent ? content : LogUtils.NOT_SHOW_CONTENT_MESSAGE);
+                        if (options.Logger is { LogCommand: true })
+                            options.Logger.Log("{0}: [Recv-CommandResponsePackage]Code:{1}，Message：{2}，Type:{3},Content:{4}", DateTime.Now, code, message, typeName, options
+                                .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
 
                         OnCommandResponseReceived(commandId, code, message, typeName, content);
                         break;

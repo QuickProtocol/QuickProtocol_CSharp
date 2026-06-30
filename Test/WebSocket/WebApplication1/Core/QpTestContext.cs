@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Quick.Protocol;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace WebApplication1.Core
 {
@@ -12,13 +9,7 @@ namespace WebApplication1.Core
         private Quick.Protocol.WebSocket.Server.AspNetCore.QpWebSocketServer server;
 
         public QpTestContext(IApplicationBuilder app)
-        {
-            //Quick.Protocol.Utils.LogUtils.SetConsoleLogHandler();
-            Quick.Protocol.Utils.LogUtils.LogPackage=true;
-            Quick.Protocol.Utils.LogUtils.LogContent=true;
-            Quick.Protocol.Utils.LogUtils.LogConnection = true;
-            Quick.Protocol.Utils.LogUtils.LogHeartbeat = true;
-            
+        {            
             app.UseQuickProtocol(new Quick.Protocol.WebSocket.Server.AspNetCore.QpWebSocketServerOptions()
             {
                 Path = "/qp_test",

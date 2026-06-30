@@ -21,8 +21,7 @@ namespace Quick.Protocol.SerialPort
 
         protected override async Task<Stream> InnerConnectAsync()
         {
-            if (LogUtils.LogConnection)
-                LogUtils.Log($"Opening SerialPort[{options.PortName}]...");
+            Console.WriteLine($"Opening SerialPort[{options.PortName}]...");
             serialPort = new System.IO.Ports.SerialPort(options.PortName,
                                                             options.BaudRate,
                                                             options.Parity,
@@ -37,8 +36,7 @@ namespace Quick.Protocol.SerialPort
                 serialPort.Dispose();
                 throw;
             }
-            if (LogUtils.LogConnection)
-                LogUtils.Log($"SerialPort[{options.PortName}] open success.");
+            Console.WriteLine($"SerialPort[{options.PortName}] open success.");
             serialPort.WriteTimeout = options.TransportTimeout;
             serialPort.ReadTimeout = options.TransportTimeout;
             return serialPort.BaseStream;

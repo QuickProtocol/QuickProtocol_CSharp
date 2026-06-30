@@ -1,9 +1,6 @@
-﻿using Quick.Protocol.Utils;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,14 +41,12 @@ namespace Quick.Protocol.Tcp
                 try
                 {
                     var remoteEndPointStr = "TCP:" + tcpClient.Client.RemoteEndPoint.ToString();
-                    if (LogUtils.LogConnection)
-                        LogUtils.Log("[Connection]{0} connected.", remoteEndPointStr);
+                    Console.WriteLine("[Connection]{0} connected.", remoteEndPointStr);
                     OnNewChannelConnected(tcpClient.GetStream(), remoteEndPointStr, token);
                 }
                 catch (Exception ex)
                 {
-                    if (LogUtils.LogConnection)
-                        LogUtils.Log("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                    Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                     try { tcpClient.Close(); }
                     catch { }
                 }

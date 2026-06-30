@@ -72,8 +72,8 @@ namespace Quick.Protocol
                     if (t.IsCanceled
                     || IsConnected)
                         return;
-                    if (LogUtils.LogConnection)
-                        LogUtils.Log("[Connection]{0} Authenticate timeout.", channelName);
+                    if (options.Logger is { LogConnection: true })
+                        options.Logger.Log("[Connection]{0} Authenticate timeout.", channelName);
 
                     if (stream != null)
                     {
@@ -174,11 +174,10 @@ namespace Quick.Protocol
         {
             if (options.ProtocolErrorHandler != null)
             {
-                if (exception is ProtocolException)
+                if (exception is ProtocolException protocolException)
                 {
-                    var protocolException = (ProtocolException)exception;
-                    if (LogUtils.LogConnection)
-                        LogUtils.Log("[ProtocolErrorHandler]{0}: Begin ProtocolErrorHandler invoke...", DateTime.Now);
+                    if (options.Logger is { LogConnection: true })
+                        options.Logger.Log("[ProtocolErrorHandler]{0}: Begin ProtocolErrorHandler invoke...", DateTime.Now);
 
                     options.ProtocolErrorHandler.Invoke(stream, protocolException.ReadBuffer);
                     return;

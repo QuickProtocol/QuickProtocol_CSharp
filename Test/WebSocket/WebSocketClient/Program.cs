@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace WebSocketClient
 {
@@ -8,10 +6,6 @@ namespace WebSocketClient
     {
         static void Main(string[] args)
         {
-            Quick.Protocol.Utils.LogUtils.LogConnection = true;
-            Quick.Protocol.Utils.LogUtils.LogPackage = true;
-            Quick.Protocol.Utils.LogUtils.LogHeartbeat = true;
-
             var client = new Quick.Protocol.WebSocket.Client.QpWebSocketClient(new Quick.Protocol.WebSocket.Client.QpWebSocketClientOptions()
             {
                 Url = "qp.ws://127.0.0.1:3011/qp_test",

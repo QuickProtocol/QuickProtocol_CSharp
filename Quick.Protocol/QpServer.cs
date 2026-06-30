@@ -66,15 +66,15 @@ namespace Quick.Protocol
             var channel = new QpServerChannel(stream, channelName, token, options.Clone(), readFromStreamReturnZeroMeansFault);
 
             //认证超时
-            channel.AuchenticateTimeout += (sender, e) =>
+            channel.AuchenticateTimeout += (_, _) =>
             {
-                if (LogUtils.LogConnection)
-                    LogUtils.Log("[Connection]{0} Auchenticate timeout.", channelName);
+                if (options.Logger is { LogConnection: true })
+                    options.Logger.Log("[Connection]{0} Auchenticate timeout.", channelName);
                 ChannelAuchenticateTimeout?.Invoke(this, channel);
             };
 
             //认证通过后，才将通道添加到已连接通道列表里面
-            channel.Auchenticated += (sender, e) =>
+            channel.Auchenticated += (_, _) =>
             {
                 lock (channelList)
                 {
@@ -82,10 +82,10 @@ namespace Quick.Protocol
                     Channels = channelList.ToArray();
                 }
                 ChannelConnected?.Invoke(this, channel);
-                channel.Disconnected += (sender2, e2) =>
+                channel.Disconnected += (_, _) =>
                 {
-                    if (LogUtils.LogConnection)
-                        LogUtils.Log("[Connection]{0} Disconnected.", channelName);
+                    if (options.Logger is { LogConnection: true })
+                        options.Logger.Log("[Connection]{0} Disconnected.", channelName);
                     RemoveChannel(channel);
                     ChannelDisconnected?.Invoke(this, channel);
                 };
@@ -112,7 +112,7 @@ namespace Quick.Protocol
             {
                 channels = channelList.ToArray();
                 channelList.Clear();
-                Channels = new QpServerChannel[0];
+                Channels = Array.Empty<QpServerChannel>();
             }
             foreach (var channel in channels)
                 try { channel.Disconnect(); }

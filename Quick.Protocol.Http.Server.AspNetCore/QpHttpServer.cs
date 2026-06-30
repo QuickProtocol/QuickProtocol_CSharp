@@ -129,8 +129,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                 httpContextQueue.Enqueue(qpHttpContext);
             await Task.Delay(-1, cts.Token).ContinueWith(t =>
              {
-                 if (LogUtils.LogConnection)
-                     LogUtils.Log("[Connection]{0} disconnected.", connectionInfoStr);
+                 Console.WriteLine("[Connection]{0} disconnected.", connectionInfoStr);
              });
         }
 
@@ -162,14 +161,12 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             {
                 try
                 {
-                    if (LogUtils.LogConnection)
-                        LogUtils.Log("[Connection]{0} connected.", context.ConnectionInfo);
+                    Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
                     OnNewChannelConnected(context.Stream, context.ConnectionInfo, token, false);
                 }
                 catch (Exception ex)
                 {
-                    if (LogUtils.LogConnection)
-                        LogUtils.Log("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                    Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                 }
             }
         }

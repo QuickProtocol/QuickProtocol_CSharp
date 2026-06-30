@@ -7,10 +7,6 @@ namespace SerialPortServer
     {
         static void Main(string[] args)
         {
-            Quick.Protocol.Utils.LogUtils.SetConsoleLogHandler();
-            Quick.Protocol.Utils.LogUtils.LogContent=true;
-            Quick.Protocol.Utils.LogUtils.LogConnection = true;
-
             var server = new Quick.Protocol.SerialPort.QpSerialPortServer(new Quick.Protocol.SerialPort.QpSerialPortServerOptions()
             {
                 PortName = "COM2",

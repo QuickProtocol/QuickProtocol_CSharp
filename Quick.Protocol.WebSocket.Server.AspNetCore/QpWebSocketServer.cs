@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Quick.Protocol.Utils;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -59,8 +58,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                         cts));
             await Task.Delay(-1, cts.Token).ContinueWith(t =>
              {
-                 if (LogUtils.LogConnection)
-                     LogUtils.Log("[Connection]{0} disconnected.", connectionInfoStr);
+                 Console.WriteLine("[Connection]{0} disconnected.", connectionInfoStr);
              });
         }
 
@@ -94,15 +92,13 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
             {
                 try
                 {
-                    if (LogUtils.LogConnection)
-                        LogUtils.Log("[Connection]{0} connected.", context.ConnectionInfo);
+                    Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
                     OnNewChannelConnected(new WebSocketServerStream(context.WebSocket, context.Cts), context.ConnectionInfo, token);
                 }
                 catch (Exception ex)
                 {
                     context.Cts.Cancel();
-                    if (LogUtils.LogConnection)
-                        LogUtils.Log("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                    Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                     try
                     {
                         await context.WebSocket

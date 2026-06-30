@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Quick.Protocol.JsonConverters;
 
@@ -13,18 +10,23 @@ namespace Quick.Protocol
         /// 类型信息
         /// </summary>
         protected abstract JsonSerializerContext GetJsonSerializerContext();
+
         /// <summary>
         /// 内部是否压缩
         /// </summary>
         internal virtual bool InternalCompress { get; set; } = false;
+
         /// <summary>
         /// 内部是否加密
         /// </summary>
         internal virtual bool InternalEncrypt { get; set; } = false;
+
         /// <summary>
         /// 内部接收超时(默认15秒)
         /// </summary>
         internal int InternalTransportTimeout { get; set; } = 15 * 1000;
+
+        [Browsable(false)] [JsonIgnore] public QpLogger Logger { get; set; }
 
         /// <summary>
         /// 心跳间隔，为发送或接收超时中小的值的三分一
@@ -41,7 +43,8 @@ namespace Quick.Protocol
         [PasswordPropertyText(true)]
         public string Password { get; set; } = "HelloQP";
 
-        private QpInstruction[] _InstructionSet = new QpInstruction[] { Base.Instruction };
+        private QpInstruction[] _InstructionSet = [Base.Instruction];
+
         /// <summary>
         /// 支持的指令集
         /// </summary>
@@ -54,8 +57,8 @@ namespace Quick.Protocol
             {
                 _InstructionSet = value;
                 //必须加上QP基础指令集
-                if (!_InstructionSet.Any(t => t.Id == Base.Instruction.Id))
-                    _InstructionSet = new QpInstruction[] { Base.Instruction }
+                if (_InstructionSet.All(t => t.Id != Base.Instruction.Id))
+                    _InstructionSet = new[] { Base.Instruction }
                         .Concat(_InstructionSet)
                         .ToArray();
             }
@@ -68,7 +71,7 @@ namespace Quick.Protocol
         [DisplayName("最大包大小")]
         [JsonConverter(typeof(QpJsonInt32Converter))]
         public int MaxPackageSize { get; set; } = 10 * 1024 * 1024;
-        
+
         [Category("高级")]
         [DisplayName("是否启用网络统计")]
         [JsonConverter(typeof(QpJsonBoolConverter))]
@@ -96,13 +99,14 @@ namespace Quick.Protocol
         /// </summary>
         [Browsable(false)]
         [JsonIgnore]
-        public List<CommandExecuterManager> CommandExecuterManagerList { get; set; } = new List<CommandExecuterManager>();
+        public List<CommandExecuterManager> CommandExecuterManagerList { get; set; } = new();
+
         /// <summary>
         /// 通知处理器管理器列表
         /// </summary>
         [Browsable(false)]
         [JsonIgnore]
-        public List<NoticeHandlerManager> NoticeHandlerManagerList { get; set; } = new List<NoticeHandlerManager>();
+        public List<NoticeHandlerManager> NoticeHandlerManagerList { get; set; } = new();
 
         // <summary>
         // 注册指令执行器管理器

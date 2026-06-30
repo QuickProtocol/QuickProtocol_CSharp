@@ -1,4 +1,4 @@
-﻿using Quick.Protocol.Utils;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,16 +18,14 @@ namespace Quick.Protocol.SerialPort
         public override void Start()
         {
             this.ChannelDisconnected += QpSerialPortServer_ChannelDisconnected;
-            if (LogUtils.LogConnection)
-                LogUtils.Log($"Opening SerialPort[{options.PortName}]...");
+            Console.WriteLine($"Opening SerialPort[{options.PortName}]...");
             serialPort = new System.IO.Ports.SerialPort(options.PortName,
                                                 options.BaudRate,
                                                 options.Parity,
                                                 options.DataBits,
                                                 options.StopBits);
             serialPort.Open();
-            if (LogUtils.LogConnection)
-                LogUtils.Log($"SerialPort[{options.PortName}] open success.");
+            Console.WriteLine($"SerialPort[{options.PortName}] open success.");
             isAccepted = false;
             base.Start();
         }
