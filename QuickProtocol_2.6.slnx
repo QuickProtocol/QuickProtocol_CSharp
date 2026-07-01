@@ -15,14 +15,6 @@
     <Project Path="Test/Http/QpHttpClient/QpHttpClient.csproj" />
     <Project Path="Test/Http/QpHttpServer/QpHttpServer.csproj" />
   </Folder>
-  <Folder Name="/Test/Pipeline/">
-    <Project Path="Test/Pipeline/PipelineClient/PipelineClient.csproj" />
-    <Project Path="Test/Pipeline/PipelineServer/PipelineServer.csproj" />
-  </Folder>
-  <Folder Name="/Test/SerialPort/">
-    <Project Path="Test/SerialPort/SerialPortClient/SerialPortClient.csproj" />
-    <Project Path="Test/SerialPort/SerialPortServer/SerialPortServer.csproj" />
-  </Folder>
   <Folder Name="/Test/WebSocket/">
     <Project Path="Test/WebSocket/WebApplication1/WebApplication1.csproj" />
     <Project Path="Test/WebSocket/WebSocketClient/WebSocketClient.csproj" />

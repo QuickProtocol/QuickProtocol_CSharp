@@ -1,12 +1,10 @@
-﻿using System;
+namespace TestProgram.Units;
 
-namespace PipelineClient
+public class PipelineClientUnit
 {
-    class Program
+    public static void Invoke()
     {
-        static void Main(string[] args)
-        {
-            var client = new Quick.Protocol.Pipeline.QpPipelineClient(new Quick.Protocol.Pipeline.QpPipelineClientOptions()
+        var client = new Quick.Protocol.Pipeline.QpPipelineClient(new Quick.Protocol.Pipeline.QpPipelineClientOptions()
             {
                 PipeName = "Quick.Protocol",
                 Password = "HelloQP",
@@ -16,21 +14,21 @@ namespace PipelineClient
 
             client.Disconnected += (sender, e) =>
             {
-                Console.WriteLine("连接已断开");
+                Console.WriteLine("Disconnected");
             };
             client.ConnectAsync().ContinueWith(async t =>
             {
                 if (t.IsCanceled)
                 {
-                    Console.WriteLine("连接已取消");
+                    Console.WriteLine("Connect cancelled");
                     return;
                 }
                 if (t.IsFaulted)
                 {
-                    Console.WriteLine("连接出错，原因：" + t.Exception.InnerException.ToString());
+                    Console.WriteLine("Connect error," + t.Exception.InnerException.ToString());
                     return;
                 }
-                Console.WriteLine("连接成功");
+                Console.WriteLine("Connected");
 
                 try
                 {
@@ -59,6 +57,5 @@ namespace PipelineClient
                 }
             });
             Console.ReadLine();
-        }
     }
 }

@@ -15,6 +15,10 @@ var unitDict = new Dictionary<string, string>()
     [nameof(ProcessCommunicateUnit)] = "Process Communicate",
     [nameof(TcpClientUnit)] = "TCP client",
     [nameof(TcpServerUnit)] = "TCP server",
+    [nameof(PipelineServerUnit)] = "Pipeline server",
+    [nameof(PipelineClientUnit)] = "Pipeline client",
+    [nameof(SerialPortServerUnit)] = "SerialPort server",
+    [nameof(SerialPortClientUnit)] = "SerialPort client",
 };
 Console.WriteLine("Welcome to use Test program.");
 Console.WriteLine("Please select test unit:");
@@ -26,10 +30,22 @@ switch (selectedUnit)
     case nameof(ProcessCommunicateUnit):
         ProcessCommunicateUnit.Invoke();
         break;
+    case nameof(TcpServerUnit):
+        TcpServerUnit.Invoke();
+        break;
     case nameof(TcpClientUnit):
         TcpClientUnit.Invoke();
         break;
-    case nameof(TcpServerUnit):
-        TcpServerUnit.Invoke();
+    case nameof(PipelineServerUnit):
+        PipelineServerUnit.Invoke();
+        break;
+    case nameof(PipelineClientUnit):
+        PipelineClientUnit.Invoke();
+        break;
+    case nameof(SerialPortServerUnit):
+        SerialPortServerUnit.Invoke();
+        break;
+    case nameof(SerialPortClientUnit):
+        SerialPortClientUnit.Invoke();
         break;
 }
