@@ -7,7 +7,7 @@
 		<RepositoryUrl>https://github.com/QuickProtocol/QuickProtocol_CSharp</RepositoryUrl>
 		<Copyright />
 		<Authors>scbeta</Authors>
-		<Version>2.6.12</Version>
+		<Version>2.6.13</Version>
 		<Company />
 		<Description>A simple protocol for TCP,Pipeline,SerialPort,WebSocket.</Description>
 		<PackageIcon>logo.png</PackageIcon>
