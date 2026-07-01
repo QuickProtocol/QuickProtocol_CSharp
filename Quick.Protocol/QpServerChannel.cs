@@ -66,7 +66,7 @@ namespace Quick.Protocol
                     || IsConnected)
                         return;
                     if (options.Logger is { LogConnection: true })
-                        options.Logger.Log("[Connection]{0} Authenticate timeout.", channelName);
+                        options.Logger.Log("{0} Authenticate timeout.", channelName);
 
                     if (stream != null)
                     {

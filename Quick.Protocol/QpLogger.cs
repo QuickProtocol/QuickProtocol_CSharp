@@ -2,6 +2,8 @@ namespace Quick.Protocol;
 
 public class QpLogger
 {
+    public static QpLogger EmptyLogger => new QpLogger(null);
+
     public const string NOT_SHOW_CONTENT_MESSAGE = "[NOT_SHOW: LogUtils.LogContent is False]";
     public bool LogPackage { get; set; } = false;
     public bool LogHeartbeat { get; set; } = false;
@@ -10,14 +12,11 @@ public class QpLogger
     public bool LogContent { get; set; } = false;
     public bool LogConnection { get; set; } = false;
     public bool LogRaw { get; set; } = false;
+    private Action<string> logHandler;
 
-    private Action<string> LogHandler = null;
-
-    public void SetConsoleLogHandler() => SetLogHandler(Console.WriteLine);
-
-    public void SetLogHandler(Action<string> logHandler)
+    public QpLogger(Action<string> logHandler)
     {
-        LogHandler = logHandler;
+        this.logHandler = logHandler;
     }
 
     public void Log(string template, params object[] args)
@@ -27,6 +26,6 @@ public class QpLogger
 
     public void Log(string content)
     {
-        LogHandler?.Invoke(content);
+        logHandler?.Invoke("[QuickProtocol]"+content);
     }
 }

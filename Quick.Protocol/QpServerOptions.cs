@@ -43,6 +43,7 @@ namespace Quick.Protocol
             ret.CommandExecuterManagerList = CommandExecuterManagerList;
             ret.NoticeHandlerManagerList = NoticeHandlerManagerList;
             ret.ProtocolErrorHandler = ProtocolErrorHandler;
+            ret.Logger = Logger;
             return ret;
         }
     }

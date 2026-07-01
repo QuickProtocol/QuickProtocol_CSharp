@@ -69,7 +69,7 @@ namespace Quick.Protocol
             channel.AuchenticateTimeout += (_, _) =>
             {
                 if (options.Logger is { LogConnection: true })
-                    options.Logger.Log("[Connection]{0} Auchenticate timeout.", channelName);
+                    options.Logger.Log("{0} Auchenticate timeout.", channelName);
                 ChannelAuchenticateTimeout?.Invoke(this, channel);
             };
 
@@ -85,7 +85,7 @@ namespace Quick.Protocol
                 channel.Disconnected += (_, _) =>
                 {
                     if (options.Logger is { LogConnection: true })
-                        options.Logger.Log("[Connection]{0} Disconnected.", channelName);
+                        options.Logger.Log("{0} Disconnected.", channelName);
                     RemoveChannel(channel);
                     ChannelDisconnected?.Invoke(this, channel);
                 };
