@@ -19,6 +19,8 @@ var unitDict = new Dictionary<string, string>()
     [nameof(PipelineClientUnit)] = "Pipeline client",
     [nameof(SerialPortServerUnit)] = "SerialPort server",
     [nameof(SerialPortClientUnit)] = "SerialPort client",
+    [nameof(HttpServerUnit)] = "Http server",
+    [nameof(HttpClientUnit)] = "Http client",
 };
 Console.WriteLine("Welcome to use Test program.");
 Console.WriteLine("Please select test unit:");
@@ -47,5 +49,11 @@ switch (selectedUnit)
         break;
     case nameof(SerialPortClientUnit):
         SerialPortClientUnit.Invoke();
+        break;
+    case nameof(HttpServerUnit):
+        HttpServerUnit.Invoke();
+        break;
+    case nameof(HttpClientUnit):
+        HttpClientUnit.Invoke();
         break;
 }

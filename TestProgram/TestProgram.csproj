@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\Quick.Protocol.Http.Client\Quick.Protocol.Http.Client.csproj" />
     <ProjectReference Include="..\Quick.Protocol.Http.Server.AspNetCore\Quick.Protocol.Http.Server.AspNetCore.csproj" />
     <ProjectReference Include="..\Quick.Protocol.Pipeline\Quick.Protocol.Pipeline.csproj" />

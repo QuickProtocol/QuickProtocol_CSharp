@@ -11,10 +11,6 @@
   <Project Path="QpTestClient/QpTestClient.csproj" />
   <Project Path="TestProgram/TestProgram.csproj" />
 
-  <Folder Name="/Test/Http/">
-    <Project Path="Test/Http/QpHttpClient/QpHttpClient.csproj" />
-    <Project Path="Test/Http/QpHttpServer/QpHttpServer.csproj" />
-  </Folder>
   <Folder Name="/Test/WebSocket/">
     <Project Path="Test/WebSocket/WebApplication1/WebApplication1.csproj" />
     <Project Path="Test/WebSocket/WebSocketClient/WebSocketClient.csproj" />
