@@ -1,15 +1,16 @@
 <Solution>
-  <Folder Name="/Test/">
-    <Project Path="Test/ConsoleTest/ConsoleTest.csproj" />
-  </Folder>
-  <Project Path="QpTestClient2/QpTestClient2.csproj" />
+  <Project Path="Quick.Protocol/Quick.Protocol.csproj" />
   <Project Path="Quick.Protocol.Http.Client/Quick.Protocol.Http.Client.csproj" />
   <Project Path="Quick.Protocol.Http.Server.AspNetCore/Quick.Protocol.Http.Server.AspNetCore.csproj" />
-  <Project Path="Quick.Protocol.InterfaceService/Quick.Protocol.InterfaceService.csproj" />
   <Project Path="Quick.Protocol.Pipeline/Quick.Protocol.Pipeline.csproj" />
   <Project Path="Quick.Protocol.Tcp/Quick.Protocol.Tcp.csproj" />
   <Project Path="Quick.Protocol.WebSocket.Server.AspNetCore/Quick.Protocol.WebSocket.Server.AspNetCore.csproj" />
-  <Project Path="Quick.Protocol/Quick.Protocol.csproj" />
+  <Project Path="Quick.Protocol.SerialPort/Quick.Protocol.SerialPort.csproj" />
+  <Project Path="Quick.Protocol.WebSocket.Client/Quick.Protocol.WebSocket.Client.csproj" />
+  <Project Path="Quick.Protocol.InterfaceService/Quick.Protocol.InterfaceService.csproj" />
+  <Project Path="QpTestClient/QpTestClient.csproj" />
+  <Project Path="TestProgram/TestProgram.csproj" />
+
   <Folder Name="/Test/Http/">
     <Project Path="Test/Http/QpHttpClient/QpHttpClient.csproj" />
     <Project Path="Test/Http/QpHttpServer/QpHttpServer.csproj" />
@@ -22,15 +23,8 @@
     <Project Path="Test/SerialPort/SerialPortClient/SerialPortClient.csproj" />
     <Project Path="Test/SerialPort/SerialPortServer/SerialPortServer.csproj" />
   </Folder>
-  <Folder Name="/Test/Tcp/">
-    <Project Path="Test/Tcp/TcpClient/TcpClient.csproj" />
-    <Project Path="Test/Tcp/TcpServer/TcpServer.csproj" />
-  </Folder>
   <Folder Name="/Test/WebSocket/">
     <Project Path="Test/WebSocket/WebApplication1/WebApplication1.csproj" />
     <Project Path="Test/WebSocket/WebSocketClient/WebSocketClient.csproj" />
   </Folder>
-  <Project Path="QpTestClient/QpTestClient.csproj" />
-    <Project Path="Quick.Protocol.SerialPort/Quick.Protocol.SerialPort.csproj" />
-    <Project Path="Quick.Protocol.WebSocket.Client/Quick.Protocol.WebSocket.Client.csproj" />
 </Solution>

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Quick.Protocol.Http.Client\Quick.Protocol.Http.Client.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.Http.Server.AspNetCore\Quick.Protocol.Http.Server.AspNetCore.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.Pipeline\Quick.Protocol.Pipeline.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.SerialPort\Quick.Protocol.SerialPort.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.Tcp\Quick.Protocol.Tcp.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.WebSocket.Client\Quick.Protocol.WebSocket.Client.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.WebSocket.Server.AspNetCore\Quick.Protocol.WebSocket.Server.AspNetCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Quick.Build" Version="1.0.20" />
+  </ItemGroup>
+
+</Project>
