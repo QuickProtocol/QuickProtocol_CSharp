@@ -21,6 +21,8 @@ var unitDict = new Dictionary<string, string>()
     [nameof(SerialPortClientUnit)] = "SerialPort client",
     [nameof(HttpServerUnit)] = "Http server",
     [nameof(HttpClientUnit)] = "Http client",
+    [nameof(WebSocketServerUnit)] = "WebSocket server",
+    [nameof(WebSocketClientUnit)] = "WebSocket client",
 };
 Console.WriteLine("Welcome to use Test program.");
 Console.WriteLine("Please select test unit:");
@@ -55,5 +57,11 @@ switch (selectedUnit)
         break;
     case nameof(HttpClientUnit):
         HttpClientUnit.Invoke();
+        break;
+    case nameof(WebSocketServerUnit):
+        WebSocketServerUnit.Invoke();
+        break;
+    case nameof(WebSocketClientUnit):
+        WebSocketClientUnit.Invoke();
         break;
 }
