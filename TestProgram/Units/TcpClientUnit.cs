@@ -1,3 +1,5 @@
+using Quick.Utils;
+
 namespace TestProgram.Units;
 
 public class TcpClientUnit
@@ -8,7 +10,7 @@ public class TcpClientUnit
         {
             Host = "127.0.0.1",
             Port = 3011,
-            Password = "HelloQP",
+            Password = "HelloQP2",
             EnableCompress = true,
             EnableEncrypt = true
         });
@@ -16,7 +18,7 @@ public class TcpClientUnit
         client.NoticePackageReceived += Client_NoticePackageReceived;
         client.Disconnected += (sender, e) =>
         {
-            Console.WriteLine("Connection disconnected.");
+            Console.WriteLine("Connection disconnected.Reason: " + ExceptionUtils.GetExceptionString(client.LastException));
         };
         client.ConnectAsync().ContinueWith(t =>
         {
@@ -27,7 +29,7 @@ public class TcpClientUnit
             }
             if (t.IsFaulted)
             {
-                Console.WriteLine("Connect error," + t.Exception.InnerException.ToString());
+                Console.WriteLine("Connect error," + ExceptionUtils.GetExceptionMessage(t.Exception.InnerException));
                 return;
             }
             Console.WriteLine("Connected");

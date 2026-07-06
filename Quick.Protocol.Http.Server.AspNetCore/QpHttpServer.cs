@@ -98,12 +98,11 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             isStarted = true;
             lock (httpContextQueue)
                 httpContextQueue.Clear();
-            ChannelAuchenticateTimeout += OnChannelAuchenticateTimeoutOrDisconnected;
-            ChannelDisconnected += OnChannelAuchenticateTimeoutOrDisconnected;
+            ChannelDisconnected += OnChannelDisconnected;
             base.Start();
         }
 
-        private void OnChannelAuchenticateTimeoutOrDisconnected(object sender, QpServerChannel e)
+        private void OnChannelDisconnected(object sender, QpServerChannel e)
         {
             var stream = e.GetStream();
             if (stream == null)
@@ -128,16 +127,16 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             lock (httpContextQueue)
                 httpContextQueue.Enqueue(qpHttpContext);
             await Task.Delay(-1, cts.Token).ContinueWith(t =>
-             {
-                 Console.WriteLine("[Connection]{0} disconnected.", connectionInfoStr);
-             });
+            {
+                if (Options.Logger is { LogConnection: true })
+                    Console.WriteLine("[Connection]{0} disconnected.", connectionInfoStr);
+            });
         }
 
         public override void Stop()
         {
             isStarted = false;
-            ChannelAuchenticateTimeout -= OnChannelAuchenticateTimeoutOrDisconnected;
-            ChannelDisconnected -= OnChannelAuchenticateTimeoutOrDisconnected;
+            ChannelDisconnected -= OnChannelDisconnected;
             lock (httpContextQueue)
                 httpContextQueue.Clear();
             base.Stop();
@@ -161,12 +160,14 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             {
                 try
                 {
-                    Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
+                    if (Options.Logger is { LogConnection: true })
+                        Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
                     OnNewChannelConnected(context.Stream, context.ConnectionInfo, token, false);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                    if (Options.Logger is { LogConnection: true })
+                        Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                 }
             }
         }

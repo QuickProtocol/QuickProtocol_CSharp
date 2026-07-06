@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using Quick.Protocol;
+using Quick.Utils;
 
 namespace TestProgram.Units;
 
@@ -80,6 +81,6 @@ Content-Length: {Encoding.UTF8.GetByteCount(message)}
 
     private static void Server_ChannelDisconnected(object sender, QpServerChannel e)
     {
-        Console.WriteLine($"{DateTime.Now:T}: Channel[{e.ChannelName}]disconnected.");
+        Console.WriteLine($"{DateTime.Now:T}: Channel[{e.ChannelName}] disconnected.Reason: {ExceptionUtils.GetExceptionMessage(e.LastException)}");
     }
 }

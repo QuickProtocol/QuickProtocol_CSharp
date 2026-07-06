@@ -65,10 +65,6 @@ public class ProcessCommunicateUnit
             ChannelName = $"Process:{process.Id}"
         };
         var channel = new QpStreamServerChannel(options);
-        channel.AuchenticateTimeout += (sender, e) =>
-        {
-            Console.WriteLine(DateTime.Now.ToString() + "[Server]: auth timeout");
-        };
         channel.Disconnected += (sender, e) =>
         {
             Console.WriteLine(DateTime.Now.ToString() + "[Server]: disconnected");

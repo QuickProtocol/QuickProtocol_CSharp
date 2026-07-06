@@ -17,7 +17,7 @@ namespace Quick.Protocol.SerialPort
 
         public override void Start()
         {
-            this.ChannelDisconnected += QpSerialPortServer_ChannelDisconnected;
+            ChannelDisconnected += QpSerialPortServer_ChannelDisconnected;
             Console.WriteLine($"Opening SerialPort[{options.PortName}]...");
             serialPort = new System.IO.Ports.SerialPort(options.PortName,
                                                 options.BaudRate,
@@ -39,7 +39,7 @@ namespace Quick.Protocol.SerialPort
                 serialPort.Dispose();
                 serialPort = null;
             }
-            this.ChannelDisconnected -= QpSerialPortServer_ChannelDisconnected;
+            ChannelDisconnected -= QpSerialPortServer_ChannelDisconnected;
         }
 
         private void QpSerialPortServer_ChannelDisconnected(object sender, QpServerChannel e)
