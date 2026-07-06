@@ -21,7 +21,9 @@ var units = new IUnit[]
     new PipelineClientUnit(),
     new SerialPortServerUnit(),
     new SerialPortClientUnit(),
+    new HttpServerUnit(),
     new HttpClientUnit(),
+    new WebSocketServerUnit(),
     new WebSocketClientUnit()
 };
 

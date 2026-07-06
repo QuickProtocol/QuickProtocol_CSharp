@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Quick.Protocol;
 using Quick.Protocol.WebSocket.Server.AspNetCore;
 using System;
@@ -10,11 +12,15 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class QuickProtocolMiddlewareExtensions
     {
-        public static IApplicationBuilder UseQuickProtocol(this IApplicationBuilder app, QpWebSocketServerOptions options, out QpWebSocketServer server)
+        public static IApplicationBuilder UseQuickProtocolWebSocketServer(this IApplicationBuilder app, QpWebSocketServerOptions options,out QpWebSocketServer server)
         {
-            var innerServer = new QpWebSocketServer(options);
+            var config = app.ApplicationServices.GetRequiredService<IConfiguration>();
+            var urlsStr = config["Urls"];
+            var urls = urlsStr?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+
+            var innerServer = new QpWebSocketServer(options, urls);
             server = innerServer;
-            app.Use((async (context, next) =>
+            app.Use(async (context, next) =>
             {
                 if (context.Request.Path == options.Path)
                 {
@@ -52,7 +58,7 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     await next().ConfigureAwait(false);
                 }
-            }));
+            });
             return app;
         }
     }

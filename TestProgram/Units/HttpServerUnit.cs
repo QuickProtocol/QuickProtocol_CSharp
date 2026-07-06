@@ -1,83 +1,41 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Quick.Protocol;
 
 namespace TestProgram.Units;
 
-public class HttpServerUnit
+public class HttpServerUnit : AbstractServerUnit
 {
-    public static void Invoke()
+    public override string Name => "HTTP server";
+
+    private Quick.Protocol.Http.Server.AspNetCore.QpHttpServerOptions GetHttpServerOptions() => new Quick.Protocol.Http.Server.AspNetCore.QpHttpServerOptions()
     {
-        CreateHostBuilder([]).Build().Run();
-    }
+        Path = "/qp_test",
+        Password = "HelloQP",
+        ServerProgram = nameof(HttpServerUnit) + " 1.0"
+    };
+    protected override QpServerOptions GetServerOptions() => GetHttpServerOptions();
 
-    public class QpTestContext
+    public override void Invoke()
     {
-        private Quick.Protocol.Http.Server.AspNetCore.QpHttpServer server;
-
-        public QpTestContext(IApplicationBuilder app)
-        {            
-            app.UseQuickProtocolHttp(new Quick.Protocol.Http.Server.AspNetCore.QpHttpServerOptions()
-            {
-                Path = "/qp_test",
-                Password = "HelloQP",
-                ServerProgram = nameof(HttpServerUnit) + " 1.0"
-            }, out server);
-
-            server.ChannelConnected += Server_ChannelConnected;
-            server.ChannelDisconnected += Server_ChannelDisconnected;
-            server.Start();
-        }
-
-        private static void Server_ChannelConnected(object sender, QpServerChannel e)
+        var urls = new string[] { "http://127.0.0.1:3011" };
+        var builder = WebApplication.CreateBuilder();
+        builder.Logging.ClearProviders();
+        builder.WebHost
+            .UseUrls(urls)
+            .ConfigureKestrel(options => options.AddServerHeader = false);
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseWebSockets();
+        app.UseQuickProtocolHttpServer(GetHttpServerOptions(), out var server);
+        StartServer(server);
+        app.MapGet("/", async context =>
         {
-            Console.WriteLine($"{DateTime.Now:T}: Channel[{e.ChannelName}] connected.");
-        }
-
-
-        private static void Server_ChannelDisconnected(object sender, QpServerChannel e)
-        {
-            Console.WriteLine($"{DateTime.Now:T}: Channel[{e.ChannelName}] disconnected.");
-        }
+            await context.Response.WriteAsync("Hello World!");
+        });
+        app.Run();
+        server.Stop();
     }
-
-    public class Startup
-    {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services)
-        {
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseRouting();
-            app.UseWebSockets();
-            new QpTestContext(app);
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
-            });
-        }
-    }
-
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseUrls("http://127.0.0.1:3011");
-                webBuilder.UseStartup<Startup>();
-            });
 }

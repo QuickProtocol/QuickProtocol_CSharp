@@ -42,7 +42,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
 
         public override QpServer CreateServer()
         {
-            return new QpWebSocketServer(this);
+            return new QpWebSocketServer(this, null);
         }
     }
 }

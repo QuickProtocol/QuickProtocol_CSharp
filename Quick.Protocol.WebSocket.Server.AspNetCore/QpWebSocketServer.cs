@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,8 +11,27 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
     {
         private Queue<WebSocketContext> webSocketContextQueue = new Queue<WebSocketContext>();
         private bool isStarted = false;
-        private string path;
-        public override string BindingPath => $"qp.ws://xxxx/{path}";
+        private string[] urls;
+        private QpWebSocketServerOptions options;
+
+        private string processUrl(string t)
+        {
+            var prefix = "http://";
+            if (t.StartsWith(prefix))
+                return "ws://" + t.Substring(prefix.Length);
+            prefix = "https://";
+            if (t.StartsWith(prefix))
+                return "wss://" + t.Substring(prefix.Length);
+            return t;
+        }
+        public override string BindingPath
+        {
+            get
+            {
+                var pathes = urls.Select(t => $"qp.{processUrl(t)}{options.Path}");
+                return string.Join(";", pathes);
+            }
+        }
 
         private class WebSocketContext
         {
@@ -26,11 +46,12 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 Cts = cts;
             }
         }
-        
 
-        public QpWebSocketServer(QpWebSocketServerOptions options) : base(options)
+
+        public QpWebSocketServer(QpWebSocketServerOptions options, string[] urls) : base(options)
         {
-            path = options.Path;
+            this.options = options;
+            this.urls = urls;
         }
 
         public override void Start()

@@ -9,7 +9,7 @@ public abstract class AbstractServerUnit : IUnit
 
     protected abstract QpServerOptions GetServerOptions();
 
-    public void Invoke()
+    protected void StartServer(QpServer server)
     {
         var commandExecuterManager = new CommandExecuterManager();
         commandExecuterManager.Register<Quick.Protocol.Commands.PrivateCommand.Request, Quick.Protocol.Commands.PrivateCommand.Response>(
@@ -26,12 +26,8 @@ public abstract class AbstractServerUnit : IUnit
             {
                 Console.WriteLine($"Recv PrivateNotice: {notice.Serialize(notice)}");
             });
-
-        var options = GetServerOptions();
-        options.RegisterCommandExecuterManager(commandExecuterManager);
-        options.RegisterNoticeHandlerManager(noticeHandlerManager);
-        
-        var server = options.CreateServer();
+        server.Options.RegisterCommandExecuterManager(commandExecuterManager);
+        server.Options.RegisterNoticeHandlerManager(noticeHandlerManager);
         server.ChannelConnected += Server_ChannelConnected;
         server.ChannelDisconnected += Server_ChannelDisconnected;
         try
@@ -43,6 +39,13 @@ public abstract class AbstractServerUnit : IUnit
         {
             Console.WriteLine($"Server start failed." + ExceptionUtils.GetExceptionString(ex));
         }
+    }
+
+    public virtual void Invoke()
+    {
+        var options = GetServerOptions();        
+        var server = options.CreateServer();
+        StartServer(server);
         Console.ReadLine();
         server.Stop();
     }

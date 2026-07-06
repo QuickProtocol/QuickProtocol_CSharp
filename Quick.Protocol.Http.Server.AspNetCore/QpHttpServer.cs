@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Quick.Protocol.Utils;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -17,7 +14,15 @@ namespace Quick.Protocol.Http.Server.AspNetCore
     public class QpHttpServer : QpServer
     {
         public const string QP_CHANNEL_ID = nameof(QP_CHANNEL_ID);
-        public override string BindingPath => $"qp.http://xxxx/{options.Path}";
+        private string[] urls;
+        public override string BindingPath
+        {
+            get
+            {
+                var pathes = urls.Select(t => $"qp.{t}{options.Path}");
+                return string.Join(";", pathes);
+            }
+        }
         private QpHttpServerOptions options;
 
         private Queue<QpHttpContext> httpContextQueue = new Queue<QpHttpContext>();
@@ -88,9 +93,10 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             }
         }
 
-        public QpHttpServer(QpHttpServerOptions options) : base(options)
+        public QpHttpServer(QpHttpServerOptions options, string[] urls) : base(options)
         {
             this.options = options;
+            this.urls = urls;
         }
 
         public override void Start()
