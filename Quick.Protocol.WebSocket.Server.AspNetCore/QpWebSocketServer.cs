@@ -10,6 +10,8 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
     {
         private Queue<WebSocketContext> webSocketContextQueue = new Queue<WebSocketContext>();
         private bool isStarted = false;
+        private string path;
+        public override string BindingPath => $"qp.ws://xxxx/{path}";
 
         private class WebSocketContext
         {
@@ -24,8 +26,12 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 Cts = cts;
             }
         }
+        
 
-        public QpWebSocketServer(QpWebSocketServerOptions options) : base(options) { }
+        public QpWebSocketServer(QpWebSocketServerOptions options) : base(options)
+        {
+            path = options.Path;
+        }
 
         public override void Start()
         {

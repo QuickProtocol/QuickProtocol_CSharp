@@ -3,8 +3,10 @@ using Quick.Protocol.Streams;
 
 namespace TestProgram.Units;
 
-public class ProcessCommunicateUnit
+public class ProcessCommunicateUnit:IUnit
 {
+    public string Name => "Process Communicate";
+
     public static void InvokeChildProcess()
     {
         var isDisconnected = false;
@@ -46,7 +48,7 @@ public class ProcessCommunicateUnit
         }
     }
 
-    public static void Invoke()
+    public void Invoke()
     {
         var psi = new ProcessStartInfo("dotnet");
         psi.ArgumentList.Add($"{nameof(TestProgram)}.dll");

@@ -24,7 +24,7 @@ public abstract class QpServerOptions : QpChannelOptions
     public Action<Stream, ReadOnlySequence<byte>> ProtocolErrorHandler { get; set; }
 
     /// <summary>
-    /// 创建客户端实例
+    /// 创建服务端实例
     /// </summary>
     /// <returns></returns>
     public virtual QpServer CreateServer()

@@ -17,7 +17,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
     public class QpHttpServer : QpServer
     {
         public const string QP_CHANNEL_ID = nameof(QP_CHANNEL_ID);
-
+        public override string BindingPath => $"qp.http://xxxx/{options.Path}";
         private QpHttpServerOptions options;
 
         private Queue<QpHttpContext> httpContextQueue = new Queue<QpHttpContext>();

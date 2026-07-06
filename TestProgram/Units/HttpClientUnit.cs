@@ -1,34 +1,13 @@
+using Quick.Protocol;
 
 namespace TestProgram.Units;
 
-public class HttpClientUnit
+public class HttpClientUnit : AbstractClientUnit
 {
-    public static void Invoke()
+    public override string Name => "HTTP client";
+    protected override QpClientOptions GetClientOptions() => new Quick.Protocol.Http.Client.QpHttpClientOptions()
     {
-        var options = new Quick.Protocol.Http.Client.QpHttpClientOptions()
-        {
-            Url = "qp.http://127.0.0.1:3011/qp_test",
-            Password = "HelloQP"
-        };
-        var client = options.CreateClient();
-        client.Disconnected += (sender, e) =>
-        {
-            Console.WriteLine("Disconnected");
-        };
-        client.ConnectAsync().ContinueWith(t =>
-        {
-            if (t.IsCanceled)
-            {
-                Console.WriteLine("Connect canncelled.");
-                return;
-            }
-            if (t.IsFaulted)
-            {
-                Console.WriteLine("Connect error," + t.Exception.InnerException.ToString());
-                return;
-            }
-            Console.WriteLine("Connected");
-        });
-        Console.ReadLine();
-    }
+        Url = "qp.http://127.0.0.1:3011/qp_test",
+        Password = "HelloQP"
+    };
 }

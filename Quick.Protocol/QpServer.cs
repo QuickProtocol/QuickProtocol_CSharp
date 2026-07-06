@@ -4,6 +4,7 @@ public abstract class QpServer
 {
     private CancellationTokenSource cts;
     public QpServerOptions Options { get; private set; }
+    public abstract string BindingPath { get; }
 
     private List<QpServerChannel> channelList = new List<QpServerChannel>();
 

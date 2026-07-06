@@ -12,6 +12,8 @@ public class QpTcpServer : QpServer
     private IPAddress address;
     private int port;
 
+    public override string BindingPath => $"{QpTcpClientOptions.URI_SCHEMA}://{ListenEndPoint}";
+
     public EndPoint ListenEndPoint { get; private set; }
     public QpTcpServer(QpTcpServerOptions options) : base(options)
     {
