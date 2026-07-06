@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Quick.Protocol.Streams;
+using Quick.Utils;
 
 namespace TestProgram.Units;
 
@@ -9,35 +10,48 @@ public class ProcessCommunicateUnit:IUnit
 
     public static void InvokeChildProcess()
     {
+        Action<string> logger = t =>
+        {
+            File.AppendAllLines("ChildProcess.log", [t]);
+        };
         var isDisconnected = false;
         var options = new QpStreamClientOptions()
         {
             Password = "HelloQP",
             EnableCompress = true,
             EnableEncrypt = true,
-            BaseStream = new InputOutputStream(Console.OpenStandardInput(), Console.OpenStandardOutput())
+            BaseStream = new InputOutputStream(Console.OpenStandardInput(), Console.OpenStandardOutput()),
+            Logger = new Quick.Protocol.QpLogger(logger)
+            {
+                LogConnection = true,
+                LogCommand = true,
+                LogPackage = true,
+                LogContent=true,
+                LogRaw = true
+            }
         };
         var client = new QpStreamClient(options);
         client.Disconnected += (sender, e) =>
         {
-            Debug.WriteLine("连接已断开");
+            logger.Invoke("Disconnected.");
             isDisconnected = true;
         };
+        logger.Invoke("Connecting...");
         client.ConnectAsync().ContinueWith(t =>
         {
             if (t.IsCanceled)
             {
                 isDisconnected = true;
-                Debug.WriteLine("连接已取消");
+                logger.Invoke("Connect cancelled.");
                 return;
             }
             if (t.IsFaulted)
             {
                 isDisconnected = true;
-                Debug.WriteLine("连接出错，原因：" + t.Exception.InnerException.ToString());
+                logger.Invoke("Connect error.Reason: " + ExceptionUtils.GetExceptionString(t.Exception));
                 return;
             }
-            Debug.WriteLine("连接成功");
+            logger.Invoke("Connected.");
 
             client.SendNoticePackage(new Quick.Protocol.Notices.PrivateNotice() { Content = "Hello Quick.Protocol V2!" });
             //client.SendNoticePackage(new Quick.Protocol.Notices.PrivateNotice() { Content = "".PadRight(5 * 1024, '0') });
@@ -75,5 +89,7 @@ public class ProcessCommunicateUnit:IUnit
         channel.RawNoticePackageReceived += (sender, e) => Console.WriteLine($"[Client_RawNoticePackageReceived]TypeName:{e.TypeName},Content:{e.Content}"); ;
         
         process.WaitForExit();
+        Console.WriteLine($"Child process[{process.Id}] exited.");
+        Console.ReadLine();
     }
 }

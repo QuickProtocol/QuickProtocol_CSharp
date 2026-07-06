@@ -8,7 +8,7 @@ if (args != null && args.Length > 0)
     {
         case nameof(ProcessCommunicateUnit.InvokeChildProcess):
             ProcessCommunicateUnit.InvokeChildProcess();
-            break;
+            return;
     }
 }
 
