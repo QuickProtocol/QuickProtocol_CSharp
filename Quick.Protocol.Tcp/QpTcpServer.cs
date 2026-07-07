@@ -45,7 +45,7 @@ public class QpTcpServer : QpServer
                 return;
             try
             {
-                var remoteEndPointStr = "TCP:" + tcpClient.Client.RemoteEndPoint.ToString();
+                var remoteEndPointStr = $"{QpTcpClientOptions.URI_SCHEMA}://{tcpClient.Client.RemoteEndPoint}";
                 if (Options.Logger is { LogConnection: true })
                     Console.WriteLine("[Connection]{0} connected.", remoteEndPointStr);
                 OnNewChannelConnected(tcpClient.GetStream(), remoteEndPointStr, token);

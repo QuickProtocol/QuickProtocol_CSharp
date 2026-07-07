@@ -34,7 +34,7 @@ namespace Quick.Protocol.Pipeline
                     return;
                 if (task.IsFaulted)
                     return;
-                OnNewChannelConnected(serverStream, $"Pipe:{options.PipeName}", token);
+                OnNewChannelConnected(serverStream, $"{QpPipelineClientOptions.URI_SCHEMA}://./{options.PipeName}", token);
             });
         }
     }

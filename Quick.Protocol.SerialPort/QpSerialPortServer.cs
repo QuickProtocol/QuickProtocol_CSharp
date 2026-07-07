@@ -65,7 +65,7 @@ namespace Quick.Protocol.SerialPort
                         return;
                     if (task.IsFaulted)
                         return;
-                    OnNewChannelConnected(serialPort.BaseStream, $"SerialPort:{options.PortName}", token, false);
+                    OnNewChannelConnected(serialPort.BaseStream, $"{QpSerialPortClientOptions.URI_SCHEMA}://./{options.PortName}", token, false);
                 });
         }
     }

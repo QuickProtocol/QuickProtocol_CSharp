@@ -125,7 +125,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             //如果还没有开始接收，则直接关闭
             if (!isStarted)
                 return;
-            var connectionInfoStr = $"HTTP:{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
+            var connectionInfoStr = $"qp.http://{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
             var cts = new CancellationTokenSource();
             var qpHttpContext = new QpHttpContext(options, channelId, connectionInfoStr, cts);
             lock (httpContextDict)
