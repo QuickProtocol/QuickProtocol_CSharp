@@ -109,7 +109,7 @@ public abstract class QpServer
             Channels = Array.Empty<QpServerChannel>();
         }
         foreach (var channel in channels)
-            try { channel.Disconnect(); }
+            try { channel.Dispose(); }
             catch { }
     }
 }

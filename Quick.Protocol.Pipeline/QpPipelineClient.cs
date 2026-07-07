@@ -1,10 +1,6 @@
-﻿using Quick.Protocol.Utils;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.IO;
 using System.IO.Pipes;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Quick.Protocol.Pipeline
@@ -28,24 +24,24 @@ namespace Quick.Protocol.Pipeline
             }
             catch
             {
-                try { pipeClientStream?.Dispose(); }
+                try 
+                {
+                    pipeClientStream?.Close();
+                    pipeClientStream?.Dispose();
+                }
                 catch { }
                 pipeClientStream = null;
                 throw;
             }
-            pipeClientStream.ReadMode = PipeTransmissionMode.Byte;
             return pipeClientStream;
         }
 
-        public override void Disconnect()
+        public override void Dispose()
         {
-            if (pipeClientStream != null)
-            {
-                pipeClientStream.Close();
-                pipeClientStream.Dispose();
-                pipeClientStream = null;
-            }
-            base.Disconnect();
+            pipeClientStream?.Close();
+            pipeClientStream?.Dispose();
+            pipeClientStream = null;
+            base.Dispose();
         }
     }
 }

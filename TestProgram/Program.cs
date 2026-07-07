@@ -24,7 +24,8 @@ var units = new IUnit[]
     new HttpServerUnit(),
     new HttpClientUnit(),
     new WebSocketServerUnit(),
-    new WebSocketClientUnit()
+    new WebSocketClientUnit(),
+    new PerformanceTestUnit()
 };
 
 var unitDict = units.ToDictionary(t => t.Name, t => t);

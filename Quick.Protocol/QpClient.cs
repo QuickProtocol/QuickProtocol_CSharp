@@ -26,7 +26,7 @@ namespace Quick.Protocol
             try
             {
                 //清理
-                Close();
+                Dispose();
                 cts = new CancellationTokenSource();
                 var token = cts.Token;
 
@@ -73,42 +73,17 @@ namespace Quick.Protocol
             catch (Exception ex)
             {
                 LastException = ex;
-                Close();
+                Dispose();
                 throw;
             }
         }
 
-        protected override void OnWriteError(Exception exception)
-        {
-            base.OnWriteError(exception);
-            Options.Init();
-            cancellAll();
-            Disconnect();
-        }
-
-        protected override void OnReadError(Exception exception)
-        {
-            base.OnReadError(exception);
-            Options.Init();
-            cancellAll();
-            Disconnect();
-        }
-
-        private void cancellAll()
+        public override void Dispose()
         {
             cts?.Cancel();
             cts = null;
-        }
-
-        /// <summary>
-        /// 关闭连接
-        /// </summary>
-        public void Close()
-        {
-            cancellAll();
-            IsConnected = false;
-            InitQpPackageHandler_Stream(null);
-            Disconnect();
+            Options.Init();
+            base.Dispose();
         }
     }
 }

@@ -46,4 +46,13 @@ public class QpHttpClient : QpClient
         }
         return new HttpClientsStream(recvClient, sendClient, url);
     }
+
+    public override void Dispose()
+    {
+        recvClient?.Dispose();
+        recvClient = null;
+        sendClient?.Dispose();
+        sendClient = null;
+        base.Dispose();
+    }
 }

@@ -43,7 +43,7 @@ public abstract class AbstractServerUnit : IUnit
 
     public virtual void Invoke()
     {
-        var options = GetServerOptions();        
+        var options = GetServerOptions();
         var server = options.CreateServer();
         StartServer(server);
         Console.ReadLine();

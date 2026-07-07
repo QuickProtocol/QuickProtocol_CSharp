@@ -29,8 +29,8 @@ namespace Quick.Protocol
         {
             LastException = exception;
             Options.Logger?.Log("[ReadError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
-            InitQpPackageHandler_Stream(null);
-            Disconnect();
+            OnDisconnect();
+            Dispose();
         }
 
         /// <summary>

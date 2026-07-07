@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Quick.Protocol;
 
-public abstract partial class QpChannel
+public abstract partial class QpChannel : IDisposable
 {
     /// <summary>
     /// 包长度字节长度
@@ -115,7 +115,7 @@ public abstract partial class QpChannel
     /// <summary>
     /// 断开连接时
     /// </summary>
-    public virtual void Disconnect()
+    protected virtual void OnDisconnect()
     {
         var shouldRaiseDisconnectedEvent = false;
         lock (DISCONNECT_LOCK_OBJ)
@@ -407,5 +407,10 @@ public abstract partial class QpChannel
         var responseType = typeof(TCmdResponse);
         var responseSerializer = getTypeSerializer(responseType);
         return (TCmdResponse)responseSerializer.Deserialize(ret.Content);
+    }
+
+    public virtual void Dispose()
+    {
+        InitQpPackageHandler_Stream(null);
     }
 }

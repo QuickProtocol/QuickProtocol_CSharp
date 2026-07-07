@@ -21,8 +21,8 @@ namespace Quick.Protocol
         {
             LastException = exception;
             Options.Logger?.Log("[WriteError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
-            InitQpPackageHandler_Stream(null);
-            Disconnect();
+            OnDisconnect();
+            Dispose();
         }
 
         //压缩相关变量

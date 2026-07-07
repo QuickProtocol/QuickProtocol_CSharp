@@ -69,9 +69,9 @@ public class QpServerChannel : QpChannel
                     return;
                 if (Options.Logger is { LogConnection: true })
                     Options.Logger.Log("{0} Authenticate timeout.", channelName);
-                Stop();
                 LastException = new TimeoutException("Authenticate timeout");
-                Disconnect();
+                OnDisconnect();
+                Dispose();
             });
     }
 
@@ -81,7 +81,7 @@ public class QpServerChannel : QpChannel
         {
             await Task.Delay(1000, cancellationToken);
             if (serverCancellationToken.IsCancellationRequested)
-                Stop();
+                Dispose();
         }
     }
 
@@ -110,7 +110,7 @@ public class QpServerChannel : QpChannel
             {
                 _ = Task.Delay(1000).ContinueWith(t =>
                 {
-                    Stop();
+                    Dispose();
                 });
                 throw new CommandException(1, "Authenticate failed.");
             }
@@ -122,8 +122,8 @@ public class QpServerChannel : QpChannel
         {
             cts?.Cancel();
             LastException = ex;
-            Disconnect();
-            _ = Task.Delay(1000).ContinueWith(t => Stop());
+            OnDisconnect();
+            _ = Task.Delay(1000).ContinueWith(t => Dispose());
             throw;
         }
     }
@@ -153,23 +153,11 @@ public class QpServerChannel : QpChannel
         };
     }
 
-    /// <summary>
-    /// 停止
-    /// </summary>
-    public void Stop()
+    public override void Dispose()
     {
-        try
-        {
-            cts?.Cancel();
-            stream?.Dispose();
-        }
-        catch { }
-    }
-
-    protected override void OnWriteError(Exception exception)
-    {
-        Stop();
-        base.OnWriteError(exception);
+        cts?.Cancel();
+        stream?.Dispose();
+        base.Dispose();
     }
 
     protected override void OnReadError(Exception exception)
@@ -185,7 +173,6 @@ public class QpServerChannel : QpChannel
                 return;
             }
         }
-        Stop();
         base.OnReadError(exception);
     }
 }

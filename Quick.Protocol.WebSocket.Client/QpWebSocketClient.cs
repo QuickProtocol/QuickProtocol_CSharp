@@ -35,8 +35,15 @@ namespace Quick.Protocol.WebSocket.Client
                 cts.Cancel();
                 client.Dispose();
                 throw;
-            }            
+            }
             return new WebSocketClientStream(client);
+        }
+
+        public override void Dispose()
+        {
+            client?.Dispose();
+            client = null;
+            base.Dispose();
         }
     }
 }
