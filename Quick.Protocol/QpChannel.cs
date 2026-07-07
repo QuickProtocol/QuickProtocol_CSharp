@@ -186,7 +186,7 @@ public abstract partial class QpChannel : IDisposable
 
     public QpChannel(QpChannelOptions options)
     {
-        this.Options = options;
+        Options = options;
         passwordMd5Buffer = CryptographyUtils.ComputeMD5Hash(Encoding.UTF8.GetBytes(options.Password)).Take(8).ToArray();
 
         DES des = DES.Create();
