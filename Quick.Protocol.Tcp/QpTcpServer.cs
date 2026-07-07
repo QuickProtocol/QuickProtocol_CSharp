@@ -32,31 +32,29 @@ public class QpTcpServer : QpServer
     public override void Stop()
     {
         tcpListener?.Stop();
+        tcpListener?.Dispose();
         tcpListener = null;
         base.Stop();
     }
 
-    protected override Task InnerAcceptAsync(CancellationToken token)
+    protected override async Task InnerAcceptAsync(CancellationToken token)
     {
-        return tcpListener.AcceptTcpClientAsync().ContinueWith(task =>
+        var tcpClient = await tcpListener.AcceptTcpClientAsync();
+        try
         {
-            var tcpClient = task.Result;
-            if (tcpClient == null)
-                return;
-            try
-            {
-                var remoteEndPointStr = "TCP:" + tcpClient.Client.RemoteEndPoint.ToString();
-                if (Options.Logger is { LogConnection: true })
-                    Console.WriteLine("[Connection]{0} connected.", remoteEndPointStr);
-                OnNewChannelConnected(tcpClient.GetStream(), remoteEndPointStr, token);
-            }
-            catch (Exception ex)
-            {
-                if (Options.Logger is { LogConnection: true })
-                    Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
-                try { tcpClient.Close(); }
-                catch { }
-            }
-        });
+            var remoteEndPointStr = $"{QpTcpClientOptions.URI_SCHEMA}://{tcpClient.Client.RemoteEndPoint}";
+            if (Options.Logger is { LogConnection: true })
+                Console.WriteLine("[Connection]{0} connected.", remoteEndPointStr);
+            OnNewChannelConnected(tcpClient.GetStream(), remoteEndPointStr, token);
+        }
+        catch (Exception ex)
+        {
+            if (Options.Logger is { LogConnection: true })
+                Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+            try { tcpClient.Close(); }
+            catch { }
+            try { tcpClient.Dispose(); }
+            catch { }
+        }
     }
 }

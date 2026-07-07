@@ -82,7 +82,6 @@ namespace Quick.Protocol
         {
             cts?.Cancel();
             cts = null;
-            Options.Init();
             base.Dispose();
         }
     }

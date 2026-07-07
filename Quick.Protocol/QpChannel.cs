@@ -228,6 +228,8 @@ public abstract partial class QpChannel : IDisposable
         var preStream = QpPackageHandler_Stream;
         QpPackageHandler_Stream = stream;
 
+        try { preStream?.Close(); }
+        catch { }
         try { preStream?.Dispose(); }
         catch { }
 

@@ -19,6 +19,7 @@ namespace Quick.Protocol.Pipeline
         protected override JsonSerializerContext GetJsonSerializerContext() => QpPipelineServerOptionsOptionsSerializerContext.Default2;
 
         public string PipeName { get; set; }
+        public int MaxNumberOfServerInstances { get; set; } = -1;
 
         public override void Check()
         {

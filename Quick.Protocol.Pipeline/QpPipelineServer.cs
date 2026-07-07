@@ -28,14 +28,13 @@ namespace Quick.Protocol.Pipeline
         {
             try
             {
-                var serverStream = new NamedPipeServerStream(options.PipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                var serverStream = new NamedPipeServerStream(options.PipeName, PipeDirection.InOut, options.MaxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                 await serverStream.WaitForConnectionAsync(token);
                 OnNewChannelConnected(serverStream, $"{QpPipelineClientOptions.URI_SCHEMA}://./{options.PipeName}", token);
             }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex.ToString());
+                await Task.Delay(1000, token);
             }
         }
     }

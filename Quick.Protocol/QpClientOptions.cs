@@ -44,15 +44,6 @@ namespace Quick.Protocol
         }
 
         /// <summary>
-        /// 初始化
-        /// </summary>
-        public void Init()
-        {
-            InternalCompress = false;
-            InternalEncrypt = false;
-        }
-
-        /// <summary>
         /// 创建客户端实例
         /// </summary>
         /// <returns></returns>
