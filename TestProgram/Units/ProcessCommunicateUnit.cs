@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Quick.Protocol;
 using Quick.Protocol.Streams;
 using Quick.Utils;
 
@@ -15,13 +16,12 @@ public class ProcessCommunicateUnit:IUnit
             File.AppendAllLines("ChildProcess.log", [t]);
         };
         var isDisconnected = false;
-        var options = new QpStreamClientOptions()
+        var options = new QpStdioClientOptions()
         {
             Password = "HelloQP",
             EnableCompress = true,
             EnableEncrypt = true,
-            BaseStream = new InputOutputStream(Console.OpenStandardInput(), Console.OpenStandardOutput()),
-            Logger = new Quick.Protocol.QpLogger(logger)
+            Logger = new QpLogger(logger)
             {
                 LogConnection = true,
                 LogCommand = true,
@@ -30,7 +30,7 @@ public class ProcessCommunicateUnit:IUnit
                 LogRaw = true
             }
         };
-        var client = new QpStreamClient(options);
+        var client = options.CreateClient();
         client.Disconnected += (sender, e) =>
         {
             logger.Invoke("Disconnected.");
