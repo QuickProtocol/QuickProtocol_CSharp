@@ -17,7 +17,7 @@ internal partial class QpProcessStdioServerOptionsSerializerContext : JsonSerial
 public class QpProcessStdioServerOptions : QpServerOptions
 {
     protected override JsonSerializerContext GetJsonSerializerContext() => QpProcessStdioServerOptionsSerializerContext.Default2;
-    public Stream GetStream() => new Streams.InputOutputStream(Process.StandardInput.BaseStream, Process.StandardOutput.BaseStream);
+    public Stream GetStream() => new Streams.InputOutputStream(Process.StandardOutput.BaseStream, Process.StandardInput.BaseStream);
 
     [JsonIgnore]
     public Process Process { get; set; }
