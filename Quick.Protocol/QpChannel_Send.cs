@@ -12,7 +12,6 @@ namespace Quick.Protocol
     {
         private readonly Pipe sendPipe = new Pipe();
         private readonly Pipe sendRawPipe = new Pipe();
-        private readonly byte[] sendHeadBuffer = new byte[5];
 
         /// <summary>
         /// 当发送出错时

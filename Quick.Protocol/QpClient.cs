@@ -69,7 +69,6 @@ namespace Quick.Protocol
         protected override void OnWriteError(Exception exception)
         {
             base.OnWriteError(exception);
-            Options.Init();
             cancellAll();
             Disconnect();
         }
@@ -77,7 +76,6 @@ namespace Quick.Protocol
         protected override void OnReadError(Exception exception)
         {
             base.OnReadError(exception);
-            Options.Init();
             cancellAll();
             Disconnect();
         }

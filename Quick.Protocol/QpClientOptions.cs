@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.IO;
-using System.Reflection;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -41,15 +35,6 @@ namespace Quick.Protocol
         {
             InternalCompress = EnableCompress;
             InternalEncrypt = EnableEncrypt;
-        }
-
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        public void Init()
-        {
-            InternalCompress = false;
-            InternalEncrypt = false;
         }
 
         /// <summary>
