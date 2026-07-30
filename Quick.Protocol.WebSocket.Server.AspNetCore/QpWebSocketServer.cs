@@ -48,7 +48,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 return;
             }
 
-            var connectionInfoStr = $"WebSocket:{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
+            var connectionInfoStr = $"qp.ws://{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
             var cts = new CancellationTokenSource();
             lock (webSocketContextQueue)
                 webSocketContextQueue.Enqueue(
