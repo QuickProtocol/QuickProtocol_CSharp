@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Quick.Protocol.Utils;
+using System;
+using System.Collections.Generic;
 using System.IO.Pipes;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,7 +11,6 @@ namespace Quick.Protocol.Pipeline
     public class QpPipelineServer : QpServer
     {
         private QpPipelineServerOptions options;
-        public override string BindingPath => $"{QpPipelineClientOptions.URI_SCHEMA}://./{options.PipeName}";
         public QpPipelineServer(QpPipelineServerOptions options) : base(options)
         {
             this.options = options;
@@ -24,18 +26,19 @@ namespace Quick.Protocol.Pipeline
             base.Stop();
         }
 
-        protected override async Task InnerAcceptAsync(CancellationToken token)
+        protected override Task InnerAcceptAsync(CancellationToken token)
         {
-            try
+            var serverStream = new NamedPipeServerStream(options.PipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+            Task waitForConnectionTask = null;
+            waitForConnectionTask = serverStream.WaitForConnectionAsync(token);
+            return waitForConnectionTask.ContinueWith(task =>
             {
-                var serverStream = new NamedPipeServerStream(options.PipeName, PipeDirection.InOut, options.MaxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
-                await serverStream.WaitForConnectionAsync(token);
-                OnNewChannelConnected(serverStream, $"{QpPipelineClientOptions.URI_SCHEMA}://./{options.PipeName}", token);
-            }
-            catch
-            {
-                await Task.Delay(1000, token);
-            }
+                if (task.IsCanceled)
+                    return;
+                if (task.IsFaulted)
+                    return;
+                OnNewChannelConnected(serverStream, $"Pipe:{options.PipeName}", token);
+            });
         }
     }
 }

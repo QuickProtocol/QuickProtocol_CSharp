@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Quick.Protocol.Utils;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -14,15 +17,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
     public class QpHttpServer : QpServer
     {
         public const string QP_CHANNEL_ID = nameof(QP_CHANNEL_ID);
-        private string[] urls;
-        public override string BindingPath
-        {
-            get
-            {
-                var pathes = urls.Select(t => $"qp.{t}{options.Path}");
-                return string.Join(";", pathes);
-            }
-        }
+
         private QpHttpServerOptions options;
 
         private Queue<QpHttpContext> httpContextQueue = new Queue<QpHttpContext>();
@@ -93,10 +88,9 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             }
         }
 
-        public QpHttpServer(QpHttpServerOptions options, string[] urls) : base(options)
+        public QpHttpServer(QpHttpServerOptions options) : base(options)
         {
             this.options = options;
-            this.urls = urls;
         }
 
         public override void Start()
@@ -104,11 +98,12 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             isStarted = true;
             lock (httpContextQueue)
                 httpContextQueue.Clear();
-            ChannelDisconnected += OnChannelDisconnected;
+            ChannelAuchenticateTimeout += OnChannelAuchenticateTimeoutOrDisconnected;
+            ChannelDisconnected += OnChannelAuchenticateTimeoutOrDisconnected;
             base.Start();
         }
 
-        private void OnChannelDisconnected(object sender, QpServerChannel e)
+        private void OnChannelAuchenticateTimeoutOrDisconnected(object sender, QpServerChannel e)
         {
             var stream = e.GetStream();
             if (stream == null)
@@ -125,7 +120,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             //如果还没有开始接收，则直接关闭
             if (!isStarted)
                 return;
-            var connectionInfoStr = $"qp.http://{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
+            var connectionInfoStr = $"HTTP:{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
             var cts = new CancellationTokenSource();
             var qpHttpContext = new QpHttpContext(options, channelId, connectionInfoStr, cts);
             lock (httpContextDict)
@@ -133,16 +128,16 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             lock (httpContextQueue)
                 httpContextQueue.Enqueue(qpHttpContext);
             await Task.Delay(-1, cts.Token).ContinueWith(t =>
-            {
-                if (Options.Logger is { LogConnection: true })
-                    Console.WriteLine("[Connection]{0} disconnected.", connectionInfoStr);
-            });
+             {
+                 Console.WriteLine("[Connection]{0} disconnected.", connectionInfoStr);
+             });
         }
 
         public override void Stop()
         {
             isStarted = false;
-            ChannelDisconnected -= OnChannelDisconnected;
+            ChannelAuchenticateTimeout -= OnChannelAuchenticateTimeoutOrDisconnected;
+            ChannelDisconnected -= OnChannelAuchenticateTimeoutOrDisconnected;
             lock (httpContextQueue)
                 httpContextQueue.Clear();
             base.Stop();
@@ -166,14 +161,12 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             {
                 try
                 {
-                    if (Options.Logger is { LogConnection: true })
-                        Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
+                    Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
                     OnNewChannelConnected(context.Stream, context.ConnectionInfo, token, false);
                 }
                 catch (Exception ex)
                 {
-                    if (Options.Logger is { LogConnection: true })
-                        Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                    Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                 }
             }
         }

@@ -1,15 +1,19 @@
-﻿namespace Quick.Protocol.Streams;
+﻿using System.IO;
+using System.Threading.Tasks;
 
-public class QpStreamClient : QpClient
+namespace Quick.Protocol.Streams
 {
-    private QpStreamClientOptions options;
-    public QpStreamClient(QpStreamClientOptions options) : base(options)
+    public class QpStreamClient : QpClient
     {
-        this.options = options;
-    }
+        private QpStreamClientOptions options;
+        public QpStreamClient(QpStreamClientOptions options) : base(options)
+        {
+            this.options = options;
+        }
 
-    protected override Task<Stream> InnerConnectAsync()
-    {
-        return Task.FromResult(options.BaseStream);
+        protected override Task<Stream> InnerConnectAsync()
+        {
+            return Task.FromResult(options.BaseStream);
+        }
     }
 }

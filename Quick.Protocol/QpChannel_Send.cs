@@ -12,6 +12,7 @@ namespace Quick.Protocol
     {
         private readonly Pipe sendPipe = new Pipe();
         private readonly Pipe sendRawPipe = new Pipe();
+        private readonly byte[] sendHeadBuffer = new byte[5];
 
         /// <summary>
         /// 当发送出错时
@@ -20,8 +21,8 @@ namespace Quick.Protocol
         {
             LastException = exception;
             Options.Logger?.Log("[WriteError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
-            OnDisconnect();
-            Dispose();
+            InitQpPackageHandler_Stream(null);
+            Disconnect();
         }
 
         //压缩相关变量

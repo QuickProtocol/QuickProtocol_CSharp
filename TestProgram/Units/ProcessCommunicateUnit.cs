@@ -1,57 +1,41 @@
 using System.Diagnostics;
-using Quick.Protocol;
 using Quick.Protocol.Streams;
-using Quick.Utils;
 
 namespace TestProgram.Units;
 
-public class ProcessCommunicateUnit:IUnit
+public class ProcessCommunicateUnit
 {
-    public string Name => "Process Communicate";
-
     public static void InvokeChildProcess()
     {
-        Action<string> logger = t =>
-        {
-            File.AppendAllLines("ChildProcess.log", [t]);
-        };
         var isDisconnected = false;
-        var options = new QpStdioClientOptions()
+        var options = new QpStreamClientOptions()
         {
             Password = "HelloQP",
             EnableCompress = true,
             EnableEncrypt = true,
-            Logger = new QpLogger(logger)
-            {
-                LogConnection = true,
-                LogCommand = true,
-                LogPackage = true,
-                LogContent=true,
-                LogRaw = true
-            }
+            BaseStream = new InputOutputStream(Console.OpenStandardInput(), Console.OpenStandardOutput())
         };
-        var client = options.CreateClient();
+        var client = new QpStreamClient(options);
         client.Disconnected += (sender, e) =>
         {
-            logger.Invoke("Disconnected.");
+            Debug.WriteLine("连接已断开");
             isDisconnected = true;
         };
-        logger.Invoke("Connecting...");
         client.ConnectAsync().ContinueWith(t =>
         {
             if (t.IsCanceled)
             {
                 isDisconnected = true;
-                logger.Invoke("Connect cancelled.");
+                Debug.WriteLine("连接已取消");
                 return;
             }
             if (t.IsFaulted)
             {
                 isDisconnected = true;
-                logger.Invoke("Connect error.Reason: " + ExceptionUtils.GetExceptionString(t.Exception));
+                Debug.WriteLine("连接出错，原因：" + t.Exception.InnerException.ToString());
                 return;
             }
-            logger.Invoke("Connected.");
+            Debug.WriteLine("连接成功");
 
             client.SendNoticePackage(new Quick.Protocol.Notices.PrivateNotice() { Content = "Hello Quick.Protocol V2!" });
             //client.SendNoticePackage(new Quick.Protocol.Notices.PrivateNotice() { Content = "".PadRight(5 * 1024, '0') });
@@ -62,7 +46,7 @@ public class ProcessCommunicateUnit:IUnit
         }
     }
 
-    public void Invoke()
+    public static void Invoke()
     {
         var psi = new ProcessStartInfo("dotnet");
         psi.ArgumentList.Add($"{nameof(TestProgram)}.dll");
@@ -81,6 +65,10 @@ public class ProcessCommunicateUnit:IUnit
             ChannelName = $"Process:{process.Id}"
         };
         var channel = new QpStreamServerChannel(options);
+        channel.AuchenticateTimeout += (sender, e) =>
+        {
+            Console.WriteLine(DateTime.Now.ToString() + "[Server]: auth timeout");
+        };
         channel.Disconnected += (sender, e) =>
         {
             Console.WriteLine(DateTime.Now.ToString() + "[Server]: disconnected");
@@ -89,7 +77,5 @@ public class ProcessCommunicateUnit:IUnit
         channel.RawNoticePackageReceived += (sender, e) => Console.WriteLine($"[Client_RawNoticePackageReceived]TypeName:{e.TypeName},Content:{e.Content}"); ;
         
         process.WaitForExit();
-        Console.WriteLine($"Child process[{process.Id}] exited.");
-        Console.ReadLine();
     }
 }

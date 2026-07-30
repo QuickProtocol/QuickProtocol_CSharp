@@ -121,8 +121,6 @@ public abstract class QpChannelOptions
     // </summary>
     public void RegisterCommandExecuterManager(CommandExecuterManager commandExecuterManager)
     {
-        if (CommandExecuterManagerList == null)
-            CommandExecuterManagerList = new List<CommandExecuterManager>();
         CommandExecuterManagerList.Add(commandExecuterManager);
     }
 
@@ -132,8 +130,6 @@ public abstract class QpChannelOptions
     /// <param name="noticeHandlerManager"></param>
     public void RegisterNoticeHandlerManager(NoticeHandlerManager noticeHandlerManager)
     {
-        if (NoticeHandlerManagerList == null)
-            NoticeHandlerManagerList = new List<NoticeHandlerManager>();
         NoticeHandlerManagerList.Add(noticeHandlerManager);
     }
 }

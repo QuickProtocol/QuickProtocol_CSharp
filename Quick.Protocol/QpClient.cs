@@ -23,66 +23,80 @@ namespace Quick.Protocol
         /// </summary>
         public async Task ConnectAsync()
         {
-            try
+            //清理
+            Close();
+            cts = new CancellationTokenSource();
+            var token = cts.Token;
+
+            var stream = await InnerConnectAsync().ConfigureAwait(false);
+            //初始化网络
+            InitQpPackageHandler_Stream(stream);
+
+            //开始读取其他数据包
+            BeginReadPackage(token);
+            //开始统计网络数据
+            _ = BeginNetstat(token);
+
+            var repConnect = await SendCommand(new Commands.Connect.Request()
             {
-                //清理
-                Dispose();
-                cts = new CancellationTokenSource();
-                var token = cts.Token;
+                InstructionIds = Options.InstructionSet.Select(t => t.Id).ToArray()
+            }).ConfigureAwait(false);
+            AuthenticateQuestion = repConnect.Question;
 
-                var stream = await InnerConnectAsync().ConfigureAwait(false);
-                //初始化网络
-                InitQpPackageHandler_Stream(stream);
-
-                IsConnected = true;
-
-                //开始读取其他数据包
-                BeginReadPackage(token);
-                //开始统计网络数据
-                _ = BeginNetstat(token);
-
-                var repConnect = await SendCommand(new Commands.Connect.Request()
-                {
-                    InstructionIds = Options.InstructionSet.Select(t => t.Id).ToArray()
-                }).ConfigureAwait(false);
-                AuthenticateQuestion = repConnect.Question;
-
-
-                var repAuth = await SendCommand(new Commands.Authenticate.Request()
-                {
-                    Answer = CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password)
-                }).ConfigureAwait(false);
-
-                Options.OnAuthPassed();
-                IsAuchenticated = true;
-
-                var repHandShake = await SendCommand(new Commands.HandShake.Request()
-                {
-                    EnableCompress = Options.EnableCompress,
-                    EnableEncrypt = Options.EnableEncrypt,
-                    TransportTimeout = Options.TransportTimeout
-                }, 5000, true).ConfigureAwait(false);
-
-                //开始心跳
-                if (Options.HeartBeatInterval > 0)
-                {
-                    //定时发送心跳包
-                    _ = BeginHeartBeat(token);
-                }
-            }
-            catch (Exception ex)
+            var repAuth = await SendCommand(new Commands.Authenticate.Request()
             {
-                LastException = ex;
-                Dispose();
-                throw;
+                Answer = CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password)
+            }).ConfigureAwait(false);
+
+            Options.OnAuthPassed();
+            IsConnected = true;
+
+            var repHandShake = await SendCommand(new Commands.HandShake.Request()
+            {
+                EnableCompress = Options.EnableCompress,
+                EnableEncrypt = Options.EnableEncrypt,
+                TransportTimeout = Options.TransportTimeout
+            }, 5000, true).ConfigureAwait(false);
+
+            //开始心跳
+            if (Options.HeartBeatInterval > 0)
+            {
+                //定时发送心跳包
+                _ = BeginHeartBeat(token);
             }
         }
 
-        public override void Dispose()
+        protected override void OnWriteError(Exception exception)
+        {
+            base.OnWriteError(exception);
+            Options.Init();
+            cancellAll();
+            Disconnect();
+        }
+
+        protected override void OnReadError(Exception exception)
+        {
+            base.OnReadError(exception);
+            Options.Init();
+            cancellAll();
+            Disconnect();
+        }
+
+        private void cancellAll()
         {
             cts?.Cancel();
             cts = null;
-            base.Dispose();
+        }
+
+        /// <summary>
+        /// 关闭连接
+        /// </summary>
+        public void Close()
+        {
+            cancellAll();
+            IsConnected = false;
+            InitQpPackageHandler_Stream(null);
+            Disconnect();
         }
     }
 }

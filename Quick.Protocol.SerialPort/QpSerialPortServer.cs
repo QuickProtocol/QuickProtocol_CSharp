@@ -9,7 +9,6 @@ namespace Quick.Protocol.SerialPort
         private QpSerialPortServerOptions options;
         private System.IO.Ports.SerialPort serialPort;
         private bool isAccepted = false;
-        public override string BindingPath => $"{QpSerialPortClientOptions.URI_SCHEMA}://./{options.PortName}";
 
         public QpSerialPortServer(QpSerialPortServerOptions options) : base(options)
         {
@@ -18,7 +17,7 @@ namespace Quick.Protocol.SerialPort
 
         public override void Start()
         {
-            ChannelDisconnected += QpSerialPortServer_ChannelDisconnected;
+            this.ChannelDisconnected += QpSerialPortServer_ChannelDisconnected;
             Console.WriteLine($"Opening SerialPort[{options.PortName}]...");
             serialPort = new System.IO.Ports.SerialPort(options.PortName,
                                                 options.BaudRate,
@@ -40,7 +39,7 @@ namespace Quick.Protocol.SerialPort
                 serialPort.Dispose();
                 serialPort = null;
             }
-            ChannelDisconnected -= QpSerialPortServer_ChannelDisconnected;
+            this.ChannelDisconnected -= QpSerialPortServer_ChannelDisconnected;
         }
 
         private void QpSerialPortServer_ChannelDisconnected(object sender, QpServerChannel e)
@@ -65,7 +64,7 @@ namespace Quick.Protocol.SerialPort
                         return;
                     if (task.IsFaulted)
                         return;
-                    OnNewChannelConnected(serialPort.BaseStream, $"{QpSerialPortClientOptions.URI_SCHEMA}://./{options.PortName}", token, false);
+                    OnNewChannelConnected(serialPort.BaseStream, $"SerialPort:{options.PortName}", token, false);
                 });
         }
     }

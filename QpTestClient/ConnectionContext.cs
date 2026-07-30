@@ -1,5 +1,7 @@
 ﻿using Quick.Protocol;
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace QpTestClient
@@ -57,7 +59,7 @@ namespace QpTestClient
             }
             catch
             {
-                QpClient?.Dispose();
+                QpClient?.Close();
                 QpClient = null;
                 throw;
             }
@@ -70,7 +72,7 @@ namespace QpTestClient
             }
             catch
             {
-                QpClient?.Dispose();
+                QpClient?.Close();
                 QpClient = null;
                 throw;
             }
@@ -86,7 +88,7 @@ namespace QpTestClient
             Connected = false;
             var client = QpClient;
             QpClient = null;
-            client?.Dispose();
+            client?.Close();
         }
     }
 }

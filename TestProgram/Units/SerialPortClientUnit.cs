@@ -1,13 +1,33 @@
-using Quick.Protocol;
-
 namespace TestProgram.Units;
 
-public class SerialPortClientUnit : AbstractClientUnit
+public class SerialPortClientUnit
 {
-    public override string Name => "SerialPort client";
-    protected override QpClientOptions GetClientOptions() => new Quick.Protocol.SerialPort.QpSerialPortClientOptions()
+    public static void Invoke()
     {
-        PortName = "COM3",
-        Password = "HelloQP"
-    };
+        var client = new Quick.Protocol.SerialPort.QpSerialPortClient(new Quick.Protocol.SerialPort.QpSerialPortClientOptions()
+            {
+                PortName = "COM3",
+                Password = "HelloQP"
+            });
+
+            client.Disconnected += (sender, e) =>
+            {
+                Console.WriteLine("Disconnected");
+            };
+            client.ConnectAsync().ContinueWith(t =>
+            {
+                if (t.IsCanceled)
+                {
+                    Console.WriteLine("Connect cancelled.");
+                    return;
+                }
+                if (t.IsFaulted)
+                {
+                    Console.WriteLine("Connect error," + t.Exception.InnerException.ToString());
+                    return;
+                }
+                Console.WriteLine("Connected");
+            });
+            Console.ReadLine();
+    }
 }

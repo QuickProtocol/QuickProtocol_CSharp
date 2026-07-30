@@ -1,5 +1,4 @@
 ﻿using Quick.Build;
-using TestProgram;
 using TestProgram.Units;
 
 if (args != null && args.Length > 0)
@@ -8,32 +7,61 @@ if (args != null && args.Length > 0)
     {
         case nameof(ProcessCommunicateUnit.InvokeChildProcess):
             ProcessCommunicateUnit.InvokeChildProcess();
-            return;
+            break;
     }
 }
-
-var units = new IUnit[]
+var unitDict = new Dictionary<string, string>()
 {
-    new ProcessCommunicateUnit(),
-    new TcpServerUnit(),
-    new TcpClientUnit(),
-    new PipelineServerUnit(),
-    new PipelineClientUnit(),
-    new SerialPortServerUnit(),
-    new SerialPortClientUnit(),
-    new HttpServerUnit(),
-    new HttpClientUnit(),
-    new WebSocketServerUnit(),
-    new WebSocketClientUnit(),
-    new PerformanceTestUnit()
+    [nameof(ProcessCommunicateUnit)] = "Process Communicate",
+    [nameof(TcpClientUnit)] = "TCP client",
+    [nameof(TcpServerUnit)] = "TCP server",
+    [nameof(PipelineServerUnit)] = "Pipeline server",
+    [nameof(PipelineClientUnit)] = "Pipeline client",
+    [nameof(SerialPortServerUnit)] = "SerialPort server",
+    [nameof(SerialPortClientUnit)] = "SerialPort client",
+    [nameof(HttpServerUnit)] = "Http server",
+    [nameof(HttpClientUnit)] = "Http client",
+    [nameof(WebSocketServerUnit)] = "WebSocket server",
+    [nameof(WebSocketClientUnit)] = "WebSocket client",
 };
-
-var unitDict = units.ToDictionary(t => t.Name, t => t);
-
 Console.WriteLine("Welcome to use Test program.");
 Console.WriteLine("Please select test unit:");
-var selectedUnit = QbSelect.ArrowSelect(unitDict.Keys.ToDictionary(t => t, t => t).ToArray());
+var selectedUnit = QbSelect.ArrowSelect(unitDict.ToArray());
 
-Console.WriteLine($"Run unit: {selectedUnit}");
-var unit = unitDict[selectedUnit];
-unit.Invoke();
+Console.WriteLine("Run unit: " + unitDict[selectedUnit]);
+switch (selectedUnit)
+{
+    case nameof(ProcessCommunicateUnit):
+        ProcessCommunicateUnit.Invoke();
+        break;
+    case nameof(TcpServerUnit):
+        TcpServerUnit.Invoke();
+        break;
+    case nameof(TcpClientUnit):
+        TcpClientUnit.Invoke();
+        break;
+    case nameof(PipelineServerUnit):
+        PipelineServerUnit.Invoke();
+        break;
+    case nameof(PipelineClientUnit):
+        PipelineClientUnit.Invoke();
+        break;
+    case nameof(SerialPortServerUnit):
+        SerialPortServerUnit.Invoke();
+        break;
+    case nameof(SerialPortClientUnit):
+        SerialPortClientUnit.Invoke();
+        break;
+    case nameof(HttpServerUnit):
+        HttpServerUnit.Invoke();
+        break;
+    case nameof(HttpClientUnit):
+        HttpClientUnit.Invoke();
+        break;
+    case nameof(WebSocketServerUnit):
+        WebSocketServerUnit.Invoke();
+        break;
+    case nameof(WebSocketClientUnit):
+        WebSocketClientUnit.Invoke();
+        break;
+}

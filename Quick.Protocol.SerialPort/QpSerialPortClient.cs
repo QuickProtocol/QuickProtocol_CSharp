@@ -42,7 +42,7 @@ namespace Quick.Protocol.SerialPort
             return serialPort.BaseStream;
         }
 
-        public override void Dispose()
+        public override void Disconnect()
         {
             if (serialPort != null)
             {
@@ -50,7 +50,7 @@ namespace Quick.Protocol.SerialPort
                 serialPort.Dispose();
                 serialPort = null;
             }
-            base.Dispose();
+            base.Disconnect();
         }
     }
 }

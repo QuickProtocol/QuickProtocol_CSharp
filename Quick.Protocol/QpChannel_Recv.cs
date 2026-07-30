@@ -1,451 +1,459 @@
 ﻿using Quick.Protocol.Exceptions;
 using Quick.Protocol.Utils;
+using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO.Compression;
 using System.IO.Pipelines;
+using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Quick.Protocol.Streams;
 using Quick.Utils;
 
-namespace Quick.Protocol;
-
-public abstract partial class QpChannel
+namespace Quick.Protocol
 {
-    /// <summary>
-    /// 从流中读取返回0是否代表错误
-    /// </summary>
-    protected virtual bool ReadFromStreamReturnZeroMeansFault { get; } = true;
-    private DateTime lastReadDataTime;
-    /// <summary>
-    /// 当读取出错时
-    /// </summary>
-    protected virtual void OnReadError(Exception exception)
+    public abstract partial class QpChannel
     {
-        LastException = exception;
-        Options.Logger?.Log("[ReadError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
-        OnDisconnect();
-        Dispose();
-    }
-
-    /// <summary>
-    /// 接收到原始通知数据包时
-    /// </summary>
-    /// <param name="typeName"></param>
-    /// <param name="content"></param>
-    protected void OnRawNoticePackageReceived(string typeName, string content)
-    {
-        //触发RawNoticePackageReceived事件
-        RawNoticePackageReceived?.Invoke(this, new RawNoticePackageReceivedEventArgs()
+        /// <summary>
+        /// 从流中读取返回0是否代表错误
+        /// </summary>
+        protected virtual bool ReadFromStreamReturnZeroMeansFault { get; } = true;
+        private DateTime lastReadDataTime;
+        /// <summary>
+        /// 当读取出错时
+        /// </summary>
+        protected virtual void OnReadError(Exception exception)
         {
-            TypeName = typeName,
-            Content = content
-        });
-        //如果在字典中未找到此类型名称，则直接返回
-        if (!noticeTypeDict.ContainsKey(typeName))
-            return;
-        var noticeType = noticeTypeDict[typeName];
-        var noticeSerializer = getTypeSerializer(noticeType);
-        var contentModel = noticeSerializer.Deserialize(content);
-
-        //处理通知
-        var hasNoticeHandler = false;
-        if (Options.NoticeHandlerManagerList != null)
-            foreach (var noticeHandlerManager in Options.NoticeHandlerManagerList)
-            {
-                if (noticeHandlerManager.CanHandleNoticed(typeName))
-                {
-                    hasNoticeHandler = true;
-                    noticeHandlerManager.HandleNotice(this, typeName, contentModel);
-                    break;
-                }
-            }
-
-        //如果配置了触发NoticePackageReceived事件
-        if (Options.RaiseNoticePackageReceivedEvent)
-        {
-            NoticePackageReceived?.Invoke(this, new NoticePackageReceivedEventArgs()
-            {
-                TypeName = typeName,
-                ContentModel = contentModel,
-                Handled = hasNoticeHandler
-            });
+            LastException = exception;
+            Options.Logger?.Log("[ReadError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
+            InitQpPackageHandler_Stream(null);
+            Disconnect();
         }
-    }
 
-    /// <summary>
-    /// 接收到命令请求数据包时
-    /// </summary>
-    /// <param name="commandId"></param>
-    /// <param name="typeName"></param>
-    /// <param name="content"></param>
-    private void OnCommandRequestReceived(string commandId, string typeName, string content)
-    {
-        var eventArgs = new RawCommandRequestPackageReceivedEventArgs()
+        /// <summary>
+        /// 接收到原始通知数据包时
+        /// </summary>
+        /// <param name="typeName"></param>
+        /// <param name="content"></param>
+        protected void OnRawNoticePackageReceived(string typeName, string content)
         {
-            CommandId = commandId,
-            TypeName = typeName,
-            Content = content
-        };
-        RawCommandRequestPackageReceived?.Invoke(this, eventArgs);
-        //如果已经处理，则直接返回
-        if (eventArgs.Handled)
-            return;
-
-        try
-        {
-            //如果在字典中未找到此类型名称，则直接返回
-            if (!commandRequestTypeDict.ContainsKey(typeName))
-                throw new CommandException(255, $"Unknown RequestType[{typeName}].");
-
-            var cmdRequestType = commandRequestTypeDict[typeName];
-            var cmdResponseType = commandRequestTypeResponseTypeDict[cmdRequestType];
-            var requestSerilizer = getTypeSerializer(cmdRequestType);
-            var contentModel = requestSerilizer.Deserialize(content);
-            CommandRequestPackageReceived?.Invoke(this, new CommandRequestPackageReceivedEventArgs()
+            //触发RawNoticePackageReceived事件
+            RawNoticePackageReceived?.Invoke(this, new RawNoticePackageReceivedEventArgs()
             {
-                CommandId = commandId,
                 TypeName = typeName,
-                ContentModel = contentModel
+                Content = content
             });
+            //如果在字典中未找到此类型名称，则直接返回
+            if (!noticeTypeDict.ContainsKey(typeName))
+                return;
+            var noticeType = noticeTypeDict[typeName];
+            var noticeSerializer = getTypeSerializer(noticeType);
+            var contentModel = noticeSerializer.Deserialize(content);
 
-            var hasCommandExecuter = false;
-            if (Options.CommandExecuterManagerList != null)
-                foreach (var commandExecuterManager in Options.CommandExecuterManagerList)
+            //处理通知
+            var hasNoticeHandler = false;
+            if (Options.NoticeHandlerManagerList != null)
+                foreach (var noticeHandlerManager in Options.NoticeHandlerManagerList)
                 {
-                    if (commandExecuterManager.CanExecuteCommand(typeName))
+                    if (noticeHandlerManager.CanHandleNoticed(typeName))
                     {
-                        hasCommandExecuter = true;
-                        var responseModel = commandExecuterManager.ExecuteCommand(this, typeName, contentModel);
-                        var responseSerializer = getTypeSerializer(cmdResponseType);
-                        _ = SendCommandResponsePackage(commandId, 0, null,
-                            cmdResponseType.FullName,
-                            responseSerializer.Serialize(responseModel));
+                        hasNoticeHandler = true;
+                        noticeHandlerManager.HandleNotice(this, typeName, contentModel);
                         break;
                     }
                 }
-            if (!hasCommandExecuter)
-                throw new CommandException(255, $"No CommandExecuter for RequestType[{typeName}]");
-        }
-        catch (CommandException ex)
-        {
-            string errorMessage = ExceptionUtils.GetExceptionMessage(ex);
-            _ = SendCommandResponsePackage(commandId, ex.Code, errorMessage, null, null);
-        }
-        catch (Exception ex)
-        {
-            string errorMessage = ExceptionUtils.GetExceptionMessage(ex);
-            _ = SendCommandResponsePackage(commandId, 255, errorMessage, null, null);
-        }
-    }
 
-    /// <summary>
-    /// 接收到命令响应数据包时
-    /// </summary>
-    /// <param name="commandId"></param>
-    /// <param name="code"></param>
-    /// <param name="message"></param>
-    /// <param name="typeName"></param>
-    /// <param name="content"></param>
-    private void OnCommandResponseReceived(string commandId, byte code, string message, string typeName, string content)
-    {
-        CommandResponsePackageReceived?.Invoke(this, new CommandResponsePackageReceivedEventArgs()
-        {
-            CommandId = commandId,
-            Code = code,
-            Message = message,
-            TypeName = typeName,
-            Content = content
-        });
-        //设置指令响应
-        CommandContext commandContext;
-        if (!commandDict.TryRemove(commandId, out commandContext))
-            return;
-        if (code == 0)
-            commandContext.SetResponse(typeName, content);
-        else
-            commandContext.SetResponse(new CommandException(code, message));
-    }
-
-    private async Task CheckRecvTimeoutAsync(CancellationToken token)
-    {
-        while (!token.IsCancellationRequested)
-        {
-            await Task.Delay(1000, token);
-            var sp = DateTime.Now - lastReadDataTime;
-            if (sp.TotalMilliseconds > Options.InternalTransportTimeout)
-                throw new TimeoutException();
-        }
-    }
-
-    private async Task FillRecvPipeAsync(Stream stream, PipeWriter writer, CancellationToken token)
-    {
-        var readBufferMemory = new Memory<byte>(new byte[minimumBufferSize]);
-        while (!token.IsCancellationRequested)
-        {
-            int bytesRead = await stream.ReadAsync(readBufferMemory, token);
-            if (bytesRead < 0)
-                throw new EndOfStreamException();
-            if (bytesRead == 0)
+            //如果配置了触发NoticePackageReceived事件
+            if (Options.RaiseNoticePackageReceivedEvent)
             {
-                if (ReadFromStreamReturnZeroMeansFault)
-                    throw new EndOfStreamException();
-                await Task.Delay(100, token);
-                continue;
-            }
-            lastReadDataTime = DateTime.Now;
-            if (Options.EnableNetstat)
-            {
-                BytesReceived += bytesRead;
-                if (BytesReceived > LONG_HALF_MAX_VALUE)
-                    BytesReceived = 0;
-            }
-            await writer.WriteAsync(readBufferMemory.Slice(0, bytesRead), token);
-            await writer.FlushAsync(token);
-        }
-    }
-
-    private async Task ReadRecvPipeAsync(PipeReader recvReader, CancellationToken token)
-    {
-        //包体长度
-        var packageBodyLength = 0;
-        QpPackageType packageType;
-        //暂存包头缓存
-        var packageHeadBuffer = new byte[PACKAGE_HEAD_LENGTH];
-        ReadOnlySequence<byte> packageBodyBuffer = default;
-
-        //解压相关变量
-        Pipe decompressPipe = null;
-
-        while (!token.IsCancellationRequested)
-        {
-            //读取包
-            var currentReader = recvReader;
-            {
-                var readTask = currentReader.ReadAtLeastAsync(PACKAGE_HEAD_LENGTH, token);
-                var ret = await readTask.AsTask()
-                    .WaitAsync(TimeSpan.FromMilliseconds(Options.InternalTransportTimeout), token)
-                    .ConfigureAwait(false);
-                if (ret.IsCanceled)
-                    return;
-                if (ret.Buffer.Length < PACKAGE_HEAD_LENGTH)
-                    throw new ProtocolException(ret.Buffer, $"包头读取错误！包头长度：{PACKAGE_HEAD_LENGTH}，读取数据长度：{ret.Buffer.Length}");
-
-                //解析包总长度
-                var packageTotalLength = parsePackageTotalLength(ret.Buffer, packageHeadBuffer);
-                packageBodyLength = packageTotalLength - PACKAGE_HEAD_LENGTH;
-
-                packageType = (QpPackageType)packageHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH];
-                currentReader.AdvanceTo(ret.Buffer.Start);
-
-                //读取完整包
-                ret = await currentReader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
-                if (ret.IsCanceled)
-                    return;
-                if (ret.Buffer.Length < packageTotalLength)
-                    throw new ProtocolException(ret.Buffer, $"包读取错误！包总长度：{packageTotalLength}，读取数据长度：{ret.Buffer.Length}");
-                var packageBuffer = ret.Buffer.Slice(0, packageTotalLength);
-                if (Options.Logger is { LogRaw: true })
+                NoticePackageReceived?.Invoke(this, new NoticePackageReceivedEventArgs()
                 {
-                    var sb = new StringBuilder();
-                    sb.Append($"{DateTime.Now}: [Recv-Raw]Length: {packageBuffer.Length}");
-                    if (Options.Logger.LogContent)
-                        sb.Append(", Content: " + Convert.ToHexString(packageBuffer.ToArray()));
-                    else
-                        sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-                    Options.Logger.Log(sb.ToString());
-                }
-                packageBodyBuffer = packageBuffer.Slice(PACKAGE_HEAD_LENGTH);
+                    TypeName = typeName,
+                    ContentModel = contentModel,
+                    Handled = hasNoticeHandler
+                });
             }
-            //如果有包体，且启用了压缩或者加密
-            if (packageBodyLength > 0 && (Options.InternalCompress || Options.InternalEncrypt))
+        }
+
+        /// <summary>
+        /// 接收到命令请求数据包时
+        /// </summary>
+        /// <param name="commandId"></param>
+        /// <param name="typeName"></param>
+        /// <param name="content"></param>
+        private void OnCommandRequestReceived(string commandId, string typeName, string content)
+        {
+            var eventArgs = new RawCommandRequestPackageReceivedEventArgs()
             {
-                //如果设置了加密
-                if (Options.InternalEncrypt)
+                CommandId = commandId,
+                TypeName = typeName,
+                Content = content
+            };
+            RawCommandRequestPackageReceived?.Invoke(this, eventArgs);
+            //如果已经处理，则直接返回
+            if (eventArgs.Handled)
+                return;
+
+            try
+            {
+                //如果在字典中未找到此类型名称，则直接返回
+                if (!commandRequestTypeDict.ContainsKey(typeName))
+                    throw new CommandException(255, $"Unknown RequestType[{typeName}].");
+
+                var cmdRequestType = commandRequestTypeDict[typeName];
+                var cmdResponseType = commandRequestTypeResponseTypeDict[cmdRequestType];
+                var requestSerilizer = getTypeSerializer(cmdRequestType);
+                var contentModel = requestSerilizer.Deserialize(content);
+                CommandRequestPackageReceived?.Invoke(this, new CommandRequestPackageReceivedEventArgs()
                 {
-                    //开始解密
-                    var encryptedBuffer = packageBodyBuffer.ToArray();
-                    var decryptBuffer = dec.TransformFinalBlock(encryptedBuffer, 0, encryptedBuffer.Length);
-                    packageBodyLength = decryptBuffer.Length;
+                    CommandId = commandId,
+                    TypeName = typeName,
+                    ContentModel = contentModel
+                });
 
-                    //解密完成，释放缓存
-                    currentReader?.AdvanceTo(packageBodyBuffer.End);
-
-                    packageBodyBuffer = new ReadOnlySequence<byte>(decryptBuffer);
-                    currentReader = null;
-                }
-
-                //如果设置了压缩
-                if (Options.InternalCompress)
-                {
-                    //准备管道
-                    if (decompressPipe == null)
-                        decompressPipe = new Pipe();
-
-                    packageBodyLength = 0;
-                    //开始解压
-                    using (var readMs = new ReadOnlySequenceByteStream(packageBodyBuffer))
-                    using (var gzStream = new GZipStream(readMs, CompressionMode.Decompress, true))
+                var hasCommandExecuter = false;
+                if (Options.CommandExecuterManagerList != null)
+                    foreach (var commandExecuterManager in Options.CommandExecuterManagerList)
                     {
-                        while (true)
+                        if (commandExecuterManager.CanExecuteCommand(typeName))
                         {
-                            var count = await gzStream.ReadAsync(decompressPipe.Writer.GetMemory(minimumBufferSize), token).ConfigureAwait(false);
-                            if (count <= 0)
-                                break;
-                            decompressPipe.Writer.Advance(count);
-                            packageBodyLength += count;
+                            hasCommandExecuter = true;
+                            var responseModel = commandExecuterManager.ExecuteCommand(this, typeName, contentModel);
+                            var responseSerializer = getTypeSerializer(cmdResponseType);
+                            _ = SendCommandResponsePackage(commandId, 0, null,
+                                cmdResponseType.FullName,
+                                responseSerializer.Serialize(responseModel));
+                            break;
                         }
                     }
-                    _ = decompressPipe.Writer.FlushAsync();
-                    var ret = await decompressPipe.Reader.ReadAtLeastAsync(packageBodyLength, token).ConfigureAwait(false);
-                    //解压完成，释放缓存
-                    currentReader?.AdvanceTo(packageBodyBuffer.End);
-                    packageBodyBuffer = ret.Buffer;
-                    currentReader = decompressPipe.Reader;
-                }
+                if (!hasCommandExecuter)
+                    throw new CommandException(255, $"No CommandExecuter for RequestType[{typeName}]");
             }
-            HandlePackage(packageType, packageBodyBuffer);
-            currentReader?.AdvanceTo(packageBodyBuffer.End);
-        }
-    }
-
-    protected void HandlePackage(QpPackageType packageType, ReadOnlySequence<byte> bodyBuffer)
-    {
-        if (Options.Logger is { LogPackage: true })
-        {
-            var sb = new StringBuilder();
-            sb.Append($"{DateTime.Now}: [Recv-Package]Type: {packageType}");
-            if (bodyBuffer.Length > 0)
+            catch (CommandException ex)
             {
-                if (Options.Logger.LogContent)
-                    sb.Append(", Content: " + Convert.ToHexString(bodyBuffer.ToArray()));
-                else
-                    sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                string errorMessage = ExceptionUtils.GetExceptionMessage(ex);
+                _ = SendCommandResponsePackage(commandId, ex.Code, errorMessage, null, null);
             }
-            Options.Logger.Log(sb.ToString());
+            catch (Exception ex)
+            {
+                string errorMessage = ExceptionUtils.GetExceptionMessage(ex);
+                _ = SendCommandResponsePackage(commandId, 255, errorMessage, null, null);
+            }
         }
-        switch (packageType)
+
+        /// <summary>
+        /// 接收到命令响应数据包时
+        /// </summary>
+        /// <param name="commandId"></param>
+        /// <param name="code"></param>
+        /// <param name="message"></param>
+        /// <param name="typeName"></param>
+        /// <param name="content"></param>
+        private void OnCommandResponseReceived(string commandId, byte code, string message, string typeName, string content)
         {
-            case QpPackageType.Heartbeat:
+            CommandResponsePackageReceived?.Invoke(this, new CommandResponsePackageReceivedEventArgs()
+            {
+                CommandId = commandId,
+                Code = code,
+                Message = message,
+                TypeName = typeName,
+                Content = content
+            });
+            //设置指令响应
+            CommandContext commandContext;
+            if (!commandDict.TryRemove(commandId, out commandContext))
+                return;
+            if (code == 0)
+                commandContext.SetResponse(typeName, content);
+            else
+                commandContext.SetResponse(new CommandException(code, message));
+        }
+
+        private async Task CheckRecvTimeoutAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(1000, token);
+                var sp = DateTime.Now - lastReadDataTime;
+                if (sp.TotalMilliseconds > Options.InternalTransportTimeout)
+                    throw new TimeoutException();
+            }
+        }
+
+        private async Task FillRecvPipeAsync(Stream stream, PipeWriter writer, CancellationToken token)
+        {
+            var readBufferMemory = new Memory<byte>(new byte[minimumBufferSize]);
+            while (!token.IsCancellationRequested)
+            {
+                int bytesRead = await stream.ReadAsync(readBufferMemory, token);
+                if (bytesRead < 0)
+                    throw new EndOfStreamException();
+                if (bytesRead == 0)
                 {
-                    if (Options.Logger is { LogHeartbeat: true })
-                        Options.Logger.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
-                    HeartbeatPackageReceived?.Invoke(this, EventArgs.Empty);
-                    break;
+                    if (ReadFromStreamReturnZeroMeansFault)
+                        throw new EndOfStreamException();
+                    await Task.Delay(100, token);
+                    continue;
                 }
-            case QpPackageType.Notice:
+                lastReadDataTime = DateTime.Now;
+                if (Options.EnableNetstat)
                 {
-                    var typeNameLength = bodyBuffer.First.Span[0];
-                    bodyBuffer = bodyBuffer.Slice(1);
-
-                    var typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
-                    bodyBuffer = bodyBuffer.Slice(typeNameLength);
-
-                    var content = encoding.GetString(bodyBuffer);
-
-                    if (Options.Logger is { LogNotice: true })
-                        Options.Logger.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
-                            .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-
-                    OnRawNoticePackageReceived(typeName, content);
-                    break;
+                    BytesReceived += bytesRead;
+                    if (BytesReceived > LONG_HALF_MAX_VALUE)
+                        BytesReceived = 0;
                 }
-            case QpPackageType.CommandRequest:
-                {
-                    var commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray()).ToLower();
-                    bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
+                await writer.WriteAsync(readBufferMemory.Slice(0, bytesRead), token);
+                await writer.FlushAsync(token);
+            }
+        }
 
-                    var typeNameLength = bodyBuffer.First.Span[0];
-                    bodyBuffer = bodyBuffer.Slice(1);
-                    if (bodyBuffer.Length < typeNameLength)
+        private async Task ReadRecvPipeAsync(PipeReader recvReader, CancellationToken token)
+        {
+            //包体长度
+            var packageBodyLength = 0;
+            QpPackageType packageType;
+            //暂存包头缓存
+            var packageHeadBuffer = new byte[PACKAGE_HEAD_LENGTH];
+            ReadOnlySequence<byte> packageBodyBuffer = default;
+
+            //解压相关变量
+            Pipe decompressPipe = null;
+
+            while (!token.IsCancellationRequested)
+            {
+                //读取包
+                var currentReader = recvReader;
+                {
+                    var readTask = currentReader.ReadAtLeastAsync(PACKAGE_HEAD_LENGTH, token);
+                    var ret = await readTask.AsTask()
+                        .WaitAsync(TimeSpan.FromMilliseconds(Options.InternalTransportTimeout), token)
+                        .ConfigureAwait(false);
+                    if (ret.IsCanceled)
+                        return;
+                    if (ret.Buffer.Length < PACKAGE_HEAD_LENGTH)
+                        throw new ProtocolException(ret.Buffer, $"包头读取错误！包头长度：{PACKAGE_HEAD_LENGTH}，读取数据长度：{ret.Buffer.Length}");
+
+                    //解析包总长度
+                    var packageTotalLength = parsePackageTotalLength(ret.Buffer, packageHeadBuffer);
+                    packageBodyLength = packageTotalLength - PACKAGE_HEAD_LENGTH;
+
+                    packageType = (QpPackageType)packageHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH];
+                    currentReader.AdvanceTo(ret.Buffer.Start);
+
+                    //读取完整包
+                    ret = await currentReader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
+                    if (ret.IsCanceled)
+                        return;
+                    if (ret.Buffer.Length < packageTotalLength)
+                        throw new ProtocolException(ret.Buffer, $"包读取错误！包总长度：{packageTotalLength}，读取数据长度：{ret.Buffer.Length}");
+                    var packageBuffer = ret.Buffer.Slice(0, packageTotalLength);
+                    if (Options.Logger is { LogRaw: true })
                     {
-                        throw new IOException($"bodyBuffer.Length:{bodyBuffer.Length} < TypeNameLength: {typeNameLength}，Content:{encoding.GetString(bodyBuffer)}");
+                        var sb = new StringBuilder();
+                        sb.Append($"{DateTime.Now}: [Recv-Raw]Length: {packageBuffer.Length}");
+                        if (Options.Logger.LogContent)
+                            sb.Append(", Content: " + Convert.ToHexString(packageBuffer.ToArray()));
+                        else
+                            sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                        Options.Logger.Log(sb.ToString());
                     }
-                    var typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
-                    bodyBuffer = bodyBuffer.Slice(typeNameLength);
-
-                    var content = encoding.GetString(bodyBuffer);
-
-                    if (Options.Logger != null && Options.Logger.LogCommand)
-                        Options.Logger.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
-                            .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-                    //异步执行命令请求事件处理器
-                    Task.Run(() => OnCommandRequestReceived(commandId, typeName, content));
-                    break;
+                    packageBodyBuffer = packageBuffer.Slice(PACKAGE_HEAD_LENGTH);
                 }
-            case QpPackageType.CommandResponse:
+                //如果有包体，且启用了压缩或者加密
+                if (packageBodyLength > 0 && (Options.InternalCompress || Options.InternalEncrypt))
                 {
-                    var commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray()).ToLower();
-                    bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
+                    //如果设置了加密
+                    if (Options.InternalEncrypt)
+                    {
+                        //开始解密
+                        var encryptedBuffer = packageBodyBuffer.ToArray();
+                        var decryptBuffer = dec.TransformFinalBlock(encryptedBuffer, 0, encryptedBuffer.Length);
+                        packageBodyLength = decryptBuffer.Length;
 
-                    var code = bodyBuffer.First.Span[0];
-                    bodyBuffer = bodyBuffer.Slice(1);
+                        //解密完成，释放缓存
+                        currentReader?.AdvanceTo(packageBodyBuffer.End);
 
-                    string typeName = null;
-                    string content = null;
-                    string message = null;
+                        packageBodyBuffer = new ReadOnlySequence<byte>(decryptBuffer);
+                        currentReader = null;
+                    }
 
-                    //如果成功
-                    if (code == 0)
+                    //如果设置了压缩
+                    if (Options.InternalCompress)
+                    {
+                        //准备管道
+                        if (decompressPipe == null)
+                            decompressPipe = new Pipe();
+
+                        packageBodyLength = 0;
+                        //开始解压
+                        using (var readMs = new ReadOnlySequenceByteStream(packageBodyBuffer))
+                        using (var gzStream = new GZipStream(readMs, CompressionMode.Decompress, true))
+                        {
+                            while (true)
+                            {
+                                var count = await gzStream.ReadAsync(decompressPipe.Writer.GetMemory(minimumBufferSize), token).ConfigureAwait(false);
+                                if (count <= 0)
+                                    break;
+                                decompressPipe.Writer.Advance(count);
+                                packageBodyLength += count;
+                            }
+                        }
+                        _ = decompressPipe.Writer.FlushAsync();
+                        var ret = await decompressPipe.Reader.ReadAtLeastAsync(packageBodyLength, token).ConfigureAwait(false);
+                        //解压完成，释放缓存
+                        currentReader?.AdvanceTo(packageBodyBuffer.End);
+                        packageBodyBuffer = ret.Buffer;
+                        currentReader = decompressPipe.Reader;
+                    }
+                }
+                HandlePackage(packageType, packageBodyBuffer);
+                currentReader?.AdvanceTo(packageBodyBuffer.End);
+            }
+        }
+
+        protected void HandlePackage(QpPackageType packageType, ReadOnlySequence<byte> bodyBuffer)
+        {
+            if (Options.Logger is { LogPackage: true })
+            {
+                var sb = new StringBuilder();
+                sb.Append($"{DateTime.Now}: [Recv-Package]Type: {packageType}");
+                if (bodyBuffer.Length > 0)
+                {
+                    if (Options.Logger.LogContent)
+                        sb.Append(", Content: "+Convert.ToHexString(bodyBuffer.ToArray()));
+                    else
+                        sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                }
+                Options.Logger.Log(sb.ToString());
+            }
+            switch (packageType)
+            {
+                case QpPackageType.Heartbeat:
+                    {
+                        if (Options.Logger is { LogHeartbeat: true })
+                            Options.Logger.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
+                        HeartbeatPackageReceived?.Invoke(this, EventArgs.Empty);
+                        break;
+                    }
+                case QpPackageType.Notice:
                     {
                         var typeNameLength = bodyBuffer.First.Span[0];
                         bodyBuffer = bodyBuffer.Slice(1);
 
+                        var typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
+                        bodyBuffer = bodyBuffer.Slice(typeNameLength);
+
+                        var content = encoding.GetString(bodyBuffer);
+
+                        if (Options.Logger is { LogNotice: true })
+                            Options.Logger.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
+                                .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+
+                        OnRawNoticePackageReceived(typeName, content);
+                        break;
+                    }
+                case QpPackageType.CommandRequest:
+                    {
+                        var commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray()).ToLower();
+                        bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
+
+                        var typeNameLength = bodyBuffer.First.Span[0];
+                        bodyBuffer = bodyBuffer.Slice(1);
                         if (bodyBuffer.Length < typeNameLength)
                         {
                             throw new IOException($"bodyBuffer.Length:{bodyBuffer.Length} < TypeNameLength: {typeNameLength}，Content:{encoding.GetString(bodyBuffer)}");
                         }
-                        typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
+                        var typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
                         bodyBuffer = bodyBuffer.Slice(typeNameLength);
 
-                        content = encoding.GetString(bodyBuffer);
+                        var content = encoding.GetString(bodyBuffer);
+
+                        if (Options.Logger!=null && Options.Logger.LogCommand)
+                            Options.Logger.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
+                                .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                        //异步执行命令请求事件处理器
+                        Task.Run(() => OnCommandRequestReceived(commandId, typeName, content));
+                        break;
                     }
-                    else
+                case QpPackageType.CommandResponse:
                     {
-                        message = encoding.GetString(bodyBuffer);
+                        var commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray()).ToLower();
+                        bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
+
+                        var code = bodyBuffer.First.Span[0];
+                        bodyBuffer = bodyBuffer.Slice(1);
+
+                        string typeName = null;
+                        string content = null;
+                        string message = null;
+
+                        //如果成功
+                        if (code == 0)
+                        {
+                            var typeNameLength = bodyBuffer.First.Span[0];
+                            bodyBuffer = bodyBuffer.Slice(1);
+
+                            if (bodyBuffer.Length < typeNameLength)
+                            {
+                                throw new IOException($"bodyBuffer.Length:{bodyBuffer.Length} < TypeNameLength: {typeNameLength}，Content:{encoding.GetString(bodyBuffer)}");
+                            }
+                            typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
+                            bodyBuffer = bodyBuffer.Slice(typeNameLength);
+
+                            content = encoding.GetString(bodyBuffer);
+                        }
+                        else
+                        {
+                            message = encoding.GetString(bodyBuffer);
+                        }
+
+                        if (Options.Logger is { LogCommand: true })
+                            Options.Logger.Log("{0}: [Recv-CommandResponsePackage]Code:{1}，Message：{2}，Type:{3},Content:{4}", DateTime.Now, code, message, typeName, Options
+                                .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+
+                        OnCommandResponseReceived(commandId, code, message, typeName, content);
+                        break;
                     }
-
-                    if (Options.Logger is { LogCommand: true })
-                        Options.Logger.Log("{0}: [Recv-CommandResponsePackage]Code:{1}，Message：{2}，Type:{3},Content:{4}", DateTime.Now, code, message, typeName, Options
-                            .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-
-                    OnCommandResponseReceived(commandId, code, message, typeName, content);
-                    break;
-                }
+            }
         }
-    }
 
-    protected void BeginReadPackage(CancellationToken token)
-    {
-        lastReadDataTime = DateTime.Now;
-        var pipe = new Pipe();
-        CheckRecvTimeoutAsync(token).ContinueWith(task =>
+        protected void BeginReadPackage(CancellationToken token)
         {
-            if (task.IsFaulted)
-                OnReadError(task.Exception);
-        });
-        FillRecvPipeAsync(QpPackageHandler_Stream, pipe.Writer, token).ContinueWith(task =>
-        {
-            if (task.IsFaulted)
-                OnReadError(task.Exception);
-            pipe.Writer.CompleteAsync(task.Exception);
-        });
-        ReadRecvPipeAsync(pipe.Reader, token).ContinueWith(task =>
-        {
-            if (task.IsFaulted)
-                OnReadError(task.Exception);
-            pipe.Reader.CompleteAsync(task.Exception);
-        });
-    }
+            lastReadDataTime = DateTime.Now;
+            var pipe = new Pipe();
+            CheckRecvTimeoutAsync(token).ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                    OnReadError(task.Exception);
+            });
+            FillRecvPipeAsync(QpPackageHandler_Stream, pipe.Writer, token).ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                    OnReadError(task.Exception);
+                pipe.Writer.CompleteAsync(task.Exception);
+            });
+            ReadRecvPipeAsync(pipe.Reader, token).ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                    OnReadError(task.Exception);
+                pipe.Reader.CompleteAsync(task.Exception);
+            });
+        }
 
-    //解析包总长度
-    private int parsePackageTotalLength(ReadOnlySequence<byte> sequence, byte[] buffer)
-    {
-        sequence.Slice(0, PACKAGE_HEAD_LENGTH).CopyTo(buffer);
-        var packageTotalLength = ByteUtils.B2I_BE(buffer, 0);
-        if (packageTotalLength < PACKAGE_HEAD_LENGTH)
-            throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]必须大于等于{PACKAGE_HEAD_LENGTH}！");
-        if (packageTotalLength > Options.MaxPackageSize)
-            throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]大于最大包大小[{Options.MaxPackageSize}]");
-        return packageTotalLength;
+        //解析包总长度
+        private int parsePackageTotalLength(ReadOnlySequence<byte> sequence, byte[] buffer)
+        {
+            sequence.Slice(0, PACKAGE_HEAD_LENGTH).CopyTo(buffer);
+            var packageTotalLength = ByteUtils.B2I_BE(buffer, 0);
+            if (packageTotalLength < PACKAGE_HEAD_LENGTH)
+                throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]必须大于等于{PACKAGE_HEAD_LENGTH}！");
+            if (packageTotalLength > Options.MaxPackageSize)
+                throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]大于最大包大小[{Options.MaxPackageSize}]");
+            return packageTotalLength;
+        }
+
     }
 }

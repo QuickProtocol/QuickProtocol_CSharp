@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,27 +10,6 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
     {
         private Queue<WebSocketContext> webSocketContextQueue = new Queue<WebSocketContext>();
         private bool isStarted = false;
-        private string[] urls;
-        private QpWebSocketServerOptions options;
-
-        private string processUrl(string t)
-        {
-            var prefix = "http://";
-            if (t.StartsWith(prefix))
-                return "ws://" + t.Substring(prefix.Length);
-            prefix = "https://";
-            if (t.StartsWith(prefix))
-                return "wss://" + t.Substring(prefix.Length);
-            return t;
-        }
-        public override string BindingPath
-        {
-            get
-            {
-                var pathes = urls.Select(t => $"qp.{processUrl(t)}{options.Path}");
-                return string.Join(";", pathes);
-            }
-        }
 
         private class WebSocketContext
         {
@@ -47,12 +25,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
             }
         }
 
-
-        public QpWebSocketServer(QpWebSocketServerOptions options, string[] urls) : base(options)
-        {
-            this.options = options;
-            this.urls = urls;
-        }
+        public QpWebSocketServer(QpWebSocketServerOptions options) : base(options) { }
 
         public override void Start()
         {
@@ -75,7 +48,7 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                 return;
             }
 
-            var connectionInfoStr = $"qp.ws://{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
+            var connectionInfoStr = $"WebSocket:{connectionInfo.RemoteIpAddress}:{connectionInfo.RemotePort}";
             var cts = new CancellationTokenSource();
             lock (webSocketContextQueue)
                 webSocketContextQueue.Enqueue(
@@ -84,10 +57,9 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
                         webSocket,
                         cts));
             await Task.Delay(-1, cts.Token).ContinueWith(t =>
-            {
-                if (Options.Logger is { LogConnection: true })
-                    Console.WriteLine("[Connection]{0} disconnected.", connectionInfoStr);
-            });
+             {
+                 Console.WriteLine("[Connection]{0} disconnected.", connectionInfoStr);
+             });
         }
 
         public override void Stop()
@@ -120,15 +92,13 @@ namespace Quick.Protocol.WebSocket.Server.AspNetCore
             {
                 try
                 {
-                    if (Options.Logger is { LogConnection: true })
-                        Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
+                    Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
                     OnNewChannelConnected(new WebSocketServerStream(context.WebSocket, context.Cts), context.ConnectionInfo, token);
                 }
                 catch (Exception ex)
                 {
                     context.Cts.Cancel();
-                    if (Options.Logger is { LogConnection: true })
-                        Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                    Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                     try
                     {
                         await context.WebSocket

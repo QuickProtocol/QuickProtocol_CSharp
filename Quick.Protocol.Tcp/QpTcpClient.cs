@@ -1,8 +1,11 @@
-﻿using System;
+﻿using Quick.Protocol.Utils;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,7 +25,7 @@ namespace Quick.Protocol.Tcp
         protected override async Task<Stream> InnerConnectAsync()
         {
             if (tcpClient != null)
-                Dispose();
+                Close();
             //开始连接
             if (!string.IsNullOrEmpty(options.LocalHost) && options.LocalPort != null)
                 tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(options.LocalHost), options.LocalPort.Value));
@@ -50,12 +53,16 @@ namespace Quick.Protocol.Tcp
             return tcpClient.GetStream();
         }
 
-        public override void Dispose()
+        public override void Disconnect()
         {
-            tcpClient?.Close();
-            tcpClient?.Dispose();
-            tcpClient = null;
-            base.Dispose();
+            if (tcpClient != null)
+            {
+                tcpClient.Close();
+                tcpClient.Dispose();
+                tcpClient = null;
+            }
+
+            base.Disconnect();
         }
     }
 }
