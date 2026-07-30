@@ -28,23 +28,23 @@ namespace Quick.Protocol.Pipeline
             }
             catch
             {
-                try { pipeClientStream?.Dispose(); }
+                try 
+                {
+                    pipeClientStream?.Close();
+                    pipeClientStream?.Dispose();
+                }
                 catch { }
                 pipeClientStream = null;
                 throw;
             }
-            pipeClientStream.ReadMode = PipeTransmissionMode.Byte;
             return pipeClientStream;
         }
 
         public override void Disconnect()
         {
-            if (pipeClientStream != null)
-            {
-                pipeClientStream.Close();
-                pipeClientStream.Dispose();
-                pipeClientStream = null;
-            }
+            pipeClientStream?.Close();
+            pipeClientStream?.Dispose();
+            pipeClientStream = null;
             base.Disconnect();
         }
     }
