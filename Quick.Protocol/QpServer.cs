@@ -19,12 +19,16 @@
         public QpServerChannel[] Channels { get; private set; } = new QpServerChannel[0];
 
         /// <summary>
-        /// 通道连接上时
+        /// 通道正在连接(物理连接建立)
+        /// </summary>
+        public event EventHandler<QpServerChannel> ChannelConnecting;
+        /// <summary>
+        /// 通道连接上时(通过认证)
         /// </summary>
         public event EventHandler<QpServerChannel> ChannelConnected;
 
         /// <summary>
-        /// 通道连接断开时
+        /// 通道连接断开时(通过认证的通道才会触发)
         /// </summary>
         public event EventHandler<QpServerChannel> ChannelDisconnected;
 
@@ -58,6 +62,7 @@
         protected void OnNewChannelConnected(Stream stream, string channelName, CancellationToken token, bool readFromStreamReturnZeroMeansFault = true)
         {
             var channel = new QpServerChannel(stream, channelName, token, Options.Clone(), readFromStreamReturnZeroMeansFault);
+            ChannelConnecting?.Invoke(this, channel);
 
             //认证超时
             channel.AuchenticateTimeout += (_, _) =>

@@ -25,17 +25,22 @@ public class PerformanceTestUnit : AbstractServerUnit
     public override void Invoke()
     {
         var totalConnected = 0;
+        var totalAuthed = 0;
         var totalDisconnected = 0;
         //启动服务端
         var serverOptions = GetServerOptions();
         var server = serverOptions.CreateServer();
-        server.ChannelConnected += (_,_)=>
+        server.ChannelConnecting += (_, _) =>
         {
-            Interlocked.Add(ref totalConnected,1);
+            Interlocked.Add(ref totalConnected, 1);
         };
-        server.ChannelDisconnected += (_,_)=>
+        server.ChannelConnected += (_, _) =>
         {
-            Interlocked.Add(ref totalDisconnected,1);
+            Interlocked.Add(ref totalAuthed, 1);
+        };
+        server.ChannelDisconnected += (_, _) =>
+        {
+            Interlocked.Add(ref totalDisconnected, 1);
         };
         server.Start();
 
@@ -45,7 +50,7 @@ public class PerformanceTestUnit : AbstractServerUnit
         {
             Thread.Sleep(1000);
             process.Refresh();
-            Console.WriteLine($"[{DateTime.Now:T}]Current:{server.Channels.Length},Connected:{totalConnected},Disconnected:{totalDisconnected},Memory:{process.WorkingSet64}");
+            Console.WriteLine($"[{DateTime.Now:T}]Current:{server.Channels.Length},Connected:{totalConnected},Authed:{totalAuthed},Disconnected:{totalDisconnected},Memory:{process.WorkingSet64}");
             for (var i = 0; i < 1000; i++)
             {
                 Task.Run(async () =>
@@ -53,7 +58,7 @@ public class PerformanceTestUnit : AbstractServerUnit
                     var client = clientOptions.CreateClient();
                     await client.ConnectAsync();
                     await Task.Delay(Random.Shared.Next(100, 800));
-                    client.Disconnect();
+                    client.Close();
                 });
             }
         }
