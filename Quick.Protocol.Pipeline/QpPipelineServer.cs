@@ -1,8 +1,5 @@
-﻿using Quick.Protocol.Utils;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO.Pipes;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,6 +8,7 @@ namespace Quick.Protocol.Pipeline
     public class QpPipelineServer : QpServer
     {
         private QpPipelineServerOptions options;
+        public override string BindingPath => $"{QpPipelineClientOptions.URI_SCHEMA}://./{options.PipeName}";
         public QpPipelineServer(QpPipelineServerOptions options) : base(options)
         {
             this.options = options;

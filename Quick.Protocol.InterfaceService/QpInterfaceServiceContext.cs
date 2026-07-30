@@ -25,7 +25,7 @@ namespace Quick.Protocol.InterfaceService
             {
                 webSocketServerOptions = options.Config.WebSocketServerOptions;
                 webSocketServerOptions.InstructionSet = options.InstructionSet;
-                options.WebBuilder.UseQuickProtocol(webSocketServerOptions, out webSocketServer);
+                options.WebBuilder.UseQuickProtocolWebSocketServer(webSocketServerOptions, out webSocketServer);
                 options.WebSocketServer = webSocketServer;
                 options.WebSocketServerOptions = webSocketServerOptions;
             }
@@ -33,7 +33,7 @@ namespace Quick.Protocol.InterfaceService
             {
                 httpServerOptions = options.Config.HttpServerOptions;
                 httpServerOptions.InstructionSet = options.InstructionSet;
-                options.WebBuilder.UseQuickProtocolHttp(httpServerOptions, out httpServer);
+                options.WebBuilder.UseQuickProtocolHttpServer(httpServerOptions, out httpServer);
                 options.HttpServer = httpServer;
                 options.HttpServerOptions = httpServerOptions;
             }

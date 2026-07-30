@@ -9,6 +9,7 @@ namespace Quick.Protocol.SerialPort
         private QpSerialPortServerOptions options;
         private System.IO.Ports.SerialPort serialPort;
         private bool isAccepted = false;
+        public override string BindingPath => $"{QpSerialPortClientOptions.URI_SCHEMA}://./{options.PortName}";
 
         public QpSerialPortServer(QpSerialPortServerOptions options) : base(options)
         {

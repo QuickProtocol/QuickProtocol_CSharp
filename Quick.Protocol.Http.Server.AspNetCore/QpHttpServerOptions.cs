@@ -54,7 +54,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
         public override QpServer CreateServer()
         {
-            return new QpHttpServer(this);
+            return new QpHttpServer(this, null);
         }
     }
 }
