@@ -9,16 +9,19 @@ namespace Quick.Protocol.Tcp
     public class QpTcpServer : QpServer
     {
         private TcpListener tcpListener;
-        private QpTcpServerOptions options;
+        private IPAddress address;
+        private int port;
+
         public EndPoint ListenEndPoint { get; private set; }
         public QpTcpServer(QpTcpServerOptions options) : base(options)
         {
-            this.options = options;
+            address = IPAddress.Parse(options.Address);
+            port = options.Port;
         }
 
         public override void Start()
         {
-            tcpListener = new TcpListener(IPAddress.Parse(options.Address), options.Port);
+            tcpListener = new TcpListener(address, port);
             tcpListener.Start();
             ListenEndPoint = tcpListener.LocalEndpoint;
             base.Start();
@@ -41,12 +44,14 @@ namespace Quick.Protocol.Tcp
                 try
                 {
                     var remoteEndPointStr = "TCP:" + tcpClient.Client.RemoteEndPoint.ToString();
-                    Console.WriteLine("[Connection]{0} connected.", remoteEndPointStr);
+                    if (Options.Logger is { LogConnection: true })
+                        Console.WriteLine("[Connection]{0} connected.", remoteEndPointStr);
                     OnNewChannelConnected(tcpClient.GetStream(), remoteEndPointStr, token);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                    if (Options.Logger is { LogConnection: true })
+                        Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                     try { tcpClient.Close(); }
                     catch { }
                 }

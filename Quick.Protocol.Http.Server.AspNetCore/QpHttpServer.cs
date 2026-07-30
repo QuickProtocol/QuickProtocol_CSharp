@@ -128,9 +128,10 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             lock (httpContextQueue)
                 httpContextQueue.Enqueue(qpHttpContext);
             await Task.Delay(-1, cts.Token).ContinueWith(t =>
-             {
-                 Console.WriteLine("[Connection]{0} disconnected.", connectionInfoStr);
-             });
+            {
+                if (Options.Logger is { LogConnection: true })
+                    Console.WriteLine("[Connection]{0} disconnected.", connectionInfoStr);
+            });
         }
 
         public override void Stop()
@@ -161,12 +162,14 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             {
                 try
                 {
-                    Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
+                    if (Options.Logger is { LogConnection: true })
+                        Console.WriteLine("[Connection]{0} connected.", context.ConnectionInfo);
                     OnNewChannelConnected(context.Stream, context.ConnectionInfo, token, false);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                    if (Options.Logger is { LogConnection: true })
+                        Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                 }
             }
         }

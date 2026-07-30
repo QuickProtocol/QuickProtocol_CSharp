@@ -1,23 +1,16 @@
-﻿using Quick.Protocol.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Quick.Protocol
+﻿namespace Quick.Protocol
 {
     public abstract class QpServer
     {
         private CancellationTokenSource cts;
-        private QpServerOptions options;
+        public QpServerOptions Options { get; private set; }
 
         private List<QpServerChannel> channelList = new List<QpServerChannel>();
 
         /// <summary>
         /// 增加Tag属性，用于引用与QpServer相关的对象
         /// </summary>
-        public Object Tag { get; set; }
+        public object Tag { get; set; }
 
         /// <summary>
         /// 已通过认证的通道
@@ -42,7 +35,7 @@ namespace Quick.Protocol
         public QpServer(QpServerOptions options)
         {
             options.Check();
-            this.options = options;
+            Options = options;
         }
 
         public virtual void Start()
@@ -63,13 +56,13 @@ namespace Quick.Protocol
 
         protected void OnNewChannelConnected(Stream stream, string channelName, CancellationToken token, bool readFromStreamReturnZeroMeansFault = true)
         {
-            var channel = new QpServerChannel(stream, channelName, token, options.Clone(), readFromStreamReturnZeroMeansFault);
+            var channel = new QpServerChannel(stream, channelName, token, Options.Clone(), readFromStreamReturnZeroMeansFault);
 
             //认证超时
             channel.AuchenticateTimeout += (_, _) =>
             {
-                if (options.Logger is { LogConnection: true })
-                    options.Logger.Log("{0} Auchenticate timeout.", channelName);
+                if (Options.Logger is { LogConnection: true })
+                    Options.Logger.Log("{0} Auchenticate timeout.", channelName);
                 ChannelAuchenticateTimeout?.Invoke(this, channel);
             };
 
@@ -84,8 +77,8 @@ namespace Quick.Protocol
                 ChannelConnected?.Invoke(this, channel);
                 channel.Disconnected += (_, _) =>
                 {
-                    if (options.Logger is { LogConnection: true })
-                        options.Logger.Log("{0} Disconnected.", channelName);
+                    if (Options.Logger is { LogConnection: true })
+                        Options.Logger.Log("{0} Disconnected.", channelName);
                     RemoveChannel(channel);
                     ChannelDisconnected?.Invoke(this, channel);
                 };
