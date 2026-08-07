@@ -1,4 +1,4 @@
-﻿using Quick.Protocol.Utils;
+using Quick.Protocol.Utils;
 
 namespace Quick.Protocol
 {
@@ -83,6 +83,7 @@ namespace Quick.Protocol
         private void cancellAll()
         {
             cts?.Cancel();
+            cts?.Dispose();
             cts = null;
         }
 

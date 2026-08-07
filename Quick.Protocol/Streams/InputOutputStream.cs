@@ -1,4 +1,4 @@
-﻿namespace Quick.Protocol.Streams;
+namespace Quick.Protocol.Streams;
 
 public class InputOutputStream : Stream
 {
@@ -97,5 +97,15 @@ public class InputOutputStream : Stream
     public override Task FlushAsync(CancellationToken cancellationToken)
     {
         return output.FlushAsync(cancellationToken);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            input?.Dispose();
+            output?.Dispose();
+        }
+        base.Dispose(disposing);
     }
 }

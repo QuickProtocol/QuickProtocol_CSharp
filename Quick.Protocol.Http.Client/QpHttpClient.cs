@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
@@ -41,9 +41,19 @@ public class QpHttpClient : QpClient
         catch
         {
             cts.Cancel();
+            sendClient?.Dispose();
             recvClient.Dispose();
             throw;
         }
         return new HttpClientsStream(recvClient, sendClient, url);
+    }
+
+    public override void Disconnect()
+    {
+        sendClient?.Dispose();
+        sendClient = null;
+        recvClient?.Dispose();
+        recvClient = null;
+        base.Disconnect();
     }
 }

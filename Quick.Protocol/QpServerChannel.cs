@@ -1,4 +1,4 @@
-﻿using Quick.Protocol.Exceptions;
+using Quick.Protocol.Exceptions;
 
 namespace Quick.Protocol
 {
@@ -27,9 +27,9 @@ namespace Quick.Protocol
         public event EventHandler AuchenticateTimeout;
         protected override bool ReadFromStreamReturnZeroMeansFault { get; }
 
-        public QpServerChannel(Stream stream, string channelName, CancellationToken cancellationToken, QpServerOptions options, bool readFromStreamReturnZeroMeansFault = true) : base(options)
+        public QpServerChannel(Stream channelStream, string channelName, CancellationToken cancellationToken, QpServerOptions options, bool readFromStreamReturnZeroMeansFault = true) : base(options)
         {
-            this.stream = stream;
+            this.stream = channelStream;
             this.channelName = channelName;
             Options = options;
             this.authedCommandExecuterManagerList = options.CommandExecuterManagerList;
@@ -48,7 +48,7 @@ namespace Quick.Protocol
             options.CommandExecuterManagerList = new List<CommandExecuterManager>() { connectAndAuthCommandExecuterManager };
             options.NoticeHandlerManagerList = null;
 
-            InitQpPackageHandler_Stream(stream);
+            InitQpPackageHandler_Stream(channelStream);
             var token = cts.Token;
             //开始读取其他数据包
             BeginReadPackage(token);
@@ -68,12 +68,7 @@ namespace Quick.Protocol
                     if (options.Logger is { LogConnection: true })
                         options.Logger.Log("{0} Authenticate timeout.", channelName);
 
-                    if (stream != null)
-                    {
-                        try { stream.Dispose(); }
-                        catch { }
-                        stream = null;
-                    }
+                    Stop();
                     AuchenticateTimeout?.Invoke(this, EventArgs.Empty);
                 });
         }
@@ -153,6 +148,7 @@ namespace Quick.Protocol
             try
             {
                 cts?.Cancel();
+                cts?.Dispose();
                 stream?.Dispose();
             }
             catch { }

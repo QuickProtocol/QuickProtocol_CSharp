@@ -1,4 +1,4 @@
-﻿namespace Quick.Protocol
+namespace Quick.Protocol
 {
     public abstract class QpServer
     {
@@ -104,6 +104,7 @@
         public virtual void Stop()
         {
             cts?.Cancel();
+            cts?.Dispose();
             cts = null;
 
             QpServerChannel[] channels;

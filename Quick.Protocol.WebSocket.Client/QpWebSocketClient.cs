@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -37,6 +37,16 @@ namespace Quick.Protocol.WebSocket.Client
                 throw;
             }            
             return new WebSocketClientStream(client);
+        }
+
+        public override void Disconnect()
+        {
+            if (client != null)
+            {
+                try { client.Dispose(); } catch { }
+                client = null;
+            }
+            base.Disconnect();
         }
     }
 }
