@@ -8,7 +8,7 @@ namespace Quick.Protocol
 {
     public class CommandExecuterManager
     {
-        private Dictionary<string, Delegate> commandExecuterDict = new Dictionary<string, Delegate>();
+        private Dictionary<string, Func<QpChannel, object, object>> commandExecuterDict = new Dictionary<string, Func<QpChannel, object, object>>();
 
         /// <summary>
         /// 获取全部注册的命令请求类型名称
@@ -17,7 +17,7 @@ namespace Quick.Protocol
 
         public void Register(string cmdRequestTypeName, Delegate commandExecuter)
         {
-            commandExecuterDict[cmdRequestTypeName] = commandExecuter;
+            commandExecuterDict[cmdRequestTypeName] = (handler, request) => commandExecuter.DynamicInvoke(handler, request);
         }
 
         public void Register<TCmdRequest, TCmdResponse>(Func<QpChannel, TCmdRequest, TCmdResponse> commandExecuter)
@@ -25,7 +25,7 @@ namespace Quick.Protocol
             where TCmdResponse : class, new()
         {
             var cmdRequestTypeName = typeof(TCmdRequest).FullName;
-            Register(cmdRequestTypeName, commandExecuter);
+            commandExecuterDict[cmdRequestTypeName] = (handler, request) => commandExecuter(handler, (TCmdRequest)request);
         }
 
         public void Register<TCmdRequest, TCmdResponse>(TCmdRequest request, Func<QpChannel, TCmdRequest, TCmdResponse> commandExecuter)
@@ -33,7 +33,7 @@ namespace Quick.Protocol
             where TCmdResponse : class, new()
         {
             var cmdRequestTypeName = request.GetType().FullName;
-            Register(cmdRequestTypeName, commandExecuter);
+            commandExecuterDict[cmdRequestTypeName] = (handler, req) => commandExecuter(handler, (TCmdRequest)req);
         }
 
         /// <summary>
@@ -47,8 +47,8 @@ namespace Quick.Protocol
         {
             if (!CanExecuteCommand(cmdRequestTypeName))
                 throw new IOException($"Command Request Type[{cmdRequestTypeName}] has no executer.");
-            Delegate commandExecuter = commandExecuterDict[cmdRequestTypeName];
-            return commandExecuter.DynamicInvoke(new object[] { handler, cmdRequestModel });
+            var commandExecuter = commandExecuterDict[cmdRequestTypeName];
+            return commandExecuter(handler, cmdRequestModel);
         }
 
         /// <summary>

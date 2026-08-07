@@ -7,7 +7,7 @@ namespace Quick.Protocol
 {
     public class NoticeHandlerManager
     {
-        private Dictionary<string, Delegate> noticeHandlerDict = new Dictionary<string, Delegate>();
+        private Dictionary<string, Action<QpChannel, object>> noticeHandlerDict = new Dictionary<string, Action<QpChannel, object>>();
 
         /// <summary>
         /// 获取全部注册的通知类型名称
@@ -16,14 +16,14 @@ namespace Quick.Protocol
 
         public void Register(string noticeTypeName, Delegate noticeHandler)
         {
-            noticeHandlerDict[noticeTypeName] = noticeHandler;
+            noticeHandlerDict[noticeTypeName] = (handler, notice) => noticeHandler.DynamicInvoke(handler, notice);
         }
 
         public void Register<TNotice>(Action<QpChannel, TNotice> noticeHandler)
             where TNotice : class, new()
         {
             var noticeTypeName = typeof(TNotice).FullName;
-            Register(noticeTypeName, noticeHandler);
+            noticeHandlerDict[noticeTypeName] = (handler, notice) => noticeHandler(handler, (TNotice)notice);
         }
 
 
@@ -38,8 +38,8 @@ namespace Quick.Protocol
         {
             if (!CanHandleNoticed(noticeTypeName))
                 return;
-            Delegate noticeHandler = noticeHandlerDict[noticeTypeName];
-            noticeHandler.DynamicInvoke(new object[] { handler, noticeModel });
+            var noticeHandler = noticeHandlerDict[noticeTypeName];
+            noticeHandler(handler, noticeModel);
         }
 
         /// <summary>
