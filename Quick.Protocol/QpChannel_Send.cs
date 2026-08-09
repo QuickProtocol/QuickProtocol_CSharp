@@ -164,6 +164,7 @@ namespace Quick.Protocol
             if (packageBodyLength > 0)
                 currentReader?.AdvanceTo(packageBodyBuffer.End);
             await stream.FlushAsync().ConfigureAwait(false);
+            lastSendPackageTime = DateTime.Now;
         }
 
         private static void writePackageTotalLengthToBuffer(byte[] buffer, int offset, int packageTotalLength)
