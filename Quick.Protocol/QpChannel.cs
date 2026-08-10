@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Quick.Protocol
 {
-    public abstract partial class QpChannel
+    public abstract partial class QpChannel : IDisposable
     {
         /// <summary>
         /// 包长度字节长度
@@ -21,7 +21,7 @@ namespace Quick.Protocol
         /// </summary>
         public const int COMMAND_ID_LENGTH = 16;
         private const int minimumBufferSize = 1024;
-        
+
         private Stream QpPackageHandler_Stream;
         public QpChannelOptions Options { get; }
 
@@ -32,7 +32,7 @@ namespace Quick.Protocol
         private readonly Encoding encoding = Encoding.UTF8;
 
         //发送包锁对象
-        private readonly SemaphoreSlim sendLock = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim sendLock;
         //断开连接锁对象
         private readonly object DISCONNECT_LOCK_OBJ = new object();
 
@@ -146,8 +146,11 @@ namespace Quick.Protocol
             if (shouldRaiseDisconnectedEvent)
                 Disconnected?.Invoke(this, EventArgs.Empty);
             enc?.Dispose();
+            enc = null;
             dec?.Dispose();
+            dec = null;
             symmetricAlgorithm?.Dispose();
+            symmetricAlgorithm = null;
         }
 
         /// <summary>
@@ -260,12 +263,12 @@ namespace Quick.Protocol
 
             try { preStream?.Dispose(); }
             catch { }
-
+            if (stream != null && sendLock == null)
+                sendLock = new SemaphoreSlim(1, 1);
             EnableCompress = false;
             EnableEncrypt = false;
             ChangeTransportTimeout();
         }
-
 
         /// <summary>
         /// 发送通知包
@@ -432,6 +435,14 @@ namespace Quick.Protocol
             var responseType = typeof(TCmdResponse);
             var responseSerializer = getTypeSerializer(responseType);
             return (TCmdResponse)responseSerializer.Deserialize(ret.Content);
+        }
+
+        public void Dispose()
+        {
+            IsConnected = false;
+            Disconnect();
+            sendLock?.Dispose();
+            sendLock = null;
         }
     }
 }

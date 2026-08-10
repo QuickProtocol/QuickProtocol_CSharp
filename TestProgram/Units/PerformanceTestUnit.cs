@@ -55,10 +55,11 @@ public class PerformanceTestUnit : AbstractServerUnit
             {
                 Task.Run(async () =>
                 {
-                    var client = clientOptions.CreateClient();
-                    await client.ConnectAsync();
-                    await Task.Delay(Random.Shared.Next(100, 800));
-                    client.Close();
+                    using (var client = clientOptions.CreateClient())
+                    {
+                        await client.ConnectAsync();
+                        await Task.Delay(Random.Shared.Next(100, 800));
+                    }
                 });
             }
         }

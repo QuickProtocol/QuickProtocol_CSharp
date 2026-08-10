@@ -188,9 +188,11 @@ namespace Quick.Protocol
         {
             if (Options.EnableNetstat)
                 Interlocked.Increment(ref PackageSendQueueCount);
-            await sendLock.WaitAsync().ConfigureAwait(false);
             try
             {
+                if (sendLock == null)
+                    return;
+                await sendLock.WaitAsync().ConfigureAwait(false);
                 var packageBodyLength = 0;
                 if (packageBodyHandler != null)
                     packageBodyLength = await packageBodyHandler(sendPipe);
@@ -203,7 +205,7 @@ namespace Quick.Protocol
             }
             finally
             {
-                sendLock.Release();
+                sendLock?.Release();
                 if (Options.EnableNetstat)
                     Interlocked.Decrement(ref PackageSendQueueCount);
             }

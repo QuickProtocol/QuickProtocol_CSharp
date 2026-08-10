@@ -4,8 +4,8 @@ namespace Quick.Protocol
 {
     public class QpServerChannel : QpChannel
     {
-        private readonly Stream stream;
-        private readonly CancellationTokenSource cts;
+        private Stream stream;
+        private CancellationTokenSource cts;
         private readonly CancellationToken serverCancellationToken;
         public new QpServerOptions Options { get; }
         private readonly string channelName;
@@ -68,7 +68,7 @@ namespace Quick.Protocol
                     if (options.Logger is { LogConnection: true })
                         options.Logger.Log("{0} Authenticate timeout.", channelName);
 
-                    Stop();
+                    Dispose();
                     AuchenticateTimeout?.Invoke(this, EventArgs.Empty);
                 });
         }
@@ -79,7 +79,7 @@ namespace Quick.Protocol
             {
                 await Task.Delay(1000, cancellationToken);
                 if (serverCancellationToken.IsCancellationRequested)
-                    Stop();
+                    Dispose();
             }
         }
 
@@ -106,7 +106,7 @@ namespace Quick.Protocol
             {
                 _ = Task.Delay(1000).ContinueWith(t =>
                 {
-                    Stop();
+                    Dispose();
                 });
                 throw new CommandException(1, "Authenticate failed.");
             }
@@ -143,23 +143,23 @@ namespace Quick.Protocol
             };
         }
 
-        /// <summary>
-        /// 停止
-        /// </summary>
-        public void Stop()
+        public override void Disconnect()
         {
+            base.Disconnect();
             try
             {
                 cts?.Cancel();
                 cts?.Dispose();
+                cts = null;
                 stream?.Dispose();
+                stream = null;
             }
             catch { }
         }
         protected override void OnWriteError(Exception exception)
         {
-            Stop();
             base.OnWriteError(exception);
+            Dispose();
         }
 
         protected override void OnReadError(Exception exception)
@@ -175,8 +175,8 @@ namespace Quick.Protocol
                     return;
                 }
             }
-            Stop();
             base.OnReadError(exception);
+            Dispose();
         }
     }
 }

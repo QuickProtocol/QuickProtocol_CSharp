@@ -24,7 +24,7 @@ namespace Quick.Protocol
         public async Task ConnectAsync()
         {
             //清理
-            Close();
+            Dispose();
 
             cts = new CancellationTokenSource();
             var token = cts.Token;
@@ -75,19 +75,19 @@ namespace Quick.Protocol
         protected override void OnWriteError(Exception exception)
         {
             base.OnWriteError(exception);
-            cancellAll();
-            Disconnect();
+            Dispose();
         }
 
         protected override void OnReadError(Exception exception)
         {
             base.OnReadError(exception);
-            cancellAll();
-            Disconnect();
+            Dispose();
         }
 
-        private void cancellAll()
+        public override void Disconnect()
         {
+            base.Disconnect();
+
             cts?.Cancel();
             cts?.Dispose();
             cts = null;
@@ -95,17 +95,6 @@ namespace Quick.Protocol
             TransportTimeout = Options.TransportTimeout;
             EnableCompress = false;
             EnableEncrypt = false;
-        }
-
-        /// <summary>
-        /// 关闭连接
-        /// </summary>
-        public void Close()
-        {
-            cancellAll();
-            IsConnected = false;
-            InitQpPackageHandler_Stream(null);
-            Disconnect();
         }
     }
 }
