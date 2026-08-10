@@ -85,7 +85,7 @@ public class QpInterfaceServiceConfig
         {
             Type = FieldType.ContainerGroup,
             Name = "通用",
-            Children = list.ToArray()
+            Children = list
         };
     }
 
@@ -264,7 +264,7 @@ public class QpInterfaceServiceConfig
                 new()
                 {
                     Type = FieldType.ContainerTab,
-                    Children = list.ToArray()
+                    Children = list
                 }
             ]
         };

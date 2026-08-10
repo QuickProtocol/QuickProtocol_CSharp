@@ -24,7 +24,6 @@ namespace Quick.Protocol
         
         private Stream QpPackageHandler_Stream;
         public QpChannelOptions Options { get; }
-        private DateTime lastSendPackageTime = DateTime.MinValue;
 
         private readonly byte[] passwordMd5Buffer;
         private readonly ICryptoTransform enc;
@@ -267,12 +266,7 @@ namespace Quick.Protocol
                 await Task.Delay(Options.HeartBeatInterval, cancellationToken);
                 if (QpPackageHandler_Stream == null)
                     return;
-                var lastSendPackageToNowSeconds = (DateTime.Now - lastSendPackageTime).TotalMilliseconds;
-                //如果离最后一次发送数据包的时间大于心跳间隔，则发送心跳包
-                if (lastSendPackageToNowSeconds > Options.HeartBeatInterval)
-                {
-                    await SendHeartbeatPackage();
-                }
+                await SendHeartbeatPackage();
             }
         }
 
