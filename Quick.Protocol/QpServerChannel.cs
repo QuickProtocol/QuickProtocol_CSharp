@@ -110,13 +110,13 @@ namespace Quick.Protocol
                 });
                 throw new CommandException(1, "Authenticate failed.");
             }
-            IsConnected = true;
-            Auchenticated?.Invoke(this, EventArgs.Empty);
             return new Commands.Authenticate.Response();
         }
 
         private Commands.HandShake.Response handShake(QpChannel handler, Commands.HandShake.Request request)
         {
+            if (request.TransportTimeout < 3000)
+                throw new ArgumentException($"'TransportTimeout' must greater than 3000");
             Options.CommandExecuterManagerList.AddRange(authedCommandExecuterManagerList);
             Options.NoticeHandlerManagerList = authedNoticeHandlerManagerList;
             EnableCompress = request.EnableCompress;
@@ -130,6 +130,8 @@ namespace Quick.Protocol
             //开始心跳
             if (HeartBeatInterval > 0)
                 _ = BeginHeartBeat(cts.Token);
+            IsConnected = true;
+            Auchenticated?.Invoke(this, EventArgs.Empty);
             return new Commands.HandShake.Response();
         }
 

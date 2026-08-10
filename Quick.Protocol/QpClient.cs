@@ -25,6 +25,7 @@ namespace Quick.Protocol
         {
             //清理
             Close();
+
             cts = new CancellationTokenSource();
             var token = cts.Token;
 
@@ -66,6 +67,8 @@ namespace Quick.Protocol
             {
                 //定时发送心跳包
                 _ = BeginHeartBeat(token);
+                await Task.Delay(1000, token);
+                await SendHeartbeatPackage();
             }
         }
 
@@ -88,6 +91,10 @@ namespace Quick.Protocol
             cts?.Cancel();
             cts?.Dispose();
             cts = null;
+
+            TransportTimeout = Options.TransportTimeout;
+            EnableCompress = false;
+            EnableEncrypt = false;
         }
 
         /// <summary>
