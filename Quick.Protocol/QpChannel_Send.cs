@@ -62,10 +62,10 @@ namespace Quick.Protocol
 
             //如果有包体，且启用了压缩或者加密
             if (packageBodyLength > 0 && !ignoreCompressAndEncrypt &&
-                (Options.InternalCompress || Options.InternalEncrypt))
+                (EnableCompress || EnableEncrypt))
             {
                 //如果压缩
-                if (Options.InternalCompress)
+                if (EnableCompress)
                 {
                     if (writeCompressPipe == null)
                         writeCompressPipe = new Pipe();
@@ -92,7 +92,7 @@ namespace Quick.Protocol
                 }
 
                 //如果加密
-                if (Options.InternalEncrypt)
+                if (EnableEncrypt)
                 {
                     try
                     {
@@ -139,7 +139,7 @@ namespace Quick.Protocol
                 var rawRet = await reader.ReadAtLeastAsync(packageTotalLength);
                 using (var sequenceByteStream = new ReadOnlySequenceByteStream(rawRet.Buffer))
                     await sequenceByteStream.CopyToAsync(stream)
-                        .WaitAsync(TimeSpan.FromMilliseconds(Options.InternalTransportTimeout))
+                        .WaitAsync(TimeSpan.FromMilliseconds(TransportTimeout))
                         .ConfigureAwait(false);
                 if (Options.EnableNetstat)
                 {

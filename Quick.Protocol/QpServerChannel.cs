@@ -119,15 +119,16 @@ namespace Quick.Protocol
         {
             Options.CommandExecuterManagerList.AddRange(authedCommandExecuterManagerList);
             Options.NoticeHandlerManagerList = authedNoticeHandlerManagerList;
-            Options.InternalCompress = request.EnableCompress;
-            Options.InternalEncrypt = request.EnableEncrypt;
-            Options.InternalTransportTimeout = request.TransportTimeout;
+            EnableCompress = request.EnableCompress;
+            EnableEncrypt = request.EnableEncrypt;
+            TransportTimeout = request.TransportTimeout;
+            OnAuthPassed();
 
             //改变传输超时时间
             ChangeTransportTimeout();
 
             //开始心跳
-            if (Options.HeartBeatInterval > 0)
+            if (HeartBeatInterval > 0)
                 _ = BeginHeartBeat(cts.Token);
             return new Commands.HandShake.Response();
         }

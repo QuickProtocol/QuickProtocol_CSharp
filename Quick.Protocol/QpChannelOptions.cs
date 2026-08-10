@@ -11,37 +11,9 @@ public abstract class QpChannelOptions
     /// </summary>
     protected abstract JsonSerializerContext GetJsonSerializerContext();
 
-    /// <summary>
-    /// 内部是否压缩
-    /// </summary>
-    [Browsable(false)]
-    [JsonIgnore]
-    public virtual bool InternalCompress { get; internal set; } = false;
-
-    /// <summary>
-    /// 内部是否加密
-    /// </summary>
-    [Browsable(false)]
-    [JsonIgnore]
-    public virtual bool InternalEncrypt { get; internal set; } = false;
-
-    /// <summary>
-    /// 内部接收超时(默认15秒)
-    /// </summary>
-    [Browsable(false)]
-    [JsonIgnore]
-    public int InternalTransportTimeout { get; internal set; } = 15 * 1000;
-
     [Browsable(false)]
     [JsonIgnore]
     public QpLogger Logger { get; set; }
-
-    /// <summary>
-    /// 心跳间隔，为发送或接收超时中小的值的三分一
-    /// </summary>
-    [Browsable(false)]
-    [JsonIgnore]
-    public int HeartBeatInterval => InternalTransportTimeout / 3;
 
     /// <summary>
     /// 密码
@@ -87,9 +59,6 @@ public abstract class QpChannelOptions
 
     public virtual void Check()
     {
-        if (InternalTransportTimeout <= 0)
-            throw new ArgumentException("TransportTimeout must larger than 0", nameof(InternalTransportTimeout));
-
         if (Password == null)
             throw new ArgumentNullException(nameof(Password));
     }

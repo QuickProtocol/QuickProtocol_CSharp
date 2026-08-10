@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Builder
         <p>InstructionSet:{string.Join(" | ", options.InstructionSet.Select(t => $"{t.Name}({t.Id})"))}</p>
         <p>ServerProgram:{options.ServerProgram}</p>
         <p>MaxPackageSize:{options.MaxPackageSize}</p>
-        <p>HeartBeatInterval:{options.HeartBeatInterval}</p>
         <p>Time:{DateTime.Now}</p>
     </body>
 </html>";

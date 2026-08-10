@@ -1,7 +1,9 @@
 ﻿using Quick.Protocol.Utils;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Serialization;
 
 
 namespace Quick.Protocol
@@ -26,8 +28,9 @@ namespace Quick.Protocol
         public QpChannelOptions Options { get; }
 
         private readonly byte[] passwordMd5Buffer;
-        private readonly ICryptoTransform enc;
-        private readonly ICryptoTransform dec;
+        private SymmetricAlgorithm symmetricAlgorithm;
+        private ICryptoTransform enc;
+        private ICryptoTransform dec;
         private readonly Encoding encoding = Encoding.UTF8;
 
         //发送包锁对象
@@ -41,6 +44,26 @@ namespace Quick.Protocol
         private readonly Dictionary<Type, Type> commandRequestTypeResponseTypeDict = new Dictionary<Type, Type>();
 
         private readonly ConcurrentDictionary<string, CommandContext> commandDict = new ConcurrentDictionary<string, CommandContext>();
+
+        /// <summary>
+        /// 是否压缩
+        /// </summary>
+        public virtual bool EnableCompress { get; protected set; } = false;
+
+        /// <summary>
+        /// 是否加密
+        /// </summary>
+        public virtual bool EnableEncrypt { get; protected set; } = false;
+
+        /// <summary>
+        /// 接收超时(默认15秒)
+        /// </summary>
+        public int TransportTimeout { get; protected set; } = 15 * 1000;
+
+        /// <summary>
+        /// 心跳间隔，为发送或接收超时中小的值的三分一
+        /// </summary>
+        public int HeartBeatInterval => TransportTimeout / 3;
 
         private bool _IsConnected = false;
         /// <summary>
@@ -124,6 +147,9 @@ namespace Quick.Protocol
             InitQpPackageHandler_Stream(null);
             if (shouldRaiseDisconnectedEvent)
                 Disconnected?.Invoke(this, EventArgs.Empty);
+            enc?.Dispose();
+            dec?.Dispose();
+            symmetricAlgorithm?.Dispose();
         }
 
         /// <summary>
@@ -161,8 +187,8 @@ namespace Quick.Protocol
             var stream = QpPackageHandler_Stream;
             if (stream != null && stream.CanTimeout)
             {
-                stream.WriteTimeout = Options.InternalTransportTimeout;
-                stream.ReadTimeout = Options.InternalTransportTimeout;
+                stream.WriteTimeout = TransportTimeout;
+                stream.ReadTimeout = TransportTimeout;
             }
         }
 
@@ -184,12 +210,6 @@ namespace Quick.Protocol
         {
             this.Options = options;
             passwordMd5Buffer = CryptographyUtils.ComputeMD5Hash(Encoding.UTF8.GetBytes(options.Password)).Take(8).ToArray();
-
-            DES des = DES.Create();
-            des.Mode = CipherMode.ECB;
-            des.Padding = PaddingMode.PKCS7;
-            enc = des.CreateEncryptor(passwordMd5Buffer, passwordMd5Buffer);
-            dec = des.CreateDecryptor(passwordMd5Buffer, passwordMd5Buffer);
 
             foreach (var instructionSet in options.InstructionSet)
             {
@@ -219,6 +239,22 @@ namespace Quick.Protocol
             }
         }
 
+        protected void OnAuthPassed()
+        {
+            enc?.Dispose();
+            dec?.Dispose();
+            symmetricAlgorithm?.Dispose();
+
+            if (EnableEncrypt)
+            {
+                symmetricAlgorithm = DES.Create();
+                symmetricAlgorithm.Mode = CipherMode.ECB;
+                symmetricAlgorithm.Padding = PaddingMode.PKCS7;
+                enc = symmetricAlgorithm.CreateEncryptor(passwordMd5Buffer, passwordMd5Buffer);
+                dec = symmetricAlgorithm.CreateDecryptor(passwordMd5Buffer, passwordMd5Buffer);
+            }
+        }
+
         protected void InitQpPackageHandler_Stream(Stream stream)
         {
             var preStream = QpPackageHandler_Stream;
@@ -227,8 +263,8 @@ namespace Quick.Protocol
             try { preStream?.Dispose(); }
             catch { }
 
-            Options.InternalCompress = false;
-            Options.InternalEncrypt = false;
+            EnableCompress = false;
+            EnableEncrypt = false;
             ChangeTransportTimeout();
         }
 
@@ -259,11 +295,11 @@ namespace Quick.Protocol
 
         protected async Task BeginHeartBeat(CancellationToken cancellationToken)
         {
-            if (Options.HeartBeatInterval < 0)
+            if (HeartBeatInterval < 0)
                 return;
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(Options.HeartBeatInterval, cancellationToken);
+                await Task.Delay(HeartBeatInterval, cancellationToken);
                 if (QpPackageHandler_Stream == null)
                     return;
                 await SendHeartbeatPackage();

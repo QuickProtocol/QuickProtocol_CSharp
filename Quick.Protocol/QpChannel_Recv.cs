@@ -178,7 +178,7 @@ namespace Quick.Protocol
             {
                 await Task.Delay(1000, token);
                 var sp = DateTime.Now - lastReadDataTime;
-                if (sp.TotalMilliseconds > Options.InternalTransportTimeout)
+                if (sp.TotalMilliseconds > TransportTimeout)
                     throw new TimeoutException();
             }
         }
@@ -229,7 +229,7 @@ namespace Quick.Protocol
                 {
                     var readTask = currentReader.ReadAtLeastAsync(PACKAGE_HEAD_LENGTH, token);
                     var ret = await readTask.AsTask()
-                        .WaitAsync(TimeSpan.FromMilliseconds(Options.InternalTransportTimeout), token)
+                        .WaitAsync(TimeSpan.FromMilliseconds(TransportTimeout), token)
                         .ConfigureAwait(false);
                     if (ret.IsCanceled)
                         return;
@@ -263,10 +263,10 @@ namespace Quick.Protocol
                     packageBodyBuffer = packageBuffer.Slice(PACKAGE_HEAD_LENGTH);
                 }
                 //如果有包体，且启用了压缩或者加密
-                if (packageBodyLength > 0 && (Options.InternalCompress || Options.InternalEncrypt))
+                if (packageBodyLength > 0 && (EnableCompress || EnableEncrypt))
                 {
                     //如果设置了加密
-                    if (Options.InternalEncrypt)
+                    if (EnableEncrypt)
                     {
                         //开始解密
                         var encryptedBuffer = packageBodyBuffer.ToArray();
@@ -281,7 +281,7 @@ namespace Quick.Protocol
                     }
 
                     //如果设置了压缩
-                    if (Options.InternalCompress)
+                    if (EnableCompress)
                     {
                         //准备管道
                         if (decompressPipe == null)

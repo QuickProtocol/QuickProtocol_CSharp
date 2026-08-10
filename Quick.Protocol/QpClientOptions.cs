@@ -13,11 +13,7 @@ namespace Quick.Protocol
         /// <summary>
         /// 传输超时(默认15秒)
         /// </summary>
-        public int TransportTimeout
-        {
-            get { return InternalTransportTimeout; }
-            set { InternalTransportTimeout = value; }
-        }
+        public int TransportTimeout { get; set; } = 15 * 1000;
 
         /// <summary>
         /// 启用加密(默认为false)
@@ -28,13 +24,11 @@ namespace Quick.Protocol
         /// </summary>
         public bool EnableCompress { get; set; } = false;
 
-        /// <summary>
-        /// 当认证通过时
-        /// </summary>
-        public void OnAuthPassed()
+        public override void Check()
         {
-            InternalCompress = EnableCompress;
-            InternalEncrypt = EnableEncrypt;
+            base.Check();
+            if (TransportTimeout <= 0)
+                throw new ArgumentException("TransportTimeout must larger than 0", nameof(TransportTimeout));
         }
 
         /// <summary>
@@ -94,7 +88,6 @@ namespace Quick.Protocol
         public Uri ToUri(bool includePassword = false, bool includeOtherProperty = false)
         {
             HashSet<string> ignorePropertyNames = new HashSet<string>();
-            ignorePropertyNames.Add(nameof(HeartBeatInterval));
             if (!includePassword)
                 ignorePropertyNames.Add(nameof(Password));
             string baseUrl = ToUriBasic(ignorePropertyNames);

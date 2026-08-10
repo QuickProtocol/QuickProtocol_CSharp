@@ -48,7 +48,10 @@ namespace Quick.Protocol
                 Answer = CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password)
             }).ConfigureAwait(false);
 
-            Options.OnAuthPassed();
+            EnableCompress = Options.EnableCompress;
+            EnableEncrypt = Options.EnableEncrypt;
+            OnAuthPassed();
+
             IsConnected = true;
 
             var repHandShake = await SendCommand(new Commands.HandShake.Request()
@@ -59,7 +62,7 @@ namespace Quick.Protocol
             }, 5000, true).ConfigureAwait(false);
 
             //开始心跳
-            if (Options.HeartBeatInterval > 0)
+            if (HeartBeatInterval > 0)
             {
                 //定时发送心跳包
                 _ = BeginHeartBeat(token);
