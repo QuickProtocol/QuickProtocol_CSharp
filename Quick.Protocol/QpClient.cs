@@ -92,8 +92,8 @@ namespace Quick.Protocol
         {
             base.Disconnect();
 
-            cts?.Cancel();
-            cts?.Dispose();
+            try { cts?.Cancel(); } catch { }
+            try { cts?.Dispose(); } catch { }
             cts = null;
 
             TransportTimeout = Options.TransportTimeout;

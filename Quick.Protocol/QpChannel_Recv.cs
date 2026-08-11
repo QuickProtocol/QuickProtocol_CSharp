@@ -48,16 +48,15 @@ namespace Quick.Protocol
 
             //处理通知
             var hasNoticeHandler = false;
-            if (Options.NoticeHandlerManagerList != null)
-                foreach (var noticeHandlerManager in Options.NoticeHandlerManagerList)
+            foreach (var noticeHandlerManager in noticeHandlerManagerList)
+            {
+                if (noticeHandlerManager.CanHandleNoticed(typeName))
                 {
-                    if (noticeHandlerManager.CanHandleNoticed(typeName))
-                    {
-                        hasNoticeHandler = true;
-                        noticeHandlerManager.HandleNotice(this, typeName, contentModel);
-                        break;
-                    }
+                    hasNoticeHandler = true;
+                    noticeHandlerManager.HandleNotice(this, typeName, contentModel);
+                    break;
                 }
+            }
 
             //如果配置了触发NoticePackageReceived事件
             if (Options.RaiseNoticePackageReceivedEvent)
@@ -106,20 +105,19 @@ namespace Quick.Protocol
                 });
 
                 var hasCommandExecuter = false;
-                if (Options.CommandExecuterManagerList != null)
-                    foreach (var commandExecuterManager in Options.CommandExecuterManagerList)
+                foreach (var commandExecuterManager in commandExecuterManagerList)
+                {
+                    if (commandExecuterManager.CanExecuteCommand(typeName))
                     {
-                        if (commandExecuterManager.CanExecuteCommand(typeName))
-                        {
-                            hasCommandExecuter = true;
-                            var responseModel = commandExecuterManager.ExecuteCommand(this, typeName, contentModel);
-                            var responseSerializer = getTypeSerializer(cmdResponseType);
-                            _ = SendCommandResponsePackage(commandId, 0, null,
-                                cmdResponseType.FullName,
-                                responseSerializer.Serialize(responseModel));
-                            break;
-                        }
+                        hasCommandExecuter = true;
+                        var responseModel = commandExecuterManager.ExecuteCommand(this, typeName, contentModel);
+                        var responseSerializer = getTypeSerializer(cmdResponseType);
+                        _ = SendCommandResponsePackage(commandId, 0, null,
+                            cmdResponseType.FullName,
+                            responseSerializer.Serialize(responseModel));
+                        break;
                     }
+                }
                 if (!hasCommandExecuter)
                     throw new CommandException(255, $"No CommandExecuter for RequestType[{typeName}]");
             }

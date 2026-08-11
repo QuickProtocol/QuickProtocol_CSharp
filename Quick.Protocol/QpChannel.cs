@@ -36,6 +36,8 @@ namespace Quick.Protocol
         //断开连接锁对象
         private readonly object DISCONNECT_LOCK_OBJ = new object();
 
+        private List<CommandExecuterManager> commandExecuterManagerList = new();
+        private List<NoticeHandlerManager> noticeHandlerManagerList = new();
         private readonly Dictionary<Type, IQpSerializer> typeSerializerDict = new Dictionary<Type, IQpSerializer>();
         private readonly Dictionary<string, Type> commandRequestTypeDict = new Dictionary<string, Type>();
         private readonly Dictionary<string, Type> commandResponseTypeDict = new Dictionary<string, Type>();
@@ -157,6 +159,41 @@ namespace Quick.Protocol
         /// </summary>
         public event EventHandler Disconnected;
 
+        public void ClearCommandExecuterManagers()
+        {
+            lock (commandExecuterManagerList)
+                commandExecuterManagerList.Clear();
+        }
+
+        public void ClearNoticeHandlerManagers()
+        {
+            lock (noticeHandlerManagerList)
+                noticeHandlerManagerList.Clear();
+        }
+
+        // <summary>
+        // 注册指令执行器管理器
+        // </summary>
+        public void RegisterCommandExecuterManagers(IEnumerable<CommandExecuterManager> commandExecuterManagers)
+        {
+            if (commandExecuterManagers == null)
+                return;
+            lock (commandExecuterManagerList)
+                commandExecuterManagerList.AddRange(commandExecuterManagers);
+        }
+
+        /// <summary>
+        /// 注册通知处理器管理器
+        /// </summary>
+        /// <param name="noticeHandlerManager"></param>
+        public void RegisterNoticeHandlerManagers(IEnumerable<NoticeHandlerManager> noticeHandlerManagers)
+        {
+            if (noticeHandlerManagers == null)
+                return;
+            lock (noticeHandlerManagerList)
+                noticeHandlerManagerList.AddRange(noticeHandlerManagers);
+        }
+
         /// <summary>
         /// 断开连接时
         /// </summary>
@@ -174,6 +211,8 @@ namespace Quick.Protocol
             InitQpPackageHandler_Stream(null);
             if (shouldRaiseDisconnectedEvent)
                 Disconnected?.Invoke(this, EventArgs.Empty);
+            ClearCommandExecuterManagers();
+            ClearNoticeHandlerManagers();
             enc?.Dispose();
             enc = null;
             dec?.Dispose();
@@ -383,25 +422,6 @@ namespace Quick.Protocol
                 BytesReceivedPerSec = BytesReceived - preBytesReceived;
                 BytesSentPerSec = BytesSent - preBytesSent;
             }
-        }
-
-
-        /// <summary>
-        /// 添加命令执行器管理器
-        /// </summary>
-        /// <param name="commandExecuterManager"></param>
-        public void AddCommandExecuterManager(CommandExecuterManager commandExecuterManager)
-        {
-            Options.RegisterCommandExecuterManager(commandExecuterManager);
-        }
-
-        /// <summary>
-        /// 添加通知处理器管理器
-        /// </summary>
-        /// <param name="noticeHandlerManager"></param>
-        public void AddNoticeHandlerManager(NoticeHandlerManager noticeHandlerManager)
-        {
-            Options.RegisterNoticeHandlerManager(noticeHandlerManager);
         }
 
         public Task<CommandResponseTypeNameAndContent> SendCommand(string requestTypeName, string requestContent, int timeout = 30 * 1000)

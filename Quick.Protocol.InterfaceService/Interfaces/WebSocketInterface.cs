@@ -13,9 +13,9 @@ namespace Quick.Protocol.InterfaceService.Interfaces
             this.interfaceOptions = interfaceOptions;
             interfaceOptions.WebSocketServerOptions.Password = interfaceOptions.Config.WebSocketServerOptions.Password;
             interfaceOptions.WebSocketServerOptions.MaxPackageSize = interfaceOptions.Config.WebSocketServerOptions.MaxPackageSize;
-            if (interfaceOptions.CommandExecuterManager != null && !interfaceOptions.WebSocketServerOptions.CommandExecuterManagerList.Contains(interfaceOptions.CommandExecuterManager))
+            if (interfaceOptions.CommandExecuterManager != null)
                 interfaceOptions.WebSocketServerOptions.RegisterCommandExecuterManager(interfaceOptions.CommandExecuterManager);
-            if (interfaceOptions.NoticeHandlerManager != null && !interfaceOptions.WebSocketServerOptions.NoticeHandlerManagerList.Contains(interfaceOptions.NoticeHandlerManager))
+            if (interfaceOptions.NoticeHandlerManager != null)
                 interfaceOptions.WebSocketServerOptions.RegisterNoticeHandlerManager(interfaceOptions.NoticeHandlerManager);
         }
 

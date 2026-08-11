@@ -45,8 +45,10 @@ namespace Quick.Protocol
             connectAndAuthCommandExecuterManager.Register(new Commands.Authenticate.Request(), authenticate);
             connectAndAuthCommandExecuterManager.Register(new Commands.HandShake.Request(), handShake);
             connectAndAuthCommandExecuterManager.Register(new Commands.GetQpInstructions.Request(), getQpInstructions);
-            options.CommandExecuterManagerList = new List<CommandExecuterManager>() { connectAndAuthCommandExecuterManager };
-            options.NoticeHandlerManagerList = null;
+
+            ClearCommandExecuterManagers();
+            RegisterCommandExecuterManagers([connectAndAuthCommandExecuterManager]);
+            ClearNoticeHandlerManagers();
 
             InitQpPackageHandler_Stream(channelStream);
             var token = cts.Token;
@@ -117,8 +119,8 @@ namespace Quick.Protocol
         {
             if (request.TransportTimeout < 3000)
                 throw new ArgumentException($"'TransportTimeout' must greater than 3000");
-            Options.CommandExecuterManagerList.AddRange(authedCommandExecuterManagerList);
-            Options.NoticeHandlerManagerList = authedNoticeHandlerManagerList;
+            RegisterCommandExecuterManagers(authedCommandExecuterManagerList);
+            RegisterNoticeHandlerManagers(authedNoticeHandlerManagerList);
             EnableCompress = request.EnableCompress;
             EnableEncrypt = request.EnableEncrypt;
             EncryptMethod  = request.EncryptMethod;

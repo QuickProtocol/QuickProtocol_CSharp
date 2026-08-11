@@ -76,33 +76,26 @@ public abstract class QpChannelOptions
     /// </summary>
     [Browsable(false)]
     [JsonIgnore]
-    public List<CommandExecuterManager> CommandExecuterManagerList { get; set; } = new();
+    public List<CommandExecuterManager> CommandExecuterManagerList { get; set; }
 
     /// <summary>
     /// 通知处理器管理器列表
     /// </summary>
     [Browsable(false)]
     [JsonIgnore]
-    public List<NoticeHandlerManager> NoticeHandlerManagerList { get; set; } = new();
+    public List<NoticeHandlerManager> NoticeHandlerManagerList { get; set; }
 
-    // <summary>
-    // 注册指令执行器管理器
-    // </summary>
-    public void RegisterCommandExecuterManager(CommandExecuterManager commandExecuterManager)
+    public void RegisterCommandExecuterManager(CommandExecuterManager manager)
     {
         if (CommandExecuterManagerList == null)
             CommandExecuterManagerList = new List<CommandExecuterManager>();
-        CommandExecuterManagerList.Add(commandExecuterManager);
+        CommandExecuterManagerList.Add(manager);
     }
 
-    /// <summary>
-    /// 注册通知处理器管理器
-    /// </summary>
-    /// <param name="noticeHandlerManager"></param>
-    public void RegisterNoticeHandlerManager(NoticeHandlerManager noticeHandlerManager)
+    public void RegisterNoticeHandlerManager(NoticeHandlerManager manager)
     {
         if (NoticeHandlerManagerList == null)
             NoticeHandlerManagerList = new List<NoticeHandlerManager>();
-        NoticeHandlerManagerList.Add(noticeHandlerManager);
+        NoticeHandlerManagerList.Add(manager);
     }
 }

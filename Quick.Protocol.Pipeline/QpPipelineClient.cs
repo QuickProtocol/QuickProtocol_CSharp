@@ -38,10 +38,10 @@ namespace Quick.Protocol.Pipeline
 
         public override void Disconnect()
         {
+            base.Disconnect();
             pipeClientStream?.Close();
             pipeClientStream?.Dispose();
             pipeClientStream = null;
-            base.Disconnect();
         }
     }
 }

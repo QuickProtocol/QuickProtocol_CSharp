@@ -13,9 +13,9 @@ internal class HttpInterface
         this.interfaceOptions = interfaceOptions;
         interfaceOptions.HttpServerOptions.Password = interfaceOptions.Config.HttpServerOptions.Password;
         interfaceOptions.HttpServerOptions.MaxPackageSize = interfaceOptions.Config.HttpServerOptions.MaxPackageSize;
-        if (interfaceOptions.CommandExecuterManager != null && !interfaceOptions.HttpServerOptions.CommandExecuterManagerList.Contains(interfaceOptions.CommandExecuterManager))
+        if (interfaceOptions.CommandExecuterManager != null)
             interfaceOptions.HttpServerOptions.RegisterCommandExecuterManager(interfaceOptions.CommandExecuterManager);
-        if (interfaceOptions.NoticeHandlerManager != null && !interfaceOptions.HttpServerOptions.NoticeHandlerManagerList.Contains(interfaceOptions.NoticeHandlerManager))
+        if (interfaceOptions.NoticeHandlerManager != null)
             interfaceOptions.HttpServerOptions.RegisterNoticeHandlerManager(interfaceOptions.NoticeHandlerManager);
     }
 
