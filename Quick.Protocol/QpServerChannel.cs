@@ -121,6 +121,9 @@ namespace Quick.Protocol
             Options.NoticeHandlerManagerList = authedNoticeHandlerManagerList;
             EnableCompress = request.EnableCompress;
             EnableEncrypt = request.EnableEncrypt;
+            EncryptMethod  = request.EncryptMethod;
+            EncryptMode = request.EncryptMode;
+            EncryptPadding = request.EncryptPadding;
             TransportTimeout = request.TransportTimeout;
             OnAuthPassed();
 

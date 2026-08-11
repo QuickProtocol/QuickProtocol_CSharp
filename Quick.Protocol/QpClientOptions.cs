@@ -20,6 +20,18 @@ namespace Quick.Protocol
         /// </summary>
         public bool EnableEncrypt { get; set; } = false;
         /// <summary>
+        /// 加密方式
+        /// </summary>
+        public string EncryptMethod { get; set; } = "DES";
+        /// <summary>
+        /// 加密算法模式
+        /// </summary>
+        public string EncryptMode { get; set; } = "ECB";
+        /// <summary>
+        /// 加密填充模式
+        /// </summary>
+        public string EncryptPadding { get; set; } = "PKCS7";
+        /// <summary>
         /// 启用压缩(默认为false)
         /// </summary>
         public bool EnableCompress { get; set; } = false;

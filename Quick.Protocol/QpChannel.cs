@@ -53,6 +53,35 @@ namespace Quick.Protocol
         /// </summary>
         public virtual bool EnableEncrypt { get; protected set; } = false;
 
+        private string _EncryptMethod;
+        /// <summary>
+        /// 加密方式
+        /// </summary>
+        public string EncryptMethod
+        {
+            get => _EncryptMethod;
+            protected set => _EncryptMethod = value?.ToUpper();
+        }
+
+        private string _EncryptMode;
+        /// <summary>
+        /// 加密算法模式
+        /// </summary>
+        public string EncryptMode
+        {
+            get => _EncryptMode;
+            protected set => _EncryptMode = value?.ToUpper();
+        }
+        private string _EncryptPadding;
+        /// <summary>
+        /// 加密填充模式
+        /// </summary>
+        public string EncryptPadding
+        {
+            get => _EncryptPadding;
+            protected set => _EncryptPadding = value?.ToUpper();
+        }
+
         /// <summary>
         /// 接收超时(默认15秒)
         /// </summary>
@@ -248,9 +277,20 @@ namespace Quick.Protocol
 
             if (EnableEncrypt)
             {
-                symmetricAlgorithm = DES.Create();
-                symmetricAlgorithm.Mode = CipherMode.ECB;
-                symmetricAlgorithm.Padding = PaddingMode.PKCS7;
+                switch (EncryptMethod)
+                {
+                    case "DES":
+                        symmetricAlgorithm = DES.Create();
+                        break;
+                    case "AES":
+                        symmetricAlgorithm = Aes.Create();
+                        break;
+                    default:
+                        throw new ArgumentException($"Unknown encrypt method: {EncryptMethod}");
+                }
+
+                symmetricAlgorithm.Mode = Enum.Parse<CipherMode>(EncryptMode);
+                symmetricAlgorithm.Padding = Enum.Parse<PaddingMode>(EncryptPadding);
                 enc = symmetricAlgorithm.CreateEncryptor(passwordMd5Buffer, passwordMd5Buffer);
                 dec = symmetricAlgorithm.CreateDecryptor(passwordMd5Buffer, passwordMd5Buffer);
             }

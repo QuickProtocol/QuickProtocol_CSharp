@@ -51,6 +51,9 @@ namespace Quick.Protocol
 
             EnableCompress = Options.EnableCompress;
             EnableEncrypt = Options.EnableEncrypt;
+            EncryptMethod  = Options.EncryptMethod;
+            EncryptMode = Options.EncryptMode;
+            EncryptPadding = Options.EncryptPadding;
             OnAuthPassed();
 
             IsConnected = true;
@@ -59,6 +62,9 @@ namespace Quick.Protocol
             {
                 EnableCompress = Options.EnableCompress,
                 EnableEncrypt = Options.EnableEncrypt,
+                EncryptMethod = Options.EncryptMethod,
+                EncryptMode = Options.EncryptMode,
+                EncryptPadding = Options.EncryptPadding,
                 TransportTimeout = Options.TransportTimeout
             }, 5000, true).ConfigureAwait(false);
 
