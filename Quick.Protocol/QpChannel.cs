@@ -64,25 +64,14 @@ namespace Quick.Protocol
             get => _EncryptAlgorithm;
             protected set => _EncryptAlgorithm = value?.ToUpper();
         }
-
-        private string _EncryptMode;
         /// <summary>
         /// 加密模式
         /// </summary>
-        public string EncryptMode
-        {
-            get => _EncryptMode;
-            protected set => _EncryptMode = value?.ToUpper();
-        }
-        private string _EncryptPadding;
+        public string EncryptMode { get; protected set; }
         /// <summary>
         /// 加密填充
         /// </summary>
-        public string EncryptPadding
-        {
-            get => _EncryptPadding;
-            protected set => _EncryptPadding = value?.ToUpper();
-        }
+        public string EncryptPadding { get; protected set; }
 
         /// <summary>
         /// 接收超时(默认15秒)
