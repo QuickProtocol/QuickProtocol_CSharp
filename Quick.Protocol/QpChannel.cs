@@ -1,4 +1,4 @@
-﻿using Quick.Protocol.Utils;
+using Quick.Protocol.Utils;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
@@ -233,8 +233,8 @@ namespace Quick.Protocol
                         commandRequestTypeDict[item.RequestTypeName] = requestType;
                         commandResponseTypeDict[item.ResponseTypeName] = responseType;
                         commandRequestTypeResponseTypeDict[requestType] = responseType;
-                        typeSerializerDict[item.GetRequestType()] = item.GetRequestSeriliazer();
-                        typeSerializerDict[item.GetResponseType()] = item.GetResponseSeriliazer();
+                        typeSerializerDict[item.GetRequestType()] = item.GetRequestSerializer();
+                        typeSerializerDict[item.GetResponseType()] = item.GetResponseSerializer();
                     }
                 }
             }

@@ -35,7 +35,7 @@ namespace Quick.Protocol
         /// <summary>
         /// 通道认证超时
         /// </summary>
-        public event EventHandler<QpServerChannel> ChannelAuchenticateTimeout;
+        public event EventHandler<QpServerChannel> ChannelAuthenticateTimeout;
 
         public QpServer(QpServerOptions options)
         {
@@ -65,15 +65,15 @@ namespace Quick.Protocol
             ChannelConnecting?.Invoke(this, channel);
 
             //认证超时
-            channel.AuchenticateTimeout += (_, _) =>
+            channel.AuthenticateTimeout += (_, _) =>
             {
                 if (Options.Logger is { LogConnection: true })
-                    Options.Logger.Log("{0} Auchenticate timeout.", channelName);
-                ChannelAuchenticateTimeout?.Invoke(this, channel);
+                    Options.Logger.Log("{0} Authenticate timeout.", channelName);
+                ChannelAuthenticateTimeout?.Invoke(this, channel);
             };
 
             //认证通过后，才将通道添加到已连接通道列表里面
-            channel.Auchenticated += (_, _) =>
+            channel.Authenticated += (_, _) =>
             {
                 lock (channelList)
                 {

@@ -20,11 +20,11 @@ namespace Quick.Protocol
         /// <summary>
         /// 通过认证时
         /// </summary>
-        internal event EventHandler Auchenticated;
+        internal event EventHandler Authenticated;
         /// <summary>
         /// 认证超时
         /// </summary>
-        public event EventHandler AuchenticateTimeout;
+        public event EventHandler AuthenticateTimeout;
         protected override bool ReadFromStreamReturnZeroMeansFault { get; }
 
         public QpServerChannel(Stream channelStream, string channelName, CancellationToken cancellationToken, QpServerOptions options, bool readFromStreamReturnZeroMeansFault = true) : base(options)
@@ -69,7 +69,7 @@ namespace Quick.Protocol
                         options.Logger.Log("{0} Authenticate timeout.", channelName);
 
                     Dispose();
-                    AuchenticateTimeout?.Invoke(this, EventArgs.Empty);
+                    AuthenticateTimeout?.Invoke(this, EventArgs.Empty);
                 });
         }
 
@@ -131,7 +131,7 @@ namespace Quick.Protocol
             if (HeartBeatInterval > 0)
                 _ = BeginHeartBeat(cts.Token);
             IsConnected = true;
-            Auchenticated?.Invoke(this, EventArgs.Empty);
+            Authenticated?.Invoke(this, EventArgs.Empty);
             return new Commands.HandShake.Response();
         }
 

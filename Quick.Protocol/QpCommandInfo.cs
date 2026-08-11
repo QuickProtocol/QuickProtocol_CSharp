@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json.Nodes;
@@ -48,8 +48,8 @@ namespace Quick.Protocol
         public string ResponseTypeSchemaSample { get; set; }
         private readonly IQpSerializer requestSerializer;
         private readonly IQpSerializer responseSerializer;
-        public IQpSerializer GetRequestSeriliazer() => requestSerializer;
-        public IQpSerializer GetResponseSeriliazer() => responseSerializer;
+        public IQpSerializer GetRequestSerializer() => requestSerializer;
+        public IQpSerializer GetResponseSerializer() => responseSerializer;
 
         private readonly Type requestType;
 
@@ -106,9 +106,7 @@ namespace Quick.Protocol
         {
             var requestType = typeof(TRequest);
             var responseType = typeof(TResponse);
-            string name = null;
-            if (name == null)
-                name = requestType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
+            string name = requestType.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
             if (name == null)
                 name = requestType.FullName;
             return new QpCommandInfo(name, requestType.GetCustomAttribute<DescriptionAttribute>()?.Description,

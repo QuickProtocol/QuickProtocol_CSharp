@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Quick.Protocol.Utils;
 using System;
@@ -107,12 +107,12 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             isStarted = true;
             lock (httpContextQueue)
                 httpContextQueue.Clear();
-            ChannelAuchenticateTimeout += OnChannelAuchenticateTimeoutOrDisconnected;
-            ChannelDisconnected += OnChannelAuchenticateTimeoutOrDisconnected;
+            ChannelAuthenticateTimeout += OnChannelAuthenticateTimeoutOrDisconnected;
+            ChannelDisconnected += OnChannelAuthenticateTimeoutOrDisconnected;
             base.Start();
         }
 
-        private void OnChannelAuchenticateTimeoutOrDisconnected(object sender, QpServerChannel e)
+        private void OnChannelAuthenticateTimeoutOrDisconnected(object sender, QpServerChannel e)
         {
             var stream = e.GetStream();
             if (stream == null)
@@ -146,8 +146,8 @@ namespace Quick.Protocol.Http.Server.AspNetCore
         public override void Stop()
         {
             isStarted = false;
-            ChannelAuchenticateTimeout -= OnChannelAuchenticateTimeoutOrDisconnected;
-            ChannelDisconnected -= OnChannelAuchenticateTimeoutOrDisconnected;
+            ChannelAuthenticateTimeout -= OnChannelAuthenticateTimeoutOrDisconnected;
+            ChannelDisconnected -= OnChannelAuthenticateTimeoutOrDisconnected;
             lock (httpContextQueue)
                 httpContextQueue.Clear();
             base.Stop();

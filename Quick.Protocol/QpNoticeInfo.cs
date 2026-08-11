@@ -76,9 +76,7 @@ namespace Quick.Protocol
             where T : IQpModel<T>, new()
         {
             var type = typeof(T);
-            string name = null;
-            if (name == null)
-                name = type.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
+            string name = type.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
             if (name == null)
                 name = type.FullName;
             return new QpNoticeInfo(name,
