@@ -11,8 +11,6 @@ namespace Quick.Protocol
         {
             options.Check();
             Options = options;
-            RegisterCommandExecuterManagers(options.CommandExecuterManagerList);
-            RegisterNoticeHandlerManagers(options.NoticeHandlerManagerList);
         }
 
         public override string ChannelName => Options.ToUri().ToString();
@@ -25,6 +23,9 @@ namespace Quick.Protocol
         {
             //清理
             Dispose();
+
+            RegisterCommandExecuterManagers(Options.CommandExecuterManagerList);
+            RegisterNoticeHandlerManagers(Options.NoticeHandlerManagerList);
 
             cts = new CancellationTokenSource();
             var token = cts.Token;
