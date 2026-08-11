@@ -61,7 +61,7 @@ namespace Quick.Protocol
 
         protected void OnNewChannelConnected(Stream stream, string channelName, CancellationToken token, bool readFromStreamReturnZeroMeansFault = true)
         {
-            var channel = new QpServerChannel(stream, channelName, token, Options.Clone(), readFromStreamReturnZeroMeansFault);
+            var channel = new QpServerChannel(stream, channelName, token, Options, readFromStreamReturnZeroMeansFault);
             ChannelConnecting?.Invoke(this, channel);
 
             //认证超时

@@ -1,4 +1,4 @@
-﻿using Quick.Protocol.Utils;
+using Quick.Protocol.Utils;
 using System.Buffers;
 using System.IO.Compression;
 using System.IO.Pipelines;
@@ -148,7 +148,7 @@ namespace Quick.Protocol
                         BytesSent = 0;
                 }
 
-                if (Options.Logger != null && Options.Logger.LogRaw)
+                if (Options.Logger is { LogRaw: true })
                 {
                     var sb = new StringBuilder();
                     sb.Append($"{DateTime.Now}: [Send-Raw]Length: {packageTotalLength}");
@@ -255,7 +255,7 @@ namespace Quick.Protocol
                     }
                 }
                 _ = writer.FlushAsync();
-                if (Options.Logger != null && Options.Logger.LogNotice)
+                if (Options.Logger is { LogNotice: true })
                     Options.Logger.Log("{0}: [Send-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
                         .Logger.LogContent
                         ? content

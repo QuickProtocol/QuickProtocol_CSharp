@@ -1,6 +1,5 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Buffers;
+using System.Text.Json.Serialization;
 using Quick.Protocol.JsonConverters;
 
 namespace Quick.Protocol
@@ -30,19 +29,6 @@ namespace Quick.Protocol
         public virtual QpServer CreateServer()
         {
             throw new NotImplementedException();
-        }
-
-        public virtual QpServerOptions Clone()
-        {
-            var type = this.GetType();
-            var ret = (QpServerOptions)JsonSerializer.Deserialize(
-                JsonSerializer.Serialize(this, type, GetJsonSerializerContext()), type, GetJsonSerializerContext());
-            ret.InstructionSet = InstructionSet;
-            ret.CommandExecuterManagerList = CommandExecuterManagerList;
-            ret.NoticeHandlerManagerList = NoticeHandlerManagerList;
-            ret.ProtocolErrorHandler = ProtocolErrorHandler;
-            ret.Logger = Logger;
-            return ret;
         }
     }
 }
