@@ -1,4 +1,4 @@
-﻿using Quick.Protocol.Exceptions;
+using Quick.Protocol.Exceptions;
 using System.Buffers;
 using System.IO.Compression;
 using System.IO.Pipelines;
@@ -41,9 +41,8 @@ namespace Quick.Protocol
                 Content = content
             });
             //如果在字典中未找到此类型名称，则直接返回
-            if (!noticeTypeDict.ContainsKey(typeName))
+            if (!noticeTypeDict.TryGetValue(typeName, out var noticeType))
                 return;
-            var noticeType = noticeTypeDict[typeName];
             var noticeSerializer = getTypeSerializer(noticeType);
             var contentModel = noticeSerializer.Deserialize(content);
 
@@ -94,10 +93,8 @@ namespace Quick.Protocol
             try
             {
                 //如果在字典中未找到此类型名称，则直接返回
-                if (!commandRequestTypeDict.ContainsKey(typeName))
+                if (!commandRequestTypeDict.TryGetValue(typeName, out var cmdRequestType))
                     throw new CommandException(255, $"Unknown RequestType[{typeName}].");
-
-                var cmdRequestType = commandRequestTypeDict[typeName];
                 var cmdResponseType = commandRequestTypeResponseTypeDict[cmdRequestType];
                 var requestSerilizer = getTypeSerializer(cmdRequestType);
                 var contentModel = requestSerilizer.Deserialize(content);

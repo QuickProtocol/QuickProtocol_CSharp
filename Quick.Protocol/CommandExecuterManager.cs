@@ -1,4 +1,4 @@
-﻿namespace Quick.Protocol;
+namespace Quick.Protocol;
 
 public class CommandExecuterManager
 {
@@ -39,9 +39,8 @@ public class CommandExecuterManager
     /// <returns></returns>
     public virtual object ExecuteCommand(QpChannel handler, string cmdRequestTypeName, object cmdRequestModel)
     {
-        if (!CanExecuteCommand(cmdRequestTypeName))
+        if (!commandExecuterDict.TryGetValue(cmdRequestTypeName, out var commandExecuter))
             throw new IOException($"Command Request Type[{cmdRequestTypeName}] has no executer.");
-        var commandExecuter = commandExecuterDict[cmdRequestTypeName];
         return commandExecuter(handler, cmdRequestModel);
     }
 

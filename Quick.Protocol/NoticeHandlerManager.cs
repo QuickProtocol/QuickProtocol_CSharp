@@ -1,4 +1,4 @@
-﻿namespace Quick.Protocol;
+namespace Quick.Protocol;
 
 public class NoticeHandlerManager
 {
@@ -31,10 +31,8 @@ public class NoticeHandlerManager
     /// <returns></returns>
     public virtual void HandleNotice(QpChannel handler, string noticeTypeName, object noticeModel)
     {
-        if (!CanHandleNoticed(noticeTypeName))
-            return;
-        var noticeHandler = noticeHandlerDict[noticeTypeName];
-        noticeHandler(handler, noticeModel);
+        if (noticeHandlerDict.TryGetValue(noticeTypeName, out var noticeHandler))
+            noticeHandler(handler, noticeModel);
     }
 
     /// <summary>
