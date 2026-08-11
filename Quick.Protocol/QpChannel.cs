@@ -278,7 +278,7 @@ namespace Quick.Protocol
         public QpChannel(QpChannelOptions options)
         {
             Options = options;
-            passwordMd5Buffer = MD5.HashData(Encoding.UTF8.GetBytes(options.Password)).Take(8).ToArray();
+            passwordMd5Buffer = MD5.HashData(Encoding.UTF8.GetBytes(options.Password));
 
             foreach (var instructionSet in options.InstructionSet)
             {
@@ -316,22 +316,24 @@ namespace Quick.Protocol
 
             if (EnableEncrypt)
             {
+                byte[] key;
                 switch (EncryptAlgorithm)
                 {
                     case "DES":
                         symmetricAlgorithm = DES.Create();
+                        key = passwordMd5Buffer.Take(8).ToArray();
                         break;
                     case "AES":
                         symmetricAlgorithm = Aes.Create();
+                        key = passwordMd5Buffer.Take(16).ToArray();
                         break;
                     default:
                         throw new ArgumentException($"Unknown encrypt method: {EncryptAlgorithm}");
                 }
-
                 symmetricAlgorithm.Mode = Enum.Parse<CipherMode>(EncryptMode);
                 symmetricAlgorithm.Padding = Enum.Parse<PaddingMode>(EncryptPadding);
-                enc = symmetricAlgorithm.CreateEncryptor(passwordMd5Buffer, passwordMd5Buffer);
-                dec = symmetricAlgorithm.CreateDecryptor(passwordMd5Buffer, passwordMd5Buffer);
+                enc = symmetricAlgorithm.CreateEncryptor(key, key);
+                dec = symmetricAlgorithm.CreateDecryptor(key, key);
             }
         }
 
