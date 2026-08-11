@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -43,13 +43,13 @@ namespace Quick.Protocol.Tcp
             {
                 var remoteEndPointStr = $"{QpTcpClientOptions.URI_SCHEMA}://{tcpClient.Client.RemoteEndPoint}";
                 if (Options.Logger is { LogConnection: true })
-                    Console.WriteLine("[Connection]{0} connected.", remoteEndPointStr);
+                    Options.Logger.Log("[Connection]{0} connected.", remoteEndPointStr);
                 OnNewChannelConnected(tcpClient.GetStream(), remoteEndPointStr, token);
             }
             catch (Exception ex)
             {
                 if (Options.Logger is { LogConnection: true })
-                    Console.WriteLine("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
+                    Options.Logger.Log("[Connection]Init&Start Channel error,reason:{0}", ex.ToString());
                 try { tcpClient.Close(); }
                 catch { }
                 try { tcpClient.Dispose(); }

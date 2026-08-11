@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
@@ -56,14 +56,18 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            using (var stream = writePipe.Writer.AsStream(true))
-                stream.Write(buffer, offset, count);
+            var memory = writePipe.Writer.GetMemory(count);
+            new ReadOnlySpan<byte>(buffer, offset, count).CopyTo(memory.Span);
+            writePipe.Writer.Advance(count);
+            _ = writePipe.Writer.FlushAsync().Result;
         }
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            using (var stream = writePipe.Writer.AsStream(true))
-                await stream.WriteAsync(buffer, offset, count, cancellationToken);
+            var memory = writePipe.Writer.GetMemory(count);
+            new ReadOnlySpan<byte>(buffer, offset, count).CopyTo(memory.Span);
+            writePipe.Writer.Advance(count);
+            await writePipe.Writer.FlushAsync(cancellationToken);
         }
     }
 }
