@@ -52,7 +52,7 @@ namespace Quick.Protocol
 
             EnableCompress = Options.EnableCompress;
             EnableEncrypt = Options.EnableEncrypt;
-            EncryptMethod  = Options.EncryptMethod;
+            EncryptAlgorithm  = Options.EncryptAlgorithm;
             EncryptMode = Options.EncryptMode;
             EncryptPadding = Options.EncryptPadding;
             OnAuthPassed();
@@ -63,7 +63,7 @@ namespace Quick.Protocol
             {
                 EnableCompress = Options.EnableCompress,
                 EnableEncrypt = Options.EnableEncrypt,
-                EncryptMethod = Options.EncryptMethod,
+                EncryptAlgorithm = Options.EncryptAlgorithm,
                 EncryptMode = Options.EncryptMode,
                 EncryptPadding = Options.EncryptPadding,
                 TransportTimeout = Options.TransportTimeout

@@ -55,19 +55,19 @@ namespace Quick.Protocol
         /// </summary>
         public virtual bool EnableEncrypt { get; protected set; } = false;
 
-        private string _EncryptMethod;
+        private string _EncryptAlgorithm;
         /// <summary>
-        /// 加密方式
+        /// 加密算法
         /// </summary>
-        public string EncryptMethod
+        public string EncryptAlgorithm
         {
-            get => _EncryptMethod;
-            protected set => _EncryptMethod = value?.ToUpper();
+            get => _EncryptAlgorithm;
+            protected set => _EncryptAlgorithm = value?.ToUpper();
         }
 
         private string _EncryptMode;
         /// <summary>
-        /// 加密算法模式
+        /// 加密模式
         /// </summary>
         public string EncryptMode
         {
@@ -76,7 +76,7 @@ namespace Quick.Protocol
         }
         private string _EncryptPadding;
         /// <summary>
-        /// 加密填充模式
+        /// 加密填充
         /// </summary>
         public string EncryptPadding
         {
@@ -316,7 +316,7 @@ namespace Quick.Protocol
 
             if (EnableEncrypt)
             {
-                switch (EncryptMethod)
+                switch (EncryptAlgorithm)
                 {
                     case "DES":
                         symmetricAlgorithm = DES.Create();
@@ -325,7 +325,7 @@ namespace Quick.Protocol
                         symmetricAlgorithm = Aes.Create();
                         break;
                     default:
-                        throw new ArgumentException($"Unknown encrypt method: {EncryptMethod}");
+                        throw new ArgumentException($"Unknown encrypt method: {EncryptAlgorithm}");
                 }
 
                 symmetricAlgorithm.Mode = Enum.Parse<CipherMode>(EncryptMode);

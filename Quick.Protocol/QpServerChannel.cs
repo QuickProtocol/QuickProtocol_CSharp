@@ -123,7 +123,7 @@ namespace Quick.Protocol
             RegisterNoticeHandlerManagers(authedNoticeHandlerManagerList);
             EnableCompress = request.EnableCompress;
             EnableEncrypt = request.EnableEncrypt;
-            EncryptMethod  = request.EncryptMethod;
+            EncryptAlgorithm  = request.EncryptAlgorithm;
             EncryptMode = request.EncryptMode;
             EncryptPadding = request.EncryptPadding;
             TransportTimeout = request.TransportTimeout;

@@ -17,15 +17,15 @@ namespace Quick.Protocol.Commands.HandShake
         /// </summary>
         public bool EnableEncrypt { get; set; } = false;
         /// <summary>
-        /// 加密方式
+        /// 加密算法
         /// </summary>
-        public string EncryptMethod { get; set; } = "DES";
+        public string EncryptAlgorithm { get; set; } = "DES";
         /// <summary>
-        /// 加密算法模式
+        /// 加密模式
         /// </summary>
         public string EncryptMode { get; set; } = "ECB";
         /// <summary>
-        /// 加密填充模式
+        /// 加密填充
         /// </summary>
         public string EncryptPadding { get; set; } = "PKCS7";
 
