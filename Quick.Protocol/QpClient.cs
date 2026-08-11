@@ -11,6 +11,8 @@ namespace Quick.Protocol
         {
             options.Check();
             Options = options;
+            RegisterCommandExecuterManagers(options.CommandExecuterManagerList);
+            RegisterNoticeHandlerManagers(options.NoticeHandlerManagerList);
         }
 
         public override string ChannelName => Options.ToUri().ToString();
