@@ -2,7 +2,8 @@ namespace Quick.Protocol;
 
 public class QpLogger
 {
-    public static QpLogger EmptyLogger => new QpLogger(null);
+    private static readonly QpLogger _emptyLogger = new QpLogger(null);
+    public static QpLogger EmptyLogger => _emptyLogger;
 
     public const string NOT_SHOW_CONTENT_MESSAGE = "[NOT_SHOW: LogUtils.LogContent is False]";
     public bool LogPackage { get; set; } = false;
