@@ -1,12 +1,4 @@
-﻿using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Quick.Protocol.Streams
 {
@@ -90,7 +82,7 @@ namespace Quick.Protocol.Streams
             {
                 throw new ArgumentNullException(nameof(buffer));
             }
-            return Task.Run(() => ReadInternal(new Span<byte>(buffer, offset, count)));
+            return Task.FromResult(ReadInternal(new Span<byte>(buffer, offset, count)));
         }
 
         public override int Read(Span<byte> buffer)
@@ -100,20 +92,27 @@ namespace Quick.Protocol.Streams
 
         public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return new ValueTask<int>(Task.Run(() => ReadInternal(buffer.Span)));
+            return new ValueTask<int>(ReadInternal(buffer.Span));
         }
 
         public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
-            var buffer = new byte[bufferSize];
-            while (_sequence.Length > 0)
+            var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            try
             {
-                var count = Math.Min((int)_sequence.Length, bufferSize);
-                _sequence.Slice(0, count).CopyTo(buffer);
-                _sequence = _sequence.Slice(count);
-                await destination.WriteAsync(buffer, 0, count).ConfigureAwait(false);
+                while (_sequence.Length > 0)
+                {
+                    var count = Math.Min((int)_sequence.Length, bufferSize);
+                    _sequence.Slice(0, count).CopyTo(buffer);
+                    _sequence = _sequence.Slice(count);
+                    await destination.WriteAsync(buffer, 0, count).ConfigureAwait(false);
+                }
+                await destination.FlushAsync().ConfigureAwait(false);
             }
-            await destination.FlushAsync().ConfigureAwait(false);
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
 
         public override void Flush()
