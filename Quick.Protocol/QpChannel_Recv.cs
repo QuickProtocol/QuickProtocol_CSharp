@@ -1,17 +1,11 @@
 ﻿using Quick.Protocol.Exceptions;
-using Quick.Protocol.Utils;
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO.Compression;
 using System.IO.Pipelines;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Quick.Protocol.Streams;
 using Quick.Utils;
+using System.Buffers.Binary;
 
 namespace Quick.Protocol
 {
@@ -447,7 +441,7 @@ namespace Quick.Protocol
         private int parsePackageTotalLength(ReadOnlySequence<byte> sequence, byte[] buffer)
         {
             sequence.Slice(0, PACKAGE_HEAD_LENGTH).CopyTo(buffer);
-            var packageTotalLength = ByteUtils.B2I_BE(buffer, 0);
+            var packageTotalLength = BinaryPrimitives.ReadInt32BigEndian(new ReadOnlySpan<byte>(buffer));
             if (packageTotalLength < PACKAGE_HEAD_LENGTH)
                 throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]必须大于等于{PACKAGE_HEAD_LENGTH}！");
             if (packageTotalLength > Options.MaxPackageSize)

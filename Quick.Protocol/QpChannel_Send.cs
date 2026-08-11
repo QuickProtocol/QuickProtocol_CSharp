@@ -1,10 +1,10 @@
-using Quick.Protocol.Utils;
 using System.Buffers;
 using System.IO.Compression;
 using System.IO.Pipelines;
 using System.Text;
 using Quick.Protocol.Streams;
 using Quick.Utils;
+using System.Buffers.Binary;
 
 namespace Quick.Protocol
 {
@@ -121,7 +121,7 @@ namespace Quick.Protocol
                 var writer = sendRawPipe.Writer;
                 var headMemory = writer.GetMemory(PACKAGE_HEAD_LENGTH);
                 //包头
-                writePackageTotalLengthToBuffer(headMemory, packageTotalLength);
+                BinaryPrimitives.WriteInt32BigEndian(headMemory.Span,packageTotalLength);
                 headMemory.Span[4] = (byte)packageType;
                 writer.Advance(PACKAGE_HEAD_LENGTH);
                 //包体
@@ -164,23 +164,6 @@ namespace Quick.Protocol
             if (packageBodyLength > 0)
                 currentReader?.AdvanceTo(packageBodyBuffer.End);
             await stream.FlushAsync().ConfigureAwait(false);
-        }
-
-        private static void writePackageTotalLengthToBuffer(byte[] buffer, int offset, int packageTotalLength)
-        {
-            writePackageTotalLengthToBuffer(new Span<byte>(buffer, offset, sizeof(int)), packageTotalLength);
-        }
-
-        private static void writePackageTotalLengthToBuffer(Span<byte> span, int packageTotalLength)
-        {
-            BitConverter.TryWriteBytes(span, packageTotalLength);
-            if (BitConverter.IsLittleEndian)
-                span.Slice(0, sizeof(int)).Reverse();
-        }
-
-        private static void writePackageTotalLengthToBuffer(Memory<byte> memory, int packageTotalLength)
-        {
-            writePackageTotalLengthToBuffer(memory.Span, packageTotalLength);
         }
 
         private async Task UseSendPipe(QpPackageType packageType, Func<Pipe, Task<int>> packageBodyHandler = null,
@@ -282,7 +265,7 @@ namespace Quick.Protocol
                 //写入指令编号
                 {
                     var commandIdLength = commandId.Length / 2;
-                    ByteUtils.HexDecode(commandId, writer.GetMemory(commandIdLength));
+                    Convert.FromHexString(commandId, writer.GetMemory(commandIdLength).Span, out _, out var _);
                     writer.Advance(commandIdLength);
                     bodyLength += commandIdLength;
                 }
@@ -329,7 +312,7 @@ namespace Quick.Protocol
                 //写入指令编号
                 {
                     var commandIdLength = commandId.Length / 2;
-                    ByteUtils.HexDecode(commandId, writer.GetMemory(commandIdLength));
+                    Convert.FromHexString(commandId, writer.GetMemory(commandIdLength).Span, out _, out var _);
                     writer.Advance(commandIdLength);
                     bodyLength += commandIdLength;
                 }

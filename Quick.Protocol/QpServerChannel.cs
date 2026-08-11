@@ -102,7 +102,7 @@ namespace Quick.Protocol
 
         private Commands.Authenticate.Response authenticate(QpChannel handler, Commands.Authenticate.Request request)
         {
-            if (Utils.CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password) != request.Answer)
+            if (ComputeMD5Hash(AuthenticateQuestion + Options.Password) != request.Answer)
             {
                 _ = Task.Delay(1000).ContinueWith(t =>
                 {

@@ -1,9 +1,7 @@
-﻿using Quick.Protocol.Utils;
-using Quick.Utils;
+﻿using Quick.Utils;
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Security.Policy;
 using System.Windows.Forms;
 
 namespace QpTestClient

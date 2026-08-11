@@ -1,5 +1,3 @@
-using Quick.Protocol.Utils;
-
 namespace Quick.Protocol
 {
     public abstract class QpClient : QpChannel
@@ -46,7 +44,7 @@ namespace Quick.Protocol
 
             var repAuth = await SendCommand(new Commands.Authenticate.Request()
             {
-                Answer = CryptographyUtils.ComputeMD5Hash(AuthenticateQuestion + Options.Password)
+                Answer = ComputeMD5Hash(AuthenticateQuestion + Options.Password)
             }).ConfigureAwait(false);
 
             EnableCompress = Options.EnableCompress;

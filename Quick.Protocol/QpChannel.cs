@@ -1,4 +1,3 @@
-using Quick.Protocol.Utils;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
@@ -238,8 +237,8 @@ namespace Quick.Protocol
 
         public QpChannel(QpChannelOptions options)
         {
-            this.Options = options;
-            passwordMd5Buffer = CryptographyUtils.ComputeMD5Hash(Encoding.UTF8.GetBytes(options.Password)).Take(8).ToArray();
+            Options = options;
+            passwordMd5Buffer = MD5.HashData(Encoding.UTF8.GetBytes(options.Password)).Take(8).ToArray();
 
             foreach (var instructionSet in options.InstructionSet)
             {
@@ -318,6 +317,12 @@ namespace Quick.Protocol
             var type = package.GetType();
             var serializer = getTypeSerializer(type);
             return SendNoticePackage(type.FullName, serializer.Serialize(package));
+        }
+
+        protected string ComputeMD5Hash(string data)
+        {
+            var buffer = MD5.HashData(encoding.GetBytes(data));
+            return Convert.ToHexString(buffer).ToLower();
         }
 
         /// <summary>
