@@ -65,6 +65,15 @@ namespace Quick.Protocol
                 case nameof(EnableEncrypt):
                     EnableEncrypt = bool.Parse(value);
                     break;
+                case nameof(EncryptAlgorithm):
+                    EncryptAlgorithm = value;
+                    break;
+                case nameof(EncryptMode):
+                    EncryptMode = value;
+                    break;
+                case nameof(EncryptPadding):
+                    EncryptPadding = value;
+                    break;
                 case nameof(EnableNetstat):
                     EnableNetstat = bool.Parse(value);
                     break;
