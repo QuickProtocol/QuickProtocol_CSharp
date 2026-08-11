@@ -121,7 +121,7 @@ namespace Quick.Protocol
                 var writer = sendRawPipe.Writer;
                 var headMemory = writer.GetMemory(PACKAGE_HEAD_LENGTH);
                 //包头
-                BinaryPrimitives.WriteInt32BigEndian(headMemory.Span,packageTotalLength);
+                BinaryPrimitives.WriteInt32BigEndian(headMemory.Span, packageTotalLength);
                 headMemory.Span[4] = (byte)packageType;
                 writer.Advance(PACKAGE_HEAD_LENGTH);
                 //包体
@@ -218,7 +218,7 @@ namespace Quick.Protocol
                     writer.Advance(1);
                     bodyLength += 1;
 
-                    encoding.GetEncoder().GetBytes(typeName, writer.GetSpan(typeNameByteLength), true);
+                    encoding.GetBytes(typeName, writer.GetSpan(typeNameByteLength));
                     writer.Advance(typeNameByteLength);
                     bodyLength += typeNameByteLength;
                 }
@@ -232,7 +232,7 @@ namespace Quick.Protocol
                         charMemory = charMemory.Slice(charCount);
 
                         var byteCount = encoding.GetByteCount(tmpCharMemory.Span);
-                        encoding.GetEncoder().GetBytes(tmpCharMemory.Span, writer.GetSpan(byteCount), true);
+                        encoding.GetBytes(tmpCharMemory.Span, writer.GetSpan(byteCount));
                         writer.Advance(byteCount);
                         bodyLength += byteCount;
                     }
@@ -276,14 +276,14 @@ namespace Quick.Protocol
                     writer.Advance(1);
                     bodyLength += 1;
 
-                    encoding.GetEncoder().GetBytes(typeName, writer.GetSpan(typeNameByteLength), true);
+                    encoding.GetBytes(typeName, writer.GetSpan(typeNameByteLength));
                     writer.Advance(typeNameByteLength);
                     bodyLength += typeNameByteLength;
                 }
                 //写入内容
                 {
                     var contentLength = encoding.GetByteCount(content);
-                    encoding.GetEncoder().GetBytes(content, writer.GetSpan(contentLength), true);
+                    encoding.GetBytes(content, writer.GetSpan(contentLength));
                     writer.Advance(contentLength);
                     bodyLength += contentLength;
                 }
@@ -332,14 +332,14 @@ namespace Quick.Protocol
                         writer.Advance(1);
                         bodyLength += 1;
 
-                        encoding.GetEncoder().GetBytes(typeName, writer.GetSpan(typeNameByteLength), true);
+                        encoding.GetBytes(typeName, writer.GetSpan(typeNameByteLength));
                         writer.Advance(typeNameByteLength);
                         bodyLength += typeNameByteLength;
                     }
                     //写入内容
                     {
                         var contentLength = encoding.GetByteCount(content);
-                        encoding.GetEncoder().GetBytes(content, writer.GetSpan(contentLength), true);
+                        encoding.GetBytes(content, writer.GetSpan(contentLength));
                         writer.Advance(contentLength);
                         bodyLength += contentLength;
                     }
@@ -358,7 +358,7 @@ namespace Quick.Protocol
                     //写入消息
                     {
                         var messageLength = encoding.GetByteCount(message);
-                        encoding.GetEncoder().GetBytes(message, writer.GetSpan(messageLength), true);
+                        encoding.GetBytes(message, writer.GetSpan(messageLength));
                         writer.Advance(messageLength);
                         bodyLength += messageLength;
                     }
