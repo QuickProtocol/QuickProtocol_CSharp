@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
@@ -321,8 +322,22 @@ namespace Quick.Protocol
 
         protected string ComputeMD5Hash(string data)
         {
-            var buffer = MD5.HashData(encoding.GetBytes(data));
-            return Convert.ToHexString(buffer).ToLower();
+            int byteCount = encoding.GetByteCount(data);
+            byte[] dataBuf = ArrayPool<byte>.Shared.Rent(byteCount);
+            var dataSpan = dataBuf.AsSpan(0, byteCount);
+
+            var hashBuffer = ArrayPool<byte>.Shared.Rent(MD5.HashSizeInBytes);
+            var hashSpan = hashBuffer.AsSpan(0, MD5.HashSizeInBytes);
+            try
+            {
+                encoding.GetBytes(data, dataSpan);
+                MD5.HashData(dataSpan, hashSpan);
+                return Convert.ToHexString(hashSpan).ToLower();
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(hashBuffer);
+            }
         }
 
         /// <summary>
