@@ -336,6 +336,7 @@ namespace Quick.Protocol
             }
             finally
             {
+                ArrayPool<byte>.Shared.Return(dataBuf);
                 ArrayPool<byte>.Shared.Return(hashBuffer);
             }
         }
@@ -423,7 +424,7 @@ namespace Quick.Protocol
             {
                 try
                 {
-                    await Task.Run(() => SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, ignoreCompressAndEncrypt))
+                    await SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, ignoreCompressAndEncrypt)
                         .WaitAsync(TimeSpan.FromMilliseconds(timeout))
                         .ConfigureAwait(false);
                 }
@@ -435,7 +436,7 @@ namespace Quick.Protocol
                             commandContext.Id, requestTypeName,
                             Options.Logger.LogContent ? requestContent : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
 
-                    if (commandContext.ResponseTask.Status == TaskStatus.Created)
+                    if (!commandContext.ResponseTask.IsCompleted)
                     {
                         commandContext.Timeout();
                         commandDict.TryRemove(commandContext.Id, out _);
@@ -473,7 +474,7 @@ namespace Quick.Protocol
             {
                 try
                 {
-                    await Task.Run(() => SendCommandRequestPackage(commandContext.Id, typeName, requestContent, ignoreCompressAndEncrypt))
+                    await SendCommandRequestPackage(commandContext.Id, typeName, requestContent, ignoreCompressAndEncrypt)
                         .WaitAsync(TimeSpan.FromMilliseconds(timeout))
                         .ConfigureAwait(false);
                 }
@@ -482,7 +483,7 @@ namespace Quick.Protocol
                     if (Options.Logger is { LogCommand: true })
                         Options.Logger.Log("{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandContext.Id, typeName, Options.Logger.LogContent ? requestContent : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
 
-                    if (commandContext.ResponseTask.Status == TaskStatus.Created)
+                    if (!commandContext.ResponseTask.IsCompleted)
                     {
                         commandContext.Timeout();
                         commandDict.TryRemove(commandContext.Id, out _);

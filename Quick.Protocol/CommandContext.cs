@@ -1,7 +1,4 @@
-﻿using Quick.Protocol.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Quick.Protocol.Exceptions;
 using System.Threading.Tasks;
 
 namespace Quick.Protocol
@@ -10,53 +7,32 @@ namespace Quick.Protocol
     {
         public static string GenerateNewId() => Guid.NewGuid().ToString("N").ToLower();
         public string Id { get; private set; }
-        private CommandException commandException;
-        private bool isTimeout = false;
-        private CommandResponseTypeNameAndContent response;
-        public Task<CommandResponseTypeNameAndContent> ResponseTask { get; private set; }
+        private readonly TaskCompletionSource<CommandResponseTypeNameAndContent> tcs;
+        public Task<CommandResponseTypeNameAndContent> ResponseTask => tcs.Task;
 
         public CommandContext(string typeName)
         {
             Id = GenerateNewId();
-            ResponseTask = new Task<CommandResponseTypeNameAndContent>(() =>
-            {
-                if (isTimeout)
-                    throw new TimeoutException($"Command[Id:{Id},Type:{typeName}] is timeout.");
-                if (commandException != null)
-                    throw commandException;
-                return response;
-            });
+            tcs = new TaskCompletionSource<CommandResponseTypeNameAndContent>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
         public virtual void SetResponse(CommandException commandException)
         {
-            if (isTimeout)
-                return;
-            this.commandException = commandException;
-            if (ResponseTask.Status == TaskStatus.Created)
-                ResponseTask.Start();
+            tcs.TrySetException(commandException);
         }
 
-        public virtual void SetResponse(string responseTypeName,string responseContent)
+        public virtual void SetResponse(string responseTypeName, string responseContent)
         {
-            if (isTimeout)
-                return;
-
-            this.response = new CommandResponseTypeNameAndContent()
+            tcs.TrySetResult(new CommandResponseTypeNameAndContent()
             {
                 TypeName = responseTypeName,
                 Content = responseContent
-            };
-            
-            if (ResponseTask.Status == TaskStatus.Created)
-                ResponseTask.Start();
+            });
         }
 
         public virtual void Timeout()
         {
-            isTimeout = true;
-            if (ResponseTask.Status == TaskStatus.Created)
-                ResponseTask.Start();
+            tcs.TrySetException(new TimeoutException($"Command[Id:{Id}] is timeout."));
         }
     }
 }
