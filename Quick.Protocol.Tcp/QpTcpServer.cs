@@ -44,7 +44,8 @@ namespace Quick.Protocol.Tcp
                 var remoteEndPointStr = $"{QpTcpClientOptions.URI_SCHEMA}://{tcpClient.Client.RemoteEndPoint}";
                 if (Options.Logger is { LogConnection: true })
                     Options.Logger.Log("[Connection]{0} connected.", remoteEndPointStr);
-                OnNewChannelConnected(tcpClient.GetStream(), remoteEndPointStr, token);
+                var stream = new TcpClientOwningStream(tcpClient.GetStream(), tcpClient);
+                OnNewChannelConnected(stream, remoteEndPointStr, token);
             }
             catch (Exception ex)
             {

@@ -10,4 +10,5 @@
   <Project Path="Quick.Protocol.InterfaceService/Quick.Protocol.InterfaceService.csproj" />
   <Project Path="QpTestClient/QpTestClient.csproj" />
   <Project Path="TestProgram/TestProgram.csproj" />
+  <Project Path="SmokeTest/SmokeTest.csproj" />
 </Solution>

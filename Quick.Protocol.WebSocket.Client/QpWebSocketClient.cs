@@ -25,17 +25,21 @@ namespace Quick.Protocol.WebSocket.Client
             var url = options.Url;
             if (url.StartsWith("qp."))
                 url = url.Substring(3);
-            var cts = new CancellationTokenSource();
+            using var cts = new CancellationTokenSource(options.ConnectionTimeout);
             try
             {
                 await client.ConnectAsync(new Uri(url), cts.Token).ConfigureAwait(false);
             }
+            catch (OperationCanceledException) when (cts.IsCancellationRequested)
+            {
+                client.Dispose();
+                throw new TimeoutException($"Connection to {url} timed out.");
+            }
             catch
             {
-                cts.Cancel();
                 client.Dispose();
                 throw;
-            }            
+            }
             return new WebSocketClientStream(client);
         }
 

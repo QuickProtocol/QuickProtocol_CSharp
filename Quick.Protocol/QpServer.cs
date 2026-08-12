@@ -1,6 +1,6 @@
 namespace Quick.Protocol
 {
-    public abstract class QpServer
+    public abstract class QpServer : IDisposable
     {
         private CancellationTokenSource cts;
         public QpServerOptions Options { get; private set; }
@@ -45,6 +45,8 @@ namespace Quick.Protocol
 
         public virtual void Start()
         {
+            cts?.Cancel();
+            cts?.Dispose();
             cts = new CancellationTokenSource();
             _ = beginAccept(cts.Token);
         }
@@ -115,8 +117,17 @@ namespace Quick.Protocol
                 Channels = Array.Empty<QpServerChannel>();
             }
             foreach (var channel in channels)
+            {
                 try { channel.Disconnect(); }
                 catch { }
+                try { channel.Dispose(); }
+                catch { }
+            }
+        }
+
+        public void Dispose()
+        {
+            Stop();
         }
     }
 }

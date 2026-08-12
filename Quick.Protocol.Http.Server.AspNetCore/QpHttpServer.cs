@@ -35,6 +35,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             public string ChannelId { get; set; }
             public string ConnectionInfo { get; set; }
             public Stream Stream { get; set; }
+            public CancellationTokenSource Cts { get; set; }
             private Pipe readPipe;
             private Pipe writePipe;
             private QpHttpServerOptions options;
@@ -45,6 +46,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                 this.options = options;
                 ChannelId = channelId;
                 ConnectionInfo = connectionInfo;
+                Cts = cts;
                 readPipe = new();
                 writePipe = new();
                 Stream = new PipesStream(channelId, readPipe, writePipe);
@@ -59,9 +61,9 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
             public async Task OnGetData(HttpResponse rep)
             {
+                var readCts = new CancellationTokenSource();
                 try
                 {
-                    var readCts = new CancellationTokenSource();
                     var readCancallationToken = readCts.Token;
                     _ = Task.Delay(options.LongPollingTimeout, readCancallationToken).ContinueWith(t =>
                     {
@@ -90,6 +92,10 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                     rep.ContentLength = 0;
                     await rep.CompleteAsync();
                 }
+                finally
+                {
+                    readCts.Dispose();
+                }
             }
         }
 
@@ -117,8 +123,13 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             if (stream is not PipesStream pipesStream)
                 return;
             var channelId = pipesStream.ChannelId;
+            QpHttpContext httpContext = null;
             lock (httpContextDict)
+            {
+                httpContextDict.TryGetValue(channelId, out httpContext);
                 httpContextDict.Remove(channelId);
+            }
+            httpContext?.Cts?.Cancel();
         }
 
         public async Task OnNewConnection(string channelId, ConnectionInfo connectionInfo)
@@ -147,6 +158,14 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             ChannelDisconnected -= OnChannelAuthenticateTimeoutOrDisconnected;
             lock (httpContextQueue)
                 httpContextQueue.Clear();
+            QpHttpContext[] httpContexts;
+            lock (httpContextDict)
+            {
+                httpContexts = httpContextDict.Values.ToArray();
+                httpContextDict.Clear();
+            }
+            foreach (var ctx in httpContexts)
+                ctx.Cts?.Cancel();
             base.Stop();
         }
 

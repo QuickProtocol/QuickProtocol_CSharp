@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Net;
@@ -29,22 +29,21 @@ namespace Quick.Protocol.Tcp
             else
                 tcpClient = new TcpClient();
 
-            CancellationTokenSource cts = new CancellationTokenSource();
-            var connectTask = tcpClient.ConnectAsync(Dns.GetHostAddresses(options.Host), options.Port, cts.Token).AsTask();
+            using var cts = new CancellationTokenSource(options.ConnectionTimeout);
             try
             {
-                await connectTask
-                    .WaitAsync(TimeSpan.FromMilliseconds(options.ConnectionTimeout))
-                    .ConfigureAwait(false);
+                await tcpClient.ConnectAsync(Dns.GetHostAddresses(options.Host), options.Port, cts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cts.IsCancellationRequested)
+            {
+                tcpClient.Dispose();
+                throw new TimeoutException($"Connection to {options.Host}:{options.Port} timed out.");
             }
             catch
             {
-                cts.Cancel();
                 tcpClient.Dispose();
                 throw;
             }
-            if (connectTask.IsFaulted)
-                throw new IOException($"Failed to connect to {options.Host}:{options.Port}.", connectTask.Exception.InnerException);
             if (!tcpClient.Connected)
                 throw new IOException($"Failed to connect to {options.Host}:{options.Port}.");
             return tcpClient.GetStream();

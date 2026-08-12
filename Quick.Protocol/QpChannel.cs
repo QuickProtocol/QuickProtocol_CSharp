@@ -513,6 +513,19 @@ namespace Quick.Protocol
         {
             IsConnected = false;
             Disconnect();
+            // Cancel pending commands
+            foreach (var kvp in commandDict)
+            {
+                if (commandDict.TryRemove(kvp.Key, out var ctx))
+                    ctx.Timeout();
+            }
+            // Complete non-readonly pipes to release buffer pool segments
+            if (writeCompressPipe != null)
+            {
+                try { writeCompressPipe.Writer.Complete(); } catch { }
+                try { writeCompressPipe.Reader.Complete(); } catch { }
+                writeCompressPipe = null;
+            }
             sendLock?.Dispose();
             sendLock = null;
         }

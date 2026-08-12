@@ -69,5 +69,17 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             writePipe.Writer.Advance(count);
             await writePipe.Writer.FlushAsync(cancellationToken);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                try { readPipe.Reader.Complete(); } catch { }
+                try { readPipe.Writer.Complete(); } catch { }
+                try { writePipe.Reader.Complete(); } catch { }
+                try { writePipe.Writer.Complete(); } catch { }
+            }
+            base.Dispose(disposing);
+        }
     }
 }

@@ -96,6 +96,7 @@ public class HttpClientsStream : Stream
     protected override void Dispose(bool disposing)
     {
         cts?.Cancel();
+        cts?.Dispose();
         recvPipe.Reader.Complete();
         recvPipe.Writer.Complete();
         recvClient.Dispose();

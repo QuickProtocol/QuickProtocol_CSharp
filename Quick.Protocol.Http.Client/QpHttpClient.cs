@@ -27,7 +27,6 @@ public class QpHttpClient : QpClient
         var url = options.Url;
         if (url.StartsWith("qp."))
             url = url.Substring(3);
-        var cts = new CancellationTokenSource();
         try
         {
             var rep = await recvClient.PostAsync(url, null);
@@ -40,9 +39,10 @@ public class QpHttpClient : QpClient
         }
         catch
         {
-            cts.Cancel();
             sendClient?.Dispose();
+            sendClient = null;
             recvClient.Dispose();
+            recvClient = null;
             throw;
         }
         return new HttpClientsStream(recvClient, sendClient, url);
