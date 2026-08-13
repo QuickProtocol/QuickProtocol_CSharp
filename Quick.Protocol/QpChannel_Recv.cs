@@ -290,7 +290,7 @@ namespace Quick.Protocol
                                 packageBodyLength += count;
                             }
                         }
-                        _ = decompressPipe.Writer.FlushAsync();
+                        await decompressPipe.Writer.FlushAsync().ConfigureAwait(false);
                         var ret = await decompressPipe.Reader.ReadAtLeastAsync(packageBodyLength, token).ConfigureAwait(false);
                         //解压完成，释放缓存
                         currentReader?.AdvanceTo(packageBodyBuffer.End);
@@ -413,22 +413,46 @@ namespace Quick.Protocol
         {
             lastReadDataTime = DateTime.Now;
             var pipe = new Pipe();
-            CheckRecvTimeoutAsync(token).ContinueWith(task =>
+            _ = Task.Run(async () =>
             {
-                if (task.IsFaulted)
-                    OnReadError(task.Exception);
+                try
+                {
+                    await CheckRecvTimeoutAsync(token).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    OnReadError(ex);
+                }
             });
-            FillRecvPipeAsync(QpPackageHandler_Stream, pipe.Writer, token).ContinueWith(task =>
+            _ = Task.Run(async () =>
             {
-                if (task.IsFaulted)
-                    OnReadError(task.Exception);
-                pipe.Writer.CompleteAsync(task.Exception);
+                try
+                {
+                    await FillRecvPipeAsync(QpPackageHandler_Stream, pipe.Writer, token).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    OnReadError(ex);
+                }
+                finally
+                {
+                    await pipe.Writer.CompleteAsync().ConfigureAwait(false);
+                }
             });
-            ReadRecvPipeAsync(pipe.Reader, token).ContinueWith(task =>
+            _ = Task.Run(async () =>
             {
-                if (task.IsFaulted)
-                    OnReadError(task.Exception);
-                pipe.Reader.CompleteAsync(task.Exception);
+                try
+                {
+                    await ReadRecvPipeAsync(pipe.Reader, token).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    OnReadError(ex);
+                }
+                finally
+                {
+                    await pipe.Reader.CompleteAsync().ConfigureAwait(false);
+                }
             });
         }
 

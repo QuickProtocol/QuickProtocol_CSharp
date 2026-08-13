@@ -78,7 +78,7 @@ namespace Quick.Protocol
                         }
 
                         packageBodyLength = Convert.ToInt32(outStream.Length);
-                        _ = writeCompressPipe.Writer.FlushAsync();
+                        await writeCompressPipe.Writer.FlushAsync().ConfigureAwait(false);
                     }
 
                     //压缩完成，释放资源
@@ -132,7 +132,7 @@ namespace Quick.Protocol
                     writer.Advance(packageBodyLength);
                 }
 
-                _ = writer.FlushAsync();
+                await writer.FlushAsync().ConfigureAwait(false);
 
                 //发送
                 var reader = sendRawPipe.Reader;
@@ -173,8 +173,6 @@ namespace Quick.Protocol
                 Interlocked.Increment(ref PackageSendQueueCount);
             try
             {
-                if (sendLock == null)
-                    return;
                 await sendLock.WaitAsync().ConfigureAwait(false);
                 var packageBodyLength = 0;
                 if (packageBodyHandler != null)
@@ -237,7 +235,7 @@ namespace Quick.Protocol
                         bodyLength += byteCount;
                     }
                 }
-                _ = writer.FlushAsync();
+                await writer.FlushAsync().ConfigureAwait(false);
                 if (Options.Logger is { LogNotice: true })
                     Options.Logger.Log("{0}: [Send-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
                         .Logger.LogContent
@@ -287,7 +285,7 @@ namespace Quick.Protocol
                     writer.Advance(contentLength);
                     bodyLength += contentLength;
                 }
-                _ = writer.FlushAsync();
+                await writer.FlushAsync().ConfigureAwait(false);
                 if (Options.Logger is { LogCommand: true })
                     Options.Logger.Log("{0}: [Send-CommandRequestPackage]CommandId:{1},Type:{2},Content:{3}",
                         DateTime.Now, commandId, typeName, Options
@@ -367,7 +365,7 @@ namespace Quick.Protocol
                             DateTime.Now, commandId, code, message);
                 }
 
-                _ = writer.FlushAsync();
+                await writer.FlushAsync().ConfigureAwait(false);
                 return bodyLength;
             });
         }

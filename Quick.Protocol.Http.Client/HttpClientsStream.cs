@@ -46,9 +46,20 @@ public class HttpClientsStream : Stream
                 using (var pipeStream = writer.AsStream(true))
                     await stream.CopyToAsync(pipeStream, cancellationToken);
             }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
             catch
             {
-                await Task.Delay(100, cancellationToken);
+                try
+                {
+                    await Task.Delay(100, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
             }
         }
     }

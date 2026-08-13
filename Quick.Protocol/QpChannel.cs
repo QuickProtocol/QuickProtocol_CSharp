@@ -32,7 +32,7 @@ namespace Quick.Protocol
         private readonly Encoding encoding = Encoding.UTF8;
 
         //发送包锁对象
-        private SemaphoreSlim sendLock;
+        private SemaphoreSlim sendLock = new SemaphoreSlim(1, 1);
         //断开连接锁对象
         private readonly object DISCONNECT_LOCK_OBJ = new object();
 
@@ -332,9 +332,10 @@ namespace Quick.Protocol
             QpPackageHandler_Stream = stream;
 
             try { preStream?.Dispose(); }
-            catch { }
-            if (stream != null && sendLock == null)
-                sendLock = new SemaphoreSlim(1, 1);
+            catch (Exception ex)
+            {
+                Options.Logger?.Log("[StreamDispose]{0}: {1}", DateTime.Now, ex.Message);
+            }
             EnableCompress = false;
             EnableEncrypt = false;
             ChangeTransportTimeout();
@@ -526,8 +527,8 @@ namespace Quick.Protocol
                 try { writeCompressPipe.Reader.Complete(); } catch { }
                 writeCompressPipe = null;
             }
-            sendLock?.Dispose();
-            sendLock = null;
+            sendLock.Dispose();
+            sendLock = new SemaphoreSlim(1, 1);
         }
     }
 }
