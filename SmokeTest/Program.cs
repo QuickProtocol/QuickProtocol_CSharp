@@ -44,7 +44,7 @@ class Program
             async (handler, req) => new Quick.Protocol.Commands.PrivateCommand.Response { Content = req.Content });
         serverOptions.RegisterCommandExecuterManager(commandExecuterManager);
         var noticeHandlerManager = new NoticeHandlerManager();
-        noticeHandlerManager.Register<Quick.Protocol.Notices.PrivateNotice>((handler, notice) => { });
+        noticeHandlerManager.Register<Quick.Protocol.Notices.PrivateNotice>(async (handler, notice) => { });
         serverOptions.RegisterNoticeHandlerManager(noticeHandlerManager);
     }
 

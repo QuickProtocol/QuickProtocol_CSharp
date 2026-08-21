@@ -17,7 +17,7 @@ public abstract class AbstractServerUnit : IUnit
 
         var noticeHandlerManager = new NoticeHandlerManager();
         noticeHandlerManager.Register<Quick.Protocol.Notices.PrivateNotice>(
-            (handler, notice) =>
+            async (handler, notice) =>
             {
                 Console.WriteLine($"Recv PrivateNotice: {notice.Serialize(notice)}");
             });
