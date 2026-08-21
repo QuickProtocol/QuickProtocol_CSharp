@@ -1,24 +1,40 @@
 namespace Quick.Protocol;
 
+/// <summary>
+/// 通知处理器代理
+/// </summary>
+/// <typeparam name="TNotice"></typeparam>
+/// <param name="channel"></param>
+/// <param name="notice"></param>
+/// <returns></returns>
+public delegate ValueTask NoticeHandler<TNotice>(QpChannel channel, TNotice notice);
+/// <summary>
+/// 通知处理器代理
+/// </summary>
+/// <param name="channel"></param>
+/// <param name="request"></param>
+/// <returns></returns>
+public delegate ValueTask NoticeHandler(QpChannel channel, object notice);
+
 public class NoticeHandlerManager
 {
-    private Dictionary<string, Action<QpChannel, object>> noticeHandlerDict = new Dictionary<string, Action<QpChannel, object>>();
+    private Dictionary<string, NoticeHandler> noticeHandlerDict = new Dictionary<string, NoticeHandler>();
 
     /// <summary>
     /// 获取全部注册的通知类型名称
     /// </summary>
     public string[] GetRegisterNoticeTypeNames() => noticeHandlerDict.Keys.ToArray();
 
-    public void Register(string noticeTypeName, Action<QpChannel, object> noticeHandler)
+    public void Register(string noticeTypeName, NoticeHandler noticeHandler)
     {
         noticeHandlerDict[noticeTypeName] = noticeHandler;
     }
 
-    public void Register<TNotice>(Action<QpChannel, TNotice> noticeHandler)
+    public void Register<TNotice>(NoticeHandler<TNotice> noticeHandler)
         where TNotice : class, new()
     {
         var noticeTypeName = typeof(TNotice).FullName;
-        noticeHandlerDict[noticeTypeName] = (handler, notice) => noticeHandler(handler, (TNotice)notice);
+        noticeHandlerDict[noticeTypeName] = async (handler, notice) => await noticeHandler(handler, (TNotice)notice);
     }
 
 
@@ -29,10 +45,10 @@ public class NoticeHandlerManager
     /// <param name="noticeTypeName"></param>
     /// <param name="noticeModel"></param>
     /// <returns></returns>
-    public virtual void HandleNotice(QpChannel handler, string noticeTypeName, object noticeModel)
+    public virtual async ValueTask HandleNotice(QpChannel handler, string noticeTypeName, object noticeModel)
     {
         if (noticeHandlerDict.TryGetValue(noticeTypeName, out var noticeHandler))
-            noticeHandler(handler, noticeModel);
+            await noticeHandler(handler, noticeModel);
     }
 
     /// <summary>

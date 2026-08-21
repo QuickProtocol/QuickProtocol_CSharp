@@ -32,7 +32,7 @@ namespace Quick.Protocol
         /// </summary>
         /// <param name="typeName"></param>
         /// <param name="content"></param>
-        protected void OnRawNoticePackageReceived(string typeName, string content)
+        protected async Task OnRawNoticePackageReceived(string typeName, string content)
         {
             //触发RawNoticePackageReceived事件
             RawNoticePackageReceived?.Invoke(this, new RawNoticePackageReceivedEventArgs()
@@ -53,7 +53,7 @@ namespace Quick.Protocol
                 if (noticeHandlerManager.CanHandleNoticed(typeName))
                 {
                     hasNoticeHandler = true;
-                    noticeHandlerManager.HandleNotice(this, typeName, contentModel);
+                    await noticeHandlerManager.HandleNotice(this, typeName, contentModel);
                     break;
                 }
             }
@@ -340,8 +340,8 @@ namespace Quick.Protocol
                         if (Options.Logger is { LogNotice: true })
                             Options.Logger.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
                                 .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-
-                        OnRawNoticePackageReceived(typeName, content);
+                        //异步执行通知处理器
+                        _ = OnRawNoticePackageReceived(typeName, content);
                         break;
                     }
                 case QpPackageType.CommandRequest:
@@ -364,7 +364,7 @@ namespace Quick.Protocol
                             Options.Logger.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
                                 .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
                         //异步执行命令请求事件处理器
-                        await OnCommandRequestReceived(commandId, typeName, content);
+                        _ = OnCommandRequestReceived(commandId, typeName, content);
                         break;
                     }
                 case QpPackageType.CommandResponse:
