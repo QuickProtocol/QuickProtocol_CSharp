@@ -41,7 +41,7 @@ class Program
     {
         var commandExecuterManager = new CommandExecuterManager();
         commandExecuterManager.Register<Quick.Protocol.Commands.PrivateCommand.Request, Quick.Protocol.Commands.PrivateCommand.Response>(
-            (handler, req) => Task.FromResult(new Quick.Protocol.Commands.PrivateCommand.Response { Content = req.Content }));
+            async (handler, req) => new Quick.Protocol.Commands.PrivateCommand.Response { Content = req.Content });
         serverOptions.RegisterCommandExecuterManager(commandExecuterManager);
         var noticeHandlerManager = new NoticeHandlerManager();
         noticeHandlerManager.Register<Quick.Protocol.Notices.PrivateNotice>((handler, notice) => { });

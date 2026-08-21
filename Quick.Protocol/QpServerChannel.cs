@@ -85,7 +85,7 @@ namespace Quick.Protocol
             }
         }
 
-        private Task<Commands.Connect.Response> connect(QpChannel handler, Commands.Connect.Request request)
+        private async ValueTask<Commands.Connect.Response> connect(QpChannel handler, Commands.Connect.Request request)
         {
             if (request.InstructionIds != null)
             {
@@ -96,13 +96,13 @@ namespace Quick.Protocol
                 }
             }
             AuthenticateQuestion = Guid.NewGuid().ToString("N");
-            return Task.FromResult(new Commands.Connect.Response()
+            return new Commands.Connect.Response()
             {
                 Question = AuthenticateQuestion
-            });
+            };
         }
 
-        private Task<Commands.Authenticate.Response> authenticate(QpChannel handler, Commands.Authenticate.Request request)
+        private async ValueTask<Commands.Authenticate.Response> authenticate(QpChannel handler, Commands.Authenticate.Request request)
         {
             if (ComputeMD5Hash(AuthenticateQuestion + Options.Password) != request.Answer)
             {
@@ -112,10 +112,10 @@ namespace Quick.Protocol
                 });
                 throw new CommandException(1, "Authenticate failed.");
             }
-            return Task.FromResult(new Commands.Authenticate.Response());
+            return new Commands.Authenticate.Response();
         }
 
-        private Task<Commands.HandShake.Response> handShake(QpChannel handler, Commands.HandShake.Request request)
+        private async ValueTask<Commands.HandShake.Response> handShake(QpChannel handler, Commands.HandShake.Request request)
         {
             if (request.TransportTimeout < 3000)
                 throw new ArgumentException($"'TransportTimeout' must greater than 3000");
@@ -123,7 +123,7 @@ namespace Quick.Protocol
             RegisterNoticeHandlerManagers(authedNoticeHandlerManagerList);
             EnableCompress = request.EnableCompress;
             EnableEncrypt = request.EnableEncrypt;
-            EncryptAlgorithm  = request.EncryptAlgorithm;
+            EncryptAlgorithm = request.EncryptAlgorithm;
             EncryptMode = request.EncryptMode;
             EncryptPadding = request.EncryptPadding;
             TransportTimeout = request.TransportTimeout;
@@ -137,15 +137,15 @@ namespace Quick.Protocol
                 _ = BeginHeartBeat(cts.Token);
             IsConnected = true;
             Authenticated?.Invoke(this, EventArgs.Empty);
-            return Task.FromResult(new Commands.HandShake.Response());
+            return new Commands.HandShake.Response();
         }
 
-        private Task<Commands.GetQpInstructions.Response> getQpInstructions(QpChannel handler, Commands.GetQpInstructions.Request request)
+        private async ValueTask<Commands.GetQpInstructions.Response> getQpInstructions(QpChannel handler, Commands.GetQpInstructions.Request request)
         {
-            return Task.FromResult(new Commands.GetQpInstructions.Response()
+            return new Commands.GetQpInstructions.Response()
             {
                 Data = Options.InstructionSet
-            });
+            };
         }
 
         public override void Disconnect()

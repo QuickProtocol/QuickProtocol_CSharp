@@ -8,14 +8,14 @@ namespace Quick.Protocol;
 /// <param name="channel"></param>
 /// <param name="request"></param>
 /// <returns></returns>
-public delegate Task<TCmdResponse> CommandExecuter<TCmdRequest, TCmdResponse>(QpChannel channel, TCmdRequest request);
+public delegate ValueTask<TCmdResponse> CommandExecuter<TCmdRequest, TCmdResponse>(QpChannel channel, TCmdRequest request);
 /// <summary>
 /// 命令执行器代理
 /// </summary>
 /// <param name="channel"></param>
 /// <param name="request"></param>
 /// <returns></returns>
-public delegate Task<object> CommandExecuter(QpChannel channel, object request);
+public delegate ValueTask<object> CommandExecuter(QpChannel channel, object request);
 
 public class CommandExecuterManager
 {
@@ -54,7 +54,7 @@ public class CommandExecuterManager
     /// <param name="cmdRequestTypeName"></param>
     /// <param name="cmdRequestModel"></param>
     /// <returns></returns>
-    public virtual Task<object> ExecuteCommand(QpChannel handler, string cmdRequestTypeName, object cmdRequestModel)
+    public virtual ValueTask<object> ExecuteCommand(QpChannel handler, string cmdRequestTypeName, object cmdRequestModel)
     {
         if (!commandExecuterDict.TryGetValue(cmdRequestTypeName, out var commandExecuter))
             throw new IOException($"Command Request Type[{cmdRequestTypeName}] has no executer.");
