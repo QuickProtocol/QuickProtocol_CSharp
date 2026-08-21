@@ -1,5 +1,4 @@
 using Quick.Protocol.Exceptions;
-using System.Threading.Tasks;
 
 namespace Quick.Protocol
 {

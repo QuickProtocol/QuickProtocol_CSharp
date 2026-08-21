@@ -85,7 +85,7 @@ namespace Quick.Protocol
             }
         }
 
-        private Commands.Connect.Response connect(QpChannel handler, Commands.Connect.Request request)
+        private Task<Commands.Connect.Response> connect(QpChannel handler, Commands.Connect.Request request)
         {
             if (request.InstructionIds != null)
             {
@@ -96,13 +96,13 @@ namespace Quick.Protocol
                 }
             }
             AuthenticateQuestion = Guid.NewGuid().ToString("N");
-            return new Commands.Connect.Response()
+            return Task.FromResult(new Commands.Connect.Response()
             {
                 Question = AuthenticateQuestion
-            };
+            });
         }
 
-        private Commands.Authenticate.Response authenticate(QpChannel handler, Commands.Authenticate.Request request)
+        private Task<Commands.Authenticate.Response> authenticate(QpChannel handler, Commands.Authenticate.Request request)
         {
             if (ComputeMD5Hash(AuthenticateQuestion + Options.Password) != request.Answer)
             {
@@ -112,10 +112,10 @@ namespace Quick.Protocol
                 });
                 throw new CommandException(1, "Authenticate failed.");
             }
-            return new Commands.Authenticate.Response();
+            return Task.FromResult(new Commands.Authenticate.Response());
         }
 
-        private Commands.HandShake.Response handShake(QpChannel handler, Commands.HandShake.Request request)
+        private Task<Commands.HandShake.Response> handShake(QpChannel handler, Commands.HandShake.Request request)
         {
             if (request.TransportTimeout < 3000)
                 throw new ArgumentException($"'TransportTimeout' must greater than 3000");
@@ -137,15 +137,15 @@ namespace Quick.Protocol
                 _ = BeginHeartBeat(cts.Token);
             IsConnected = true;
             Authenticated?.Invoke(this, EventArgs.Empty);
-            return new Commands.HandShake.Response();
+            return Task.FromResult(new Commands.HandShake.Response());
         }
 
-        private Commands.GetQpInstructions.Response getQpInstructions(QpChannel handler, Commands.GetQpInstructions.Request request)
+        private Task<Commands.GetQpInstructions.Response> getQpInstructions(QpChannel handler, Commands.GetQpInstructions.Request request)
         {
-            return new Commands.GetQpInstructions.Response()
+            return Task.FromResult(new Commands.GetQpInstructions.Response()
             {
                 Data = Options.InstructionSet
-            };
+            });
         }
 
         public override void Disconnect()

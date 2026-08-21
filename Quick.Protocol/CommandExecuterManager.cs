@@ -2,32 +2,32 @@ namespace Quick.Protocol;
 
 public class CommandExecuterManager
 {
-    private Dictionary<string, Func<QpChannel, object, object>> commandExecuterDict = new Dictionary<string, Func<QpChannel, object, object>>();
+    private Dictionary<string, Func<QpChannel, object, Task<object>>> commandExecuterDict = new Dictionary<string, Func<QpChannel, object, Task<object>>>();
 
     /// <summary>
     /// 获取全部注册的命令请求类型名称
     /// </summary>
     public string[] GetRegisterCommandRequestTypeNames() => commandExecuterDict.Keys.ToArray();
 
-    public void Register(string cmdRequestTypeName, Func<QpChannel, object, object> commandExecuter)
+    public void Register(string cmdRequestTypeName, Func<QpChannel, object, Task<object>> commandExecuter)
     {
         commandExecuterDict[cmdRequestTypeName] = commandExecuter;
     }
 
-    public void Register<TCmdRequest, TCmdResponse>(Func<QpChannel, TCmdRequest, TCmdResponse> commandExecuter)
+    public void Register<TCmdRequest, TCmdResponse>(Func<QpChannel, TCmdRequest, Task<TCmdResponse>> commandExecuter)
         where TCmdRequest : class, new()
         where TCmdResponse : class, new()
     {
         var cmdRequestTypeName = typeof(TCmdRequest).FullName;
-        commandExecuterDict[cmdRequestTypeName] = (handler, request) => commandExecuter(handler, (TCmdRequest)request);
+        commandExecuterDict[cmdRequestTypeName] = async (handler, request) => await commandExecuter(handler, (TCmdRequest)request);
     }
 
-    public void Register<TCmdRequest, TCmdResponse>(TCmdRequest request, Func<QpChannel, TCmdRequest, TCmdResponse> commandExecuter)
+    public void Register<TCmdRequest, TCmdResponse>(TCmdRequest request, Func<QpChannel, TCmdRequest, Task<TCmdResponse>> commandExecuter)
         where TCmdRequest : class, IQpCommandRequest<TCmdRequest, TCmdResponse>, new()
         where TCmdResponse : class, new()
     {
         var cmdRequestTypeName = request.GetType().FullName;
-        commandExecuterDict[cmdRequestTypeName] = (handler, req) => commandExecuter(handler, (TCmdRequest)req);
+        commandExecuterDict[cmdRequestTypeName] = async (handler, req) => await commandExecuter(handler, (TCmdRequest)req);
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ public class CommandExecuterManager
     /// <param name="cmdRequestTypeName"></param>
     /// <param name="cmdRequestModel"></param>
     /// <returns></returns>
-    public virtual object ExecuteCommand(QpChannel handler, string cmdRequestTypeName, object cmdRequestModel)
+    public virtual Task<object> ExecuteCommand(QpChannel handler, string cmdRequestTypeName, object cmdRequestModel)
     {
         if (!commandExecuterDict.TryGetValue(cmdRequestTypeName, out var commandExecuter))
             throw new IOException($"Command Request Type[{cmdRequestTypeName}] has no executer.");

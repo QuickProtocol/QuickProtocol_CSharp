@@ -15,10 +15,10 @@ public abstract class AbstractServerUnit : IUnit
         commandExecuterManager.Register<Quick.Protocol.Commands.PrivateCommand.Request, Quick.Protocol.Commands.PrivateCommand.Response>(
             (handler, req) =>
             {
-                return new Quick.Protocol.Commands.PrivateCommand.Response()
+                return Task.FromResult(new Quick.Protocol.Commands.PrivateCommand.Response()
                 {
                     Content = req.Content
-                };
+                });
             });
         var noticeHandlerManager = new NoticeHandlerManager();
         noticeHandlerManager.Register<Quick.Protocol.Notices.PrivateNotice>(

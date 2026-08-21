@@ -76,7 +76,7 @@ namespace Quick.Protocol
         /// <param name="commandId"></param>
         /// <param name="typeName"></param>
         /// <param name="content"></param>
-        private void OnCommandRequestReceived(string commandId, string typeName, string content)
+        private async Task OnCommandRequestReceived(string commandId, string typeName, string content)
         {
             var eventArgs = new RawCommandRequestPackageReceivedEventArgs()
             {
@@ -110,7 +110,7 @@ namespace Quick.Protocol
                     if (commandExecuterManager.CanExecuteCommand(typeName))
                     {
                         hasCommandExecuter = true;
-                        var responseModel = commandExecuterManager.ExecuteCommand(this, typeName, contentModel);
+                        var responseModel = await commandExecuterManager.ExecuteCommand(this, typeName, contentModel);
                         var responseSerializer = getTypeSerializer(cmdResponseType);
                         _ = SendCommandResponsePackage(commandId, 0, null,
                             cmdResponseType.FullName,
@@ -298,12 +298,12 @@ namespace Quick.Protocol
                         currentReader = decompressPipe.Reader;
                     }
                 }
-                HandlePackage(packageType, packageBodyBuffer);
+                await HandlePackage(packageType, packageBodyBuffer);
                 currentReader?.AdvanceTo(packageBodyBuffer.End);
             }
         }
 
-        protected void HandlePackage(QpPackageType packageType, ReadOnlySequence<byte> bodyBuffer)
+        protected async Task HandlePackage(QpPackageType packageType, ReadOnlySequence<byte> bodyBuffer)
         {
             if (Options.Logger is { LogPackage: true })
             {
@@ -364,7 +364,7 @@ namespace Quick.Protocol
                             Options.Logger.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
                                 .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
                         //异步执行命令请求事件处理器
-                        Task.Run(() => OnCommandRequestReceived(commandId, typeName, content));
+                        await OnCommandRequestReceived(commandId, typeName, content);
                         break;
                     }
                 case QpPackageType.CommandResponse:
