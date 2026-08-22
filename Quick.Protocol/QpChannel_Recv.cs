@@ -203,7 +203,7 @@ namespace Quick.Protocol
         {
             //包体长度
             var packageBodyLength = 0;
-            QpPackageType packageType;
+            byte packageType;
             //暂存包头缓存
             var packageHeadBuffer = new byte[PACKAGE_HEAD_LENGTH];
             ReadOnlySequence<byte> packageBodyBuffer = default;
@@ -229,7 +229,7 @@ namespace Quick.Protocol
                     var packageTotalLength = parsePackageTotalLength(ret.Buffer, packageHeadBuffer);
                     packageBodyLength = packageTotalLength - PACKAGE_HEAD_LENGTH;
 
-                    packageType = (QpPackageType)packageHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH];
+                    packageType = packageHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH];
                     currentReader.AdvanceTo(ret.Buffer.Start);
 
                     //读取完整包
@@ -303,7 +303,7 @@ namespace Quick.Protocol
             }
         }
 
-        protected async Task HandlePackage(QpPackageType packageType, ReadOnlySequence<byte> bodyBuffer)
+        protected async Task HandlePackage(byte packageType, ReadOnlySequence<byte> bodyBuffer)
         {
             if (Options.Logger is { LogPackage: true })
             {

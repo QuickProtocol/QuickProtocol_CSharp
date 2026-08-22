@@ -27,7 +27,7 @@ namespace Quick.Protocol
         //压缩相关变量
         private Pipe writeCompressPipe = null;
 
-        private async Task writePackageBuffer(PipeReader currentReader, QpPackageType packageType,
+        private async Task writePackageBuffer(PipeReader currentReader, byte packageType,
             int packageBodyLength, bool ignoreCompressAndEncrypt = false)
         {
             var stream = QpPackageHandler_Stream;
@@ -122,7 +122,7 @@ namespace Quick.Protocol
                 var headMemory = writer.GetMemory(PACKAGE_HEAD_LENGTH);
                 //包头
                 BinaryPrimitives.WriteInt32BigEndian(headMemory.Span, packageTotalLength);
-                headMemory.Span[4] = (byte)packageType;
+                headMemory.Span[4] = packageType;
                 writer.Advance(PACKAGE_HEAD_LENGTH);
                 //包体
                 if (packageBodyLength > 0)
@@ -166,7 +166,7 @@ namespace Quick.Protocol
             await stream.FlushAsync().ConfigureAwait(false);
         }
 
-        private async Task UseSendPipe(QpPackageType packageType, Func<Pipe, Task<int>> packageBodyHandler = null,
+        private async Task UseSendPipe(byte packageType, Func<Pipe, Task<int>> packageBodyHandler = null,
             bool ignoreCompressAndEncrypt = false)
         {
             if (Options.EnableNetstat)
