@@ -31,8 +31,9 @@ namespace Quick.Protocol
         private ICryptoTransform dec;
         private readonly Encoding encoding = Encoding.UTF8;
 
+        public bool IsDisposed { get; private set; } = false;
         //发送包锁对象
-        private SemaphoreSlim sendLock = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim sendLock;
         //断开连接锁对象
         private readonly object DISCONNECT_LOCK_OBJ = new object();
 
@@ -148,17 +149,26 @@ namespace Quick.Protocol
         /// </summary>
         public event EventHandler Disconnected;
 
+        protected void Init()
+        {
+            sendLock = new SemaphoreSlim(1, 1);
+        }
+
         public void ClearCommandDict()
         {
-            try
+            lock (commandDict)
             {
-                foreach (var kvp in commandDict)
+                try
                 {
-                    if (commandDict.TryRemove(kvp.Key, out var ctx))
-                        ctx.Timeout();
+                    foreach (var kvp in commandDict)
+                    {
+                        if (commandDict.TryRemove(kvp.Key, out var ctx))
+                            ctx.Timeout();
+                    }
                 }
+                catch { }
+                commandDict.Clear();
             }
-            catch { }
         }
 
         public void ClearCommandExecuterManagers()
@@ -222,6 +232,15 @@ namespace Quick.Protocol
             dec = null;
             symmetricAlgorithm?.Dispose();
             symmetricAlgorithm = null;
+
+            if (writeCompressPipe != null)
+            {
+                try { writeCompressPipe.Writer.Complete(); } catch { }
+                try { writeCompressPipe.Reader.Complete(); } catch { }
+                writeCompressPipe = null;
+            }
+            sendLock?.Dispose();
+            sendLock = null;
         }
 
         /// <summary>
@@ -528,14 +547,7 @@ namespace Quick.Protocol
         {
             IsConnected = false;
             Disconnect();
-            if (writeCompressPipe != null)
-            {
-                try { writeCompressPipe.Writer.Complete(); } catch { }
-                try { writeCompressPipe.Reader.Complete(); } catch { }
-                writeCompressPipe = null;
-            }
-            sendLock?.Dispose();
-            sendLock = null;
+            IsDisposed = true;
         }
     }
 }

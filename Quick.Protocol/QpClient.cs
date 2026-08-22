@@ -21,8 +21,12 @@ namespace Quick.Protocol
         /// </summary>
         public async Task ConnectAsync()
         {
+            if(IsDisposed)
+                throw new ObjectDisposedException("QpClient has disposed.");
+
             //清理
             Disconnect();
+            Init();
 
             RegisterCommandExecuterManagers(Options.CommandExecuterManagerList);
             RegisterNoticeHandlerManagers(Options.NoticeHandlerManagerList);
@@ -82,13 +86,13 @@ namespace Quick.Protocol
         protected override void OnWriteError(Exception exception)
         {
             base.OnWriteError(exception);
-            Dispose();
+            Disconnect();
         }
 
         protected override void OnReadError(Exception exception)
         {
             base.OnReadError(exception);
-            Dispose();
+            Disconnect();
         }
 
         public override void Disconnect()

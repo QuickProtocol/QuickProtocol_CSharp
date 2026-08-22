@@ -38,6 +38,7 @@ namespace Quick.Protocol
             ReadFromStreamReturnZeroMeansFault = readFromStreamReturnZeroMeansFault;
 
             cts = new CancellationTokenSource();
+            Init();
 
             //初始化连接相关指令处理器
             var connectAndAuthCommandExecuterManager = new CommandExecuterManager();

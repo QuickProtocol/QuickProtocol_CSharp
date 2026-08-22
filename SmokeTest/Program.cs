@@ -157,7 +157,7 @@ class Program
         catch (Exception ex)
         {
             Assert(false, $"First connection failed: {ex.Message}");
-            client.Dispose();
+            client.Disconnect();
             server.Stop();
             return;
         }
