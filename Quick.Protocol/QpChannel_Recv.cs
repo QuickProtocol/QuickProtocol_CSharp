@@ -340,8 +340,8 @@ namespace Quick.Protocol
                         if (Options.Logger is { LogNotice: true })
                             Options.Logger.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
                                 .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-                        //异步执行通知处理器
-                        _ = OnRawNoticePackageReceived(typeName, content);
+                        //异步等待执行通知处理器
+                        await OnRawNoticePackageReceived(typeName, content);
                         break;
                     }
                 case QpPackageType.CommandRequest:
