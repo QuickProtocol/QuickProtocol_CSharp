@@ -124,9 +124,11 @@ namespace Quick.Protocol
                     if (EnableEncrypt)
                     {
                         //开始解密
-                        var encryptedBuffer = packageBodyBuffer.ToArray();
-                        var decryptBuffer = dec.TransformFinalBlock(encryptedBuffer, 0, encryptedBuffer.Length);
-                        packageBodyLength = decryptBuffer.Length;
+                        var packageBodyBufferLength = (int)packageBodyBuffer.Length;
+                        var encryptedBuffer = ArrayPool<byte>.Shared.Rent(packageBodyBufferLength);
+                        packageBodyBuffer.CopyTo(encryptedBuffer);
+                        var decryptBuffer = dec.TransformFinalBlock(encryptedBuffer, 0, packageBodyBufferLength);
+                        ArrayPool<byte>.Shared.Return(encryptedBuffer);
 
                         //解密完成，释放缓存
                         currentReader?.AdvanceTo(packageBodyBuffer.End);
