@@ -1,120 +1,142 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Buffers;
 
-namespace Quick.Protocol
+namespace Quick.Protocol;
+
+public class QpEventArgs : EventArgs
 {
-    public class QpEventArgs : EventArgs
-    {
-    }
+}
 
-    /// <summary>
-    /// 原始收到通知数据包事件参数
-    /// </summary>
-    public class RawNoticePackageReceivedEventArgs : QpEventArgs
+/// <summary>
+/// 收到未知包类型事件参数
+/// </summary>
+public class UnknownPackageReceivedEventArgs : QpEventArgs
+{
+    private static UnknownPackageReceivedEventArgs _Instance;
+    internal static UnknownPackageReceivedEventArgs Instance
     {
-        /// <summary>
-        /// 类型名称
-        /// </summary>
-        public string TypeName { get; set; }
-        /// <summary>
-        /// 内容
-        /// </summary>
-        public string Content { get; set; }
+        get
+        {
+            if (_Instance == null)
+                _Instance = new();
+            return _Instance;
+        }
     }
+    /// <summary>
+    /// 包类型
+    /// </summary>
+    public byte PackageType { get; set; }
+    /// <summary>
+    /// 包体
+    /// </summary>
+    public ReadOnlySequence<byte> BodyBuffer { get; set; }
+}
 
+/// <summary>
+/// 原始收到通知数据包事件参数
+/// </summary>
+public class RawNoticePackageReceivedEventArgs : QpEventArgs
+{
     /// <summary>
-    /// 收到通知数据包事件参数
+    /// 类型名称
     /// </summary>
-    public class NoticePackageReceivedEventArgs : QpEventArgs
-    {
-        /// <summary>
-        /// 类型名称
-        /// </summary>
-        public string TypeName { get; set; }
-        /// <summary>
-        /// 内容模型
-        /// </summary>
-        public object ContentModel { get; set; }
-        /// <summary>
-        /// 是否已处理
-        /// </summary>
-        public bool Handled { get; set; }
-    }
+    public string TypeName { get; set; }
+    /// <summary>
+    /// 内容
+    /// </summary>
+    public string Content { get; set; }
+}
 
+/// <summary>
+/// 收到通知数据包事件参数
+/// </summary>
+public class NoticePackageReceivedEventArgs : QpEventArgs
+{
     /// <summary>
-    /// 原始收到命令请求数据包事件参数
+    /// 类型名称
     /// </summary>
-    public class RawCommandRequestPackageReceivedEventArgs : QpEventArgs
-    {
-        /// <summary>
-        /// 命令编号
-        /// </summary>
-        public string CommandId { get; set; }
-        /// <summary>
-        /// 类型名称
-        /// </summary>
-        public string TypeName { get; set; }
-        /// <summary>
-        /// 内容
-        /// </summary>
-        public string Content { get; set; }
-        /// <summary>
-        /// 是否已处理
-        /// </summary>
-        public bool Handled { get; set; } = false;
-    }
+    public string TypeName { get; set; }
+    /// <summary>
+    /// 内容模型
+    /// </summary>
+    public object ContentModel { get; set; }
+    /// <summary>
+    /// 是否已处理
+    /// </summary>
+    public bool Handled { get; set; }
+}
 
+/// <summary>
+/// 原始收到命令请求数据包事件参数
+/// </summary>
+public class RawCommandRequestPackageReceivedEventArgs : QpEventArgs
+{
     /// <summary>
-    /// 收到命令请求数据包事件参数
+    /// 命令编号
     /// </summary>
-    public class CommandRequestPackageReceivedEventArgs : QpEventArgs
-    {
-        /// <summary>
-        /// 命令编号
-        /// </summary>
-        public string CommandId { get; set; }
-        /// <summary>
-        /// 类型名称
-        /// </summary>
-        public string TypeName { get; set; }
-        /// <summary>
-        /// 内容模型
-        /// </summary>
-        public object ContentModel { get; set; }
-    }
+    public string CommandId { get; set; }
+    /// <summary>
+    /// 类型名称
+    /// </summary>
+    public string TypeName { get; set; }
+    /// <summary>
+    /// 内容
+    /// </summary>
+    public string Content { get; set; }
+    /// <summary>
+    /// 是否已处理
+    /// </summary>
+    public bool Handled { get; set; } = false;
+}
 
+/// <summary>
+/// 收到命令请求数据包事件参数
+/// </summary>
+public class CommandRequestPackageReceivedEventArgs : QpEventArgs
+{
     /// <summary>
-    /// 命令响应中的类型名称和内容
+    /// 命令编号
     /// </summary>
-    public class CommandResponseTypeNameAndContent : QpEventArgs
-    {
-        /// <summary>
-        /// 类型名称
-        /// </summary>
-        public string TypeName { get; set; }
-        /// <summary>
-        /// 内容
-        /// </summary>
-        public string Content { get; set; }
-    }
+    public string CommandId { get; set; }
+    /// <summary>
+    /// 类型名称
+    /// </summary>
+    public string TypeName { get; set; }
+    /// <summary>
+    /// 内容模型
+    /// </summary>
+    public object ContentModel { get; set; }
+}
 
+/// <summary>
+/// 命令响应中的类型名称和内容
+/// </summary>
+public class CommandResponseTypeNameAndContent : QpEventArgs
+{
     /// <summary>
-    /// 收到命令响应数据包事件参数
+    /// 类型名称
     /// </summary>
-    public class CommandResponsePackageReceivedEventArgs : CommandResponseTypeNameAndContent
-    {
-        /// <summary>
-        /// 命令编号
-        /// </summary>
-        public string CommandId { get; set; }
-        /// <summary>
-        /// 响应码
-        /// </summary>
-        public byte Code { get; set; }
-        /// <summary>
-        /// 错误消息
-        /// </summary>
-        public string Message { get; set; }        
-    }
+    public string TypeName { get; set; }
+    /// <summary>
+    /// 内容
+    /// </summary>
+    public string Content { get; set; }
+}
+
+/// <summary>
+/// 收到命令响应数据包事件参数
+/// </summary>
+public class CommandResponsePackageReceivedEventArgs : CommandResponseTypeNameAndContent
+{
+    /// <summary>
+    /// 命令编号
+    /// </summary>
+    public string CommandId { get; set; }
+    /// <summary>
+    /// 响应码
+    /// </summary>
+    public byte Code { get; set; }
+    /// <summary>
+    /// 错误消息
+    /// </summary>
+    public string Message { get; set; }
 }

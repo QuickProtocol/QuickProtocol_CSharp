@@ -68,11 +68,11 @@ namespace Quick.Protocol
         private async Task ReadRecvPipeAsync(PipeReader recvReader, CancellationToken token)
         {
             //包体长度
-            var packageBodyLength = 0;
+            int packageBodyLength;
             byte packageType;
             //暂存包头缓存
             var packageHeadBuffer = new byte[PACKAGE_HEAD_LENGTH];
-            ReadOnlySequence<byte> packageBodyBuffer = default;
+            ReadOnlySequence<byte> packageBodyBuffer;
 
             //解压相关变量
             Pipe decompressPipe = null;
@@ -227,6 +227,5 @@ namespace Quick.Protocol
                 throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]大于最大包大小[{Options.MaxPackageSize}]");
             return packageTotalLength;
         }
-
     }
 }

@@ -36,10 +36,16 @@ namespace Quick.Protocol
         private SemaphoreSlim sendLock;
         //断开连接锁对象
         private readonly object DISCONNECT_LOCK_OBJ = new object();
+        /// <summary>
+        /// 包类型最小值
+        /// </summary>
         private const byte PACKAGE_TYPE_MIN_VALUE = 100;
+        /// <summary>
+        /// 包类型最大值
+        /// </summary>
         private const byte PACKAGE_TYPE_MAX_VALUE = 255;
 
-        private Dictionary<byte,QpPackageHandler> packageHandlerDict = new();
+        private Dictionary<byte, QpPackageHandler> packageHandlerDict = new();
         private List<CommandExecuterManager> commandExecuterManagerList = new();
         private List<NoticeHandlerManager> noticeHandlerManagerList = new();
         private readonly Dictionary<Type, IQpSerializer> typeSerializerDict = new Dictionary<Type, IQpSerializer>();
@@ -203,7 +209,7 @@ namespace Quick.Protocol
 
         public void ClearPackageHandlerDict()
         {
-            lock(packageHandlerDict)
+            lock (packageHandlerDict)
                 packageHandlerDict.Clear();
         }
 
@@ -239,7 +245,7 @@ namespace Quick.Protocol
             if (qpPackageHandler == null)
                 return;
             if (packageType < PACKAGE_TYPE_MIN_VALUE || packageType > PACKAGE_TYPE_MAX_VALUE)
-                throw new ArgumentOutOfRangeException(nameof(packageType));
+                throw new ArgumentOutOfRangeException($"packageType[{packageType}] must between {PACKAGE_TYPE_MIN_VALUE} and {PACKAGE_TYPE_MAX_VALUE}");
             lock (packageHandlerDict)
             {
                 if (packageHandlerDict.ContainsKey(packageType))
@@ -306,6 +312,10 @@ namespace Quick.Protocol
         /// 收到心跳数据包事件
         /// </summary>
         public event EventHandler HeartbeatPackageReceived;
+        /// <summary>
+        /// 收到未知数据包事件
+        /// </summary>
+        public event EventHandler<UnknownPackageReceivedEventArgs> UnknownPackageReceived;
         /// <summary>
         /// 原始收到通知数据包事件
         /// </summary>

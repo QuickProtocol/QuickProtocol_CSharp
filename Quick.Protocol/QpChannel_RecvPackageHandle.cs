@@ -81,7 +81,7 @@ namespace Quick.Protocol
 
                         var content = encoding.GetString(bodyBuffer);
 
-                        if (Options.Logger!=null && Options.Logger.LogCommand)
+                        if (Options.Logger != null && Options.Logger.LogCommand)
                             Options.Logger.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
                                 .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
                         //异步执行命令请求事件处理器
@@ -128,10 +128,19 @@ namespace Quick.Protocol
                         break;
                     }
                 default:
-                    if(packageHandlerDict.TryGetValue(packageType, out var packageHandler))
+                    if (packageHandlerDict.TryGetValue(packageType, out var packageHandler))
+                    {
                         await packageHandler(this, packageType, bodyBuffer);
+                    }
+                    else
+                    {
+                        var eventArgs = UnknownPackageReceivedEventArgs.Instance;
+                        eventArgs.PackageType = packageType;
+                        eventArgs.BodyBuffer = bodyBuffer;
+                        UnknownPackageReceived?.Invoke(this, eventArgs);
+                    }
                     break;
-            }           
+            }
         }
 
         /// <summary>
