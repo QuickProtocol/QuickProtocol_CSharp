@@ -166,7 +166,7 @@ namespace Quick.Protocol
             await stream.FlushAsync().ConfigureAwait(false);
         }
 
-        private async Task UseSendPipe(byte packageType, Func<Pipe, Task<int>> packageBodyHandler = null,
+        public async Task UseSendPipe(byte packageType, Func<Pipe, Task<int>> packageBodyHandler = null,
             bool ignoreCompressAndEncrypt = false)
         {
             if (Options.EnableNetstat)
@@ -197,12 +197,12 @@ namespace Quick.Protocol
         /// </summary>
         public async Task SendHeartbeatPackage()
         {
-            await UseSendPipe(QpPackageType.Heartbeat);
+            await UseSendPipe(PACKAGETYPE_HEARTBEAT);
         }
 
         public async Task SendNoticePackage(string noticePackageTypeName, string noticePackageContent)
         {
-            await UseSendPipe(QpPackageType.Notice, async pipe =>
+            await UseSendPipe(PACKAGETYPE_NOTICE, async pipe =>
             {
                 var writer = pipe.Writer;
 
@@ -256,7 +256,7 @@ namespace Quick.Protocol
         private async Task SendCommandRequestPackage(string commandId, string typeName, string content,
             bool ignoreCompressAndEncrypt)
         {
-            await UseSendPipe(QpPackageType.CommandRequest, async pipe =>
+            await UseSendPipe(PACKAGETYPE_COMMAND_REQUEST, async pipe =>
             {
                 var writer = pipe.Writer;
                 var bodyLength = 0;
@@ -303,7 +303,7 @@ namespace Quick.Protocol
         public async Task SendCommandResponsePackage(string commandId, byte code, string message, string typeName,
             string content)
         {
-            await UseSendPipe(QpPackageType.CommandResponse, async pipe =>
+            await UseSendPipe(PACKAGETYPE_COMMAND_RESPONSE, async pipe =>
             {
                 var writer = pipe.Writer;
                 var bodyLength = 0;

@@ -7,7 +7,23 @@ namespace Quick.Protocol
 {
     public abstract partial class QpChannel
     {
-       
+        /// <summary>
+        /// 心跳数据包
+        /// </summary>
+        public const byte PACKAGETYPE_HEARTBEAT = 0;
+        /// <summary>
+        /// 通知数据包
+        /// </summary>
+        public const byte PACKAGETYPE_NOTICE = 1;
+        /// <summary>
+        /// 指令请求数据包
+        /// </summary>
+        public const byte PACKAGETYPE_COMMAND_REQUEST = 2;
+        /// <summary>
+        /// 指令响应数据包
+        /// </summary>
+        public const byte PACKAGETYPE_COMMAND_RESPONSE = 3;
+
         protected async Task HandlePackage(byte packageType, ReadOnlySequence<byte> bodyBuffer)
         {
             if (Options.Logger is { LogPackage: true })
@@ -25,14 +41,14 @@ namespace Quick.Protocol
             }
             switch (packageType)
             {
-                case QpPackageType.Heartbeat:
+                case PACKAGETYPE_HEARTBEAT:
                     {
                         if (Options.Logger is { LogHeartbeat: true })
                             Options.Logger.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
                         HeartbeatPackageReceived?.Invoke(this, EventArgs.Empty);
                         break;
                     }
-                case QpPackageType.Notice:
+                case PACKAGETYPE_NOTICE:
                     {
                         var typeNameLength = bodyBuffer.First.Span[0];
                         bodyBuffer = bodyBuffer.Slice(1);
@@ -49,7 +65,7 @@ namespace Quick.Protocol
                         await OnRawNoticePackageReceived(typeName, content);
                         break;
                     }
-                case QpPackageType.CommandRequest:
+                case PACKAGETYPE_COMMAND_REQUEST:
                     {
                         var commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray()).ToLower();
                         bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
@@ -72,7 +88,7 @@ namespace Quick.Protocol
                         _ = OnCommandRequestReceived(commandId, typeName, content);
                         break;
                     }
-                case QpPackageType.CommandResponse:
+                case PACKAGETYPE_COMMAND_RESPONSE:
                     {
                         var commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray()).ToLower();
                         bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
