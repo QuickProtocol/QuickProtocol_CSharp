@@ -1,22 +1,5 @@
 namespace Quick.Protocol;
 
-/// <summary>
-/// 命令执行器代理
-/// </summary>
-/// <typeparam name="TCmdRequest"></typeparam>
-/// <typeparam name="TCmdResponse"></typeparam>
-/// <param name="channel"></param>
-/// <param name="request"></param>
-/// <returns></returns>
-public delegate ValueTask<TCmdResponse> QpCommandExecuter<TCmdRequest, TCmdResponse>(QpChannel channel, TCmdRequest request);
-/// <summary>
-/// 命令执行器代理
-/// </summary>
-/// <param name="channel"></param>
-/// <param name="request"></param>
-/// <returns></returns>
-public delegate ValueTask<object> QpCommandExecuter(QpChannel channel, object request);
-
 public class CommandExecuterManager
 {
     private Dictionary<string, QpCommandExecuter> commandExecuterDict = new Dictionary<string, QpCommandExecuter>();
