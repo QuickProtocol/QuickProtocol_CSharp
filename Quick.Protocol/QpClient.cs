@@ -22,7 +22,7 @@ namespace Quick.Protocol
         public async Task ConnectAsync()
         {
             //清理
-            Dispose();
+            Disconnect();
 
             RegisterCommandExecuterManagers(Options.CommandExecuterManagerList);
             RegisterNoticeHandlerManagers(Options.NoticeHandlerManagerList);

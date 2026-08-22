@@ -148,6 +148,19 @@ namespace Quick.Protocol
         /// </summary>
         public event EventHandler Disconnected;
 
+        public void ClearCommandDict()
+        {
+            try
+            {
+                foreach (var kvp in commandDict)
+                {
+                    if (commandDict.TryRemove(kvp.Key, out var ctx))
+                        ctx.Timeout();
+                }
+            }
+            catch { }
+        }
+
         public void ClearCommandExecuterManagers()
         {
             lock (commandExecuterManagerList)
@@ -200,6 +213,7 @@ namespace Quick.Protocol
             InitQpPackageHandler_Stream(null);
             if (shouldRaiseDisconnectedEvent)
                 Disconnected?.Invoke(this, EventArgs.Empty);
+            ClearCommandDict();
             ClearCommandExecuterManagers();
             ClearNoticeHandlerManagers();
             enc?.Dispose();
@@ -514,13 +528,6 @@ namespace Quick.Protocol
         {
             IsConnected = false;
             Disconnect();
-            // Cancel pending commands
-            foreach (var kvp in commandDict)
-            {
-                if (commandDict.TryRemove(kvp.Key, out var ctx))
-                    ctx.Timeout();
-            }
-            // Complete non-readonly pipes to release buffer pool segments
             if (writeCompressPipe != null)
             {
                 try { writeCompressPipe.Writer.Complete(); } catch { }

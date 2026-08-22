@@ -50,7 +50,7 @@ public class PerformanceTestUnit : AbstractServerUnit
         {
             Thread.Sleep(1000);
             process.Refresh();
-            Console.WriteLine($"[{DateTime.Now:T}]Current:{server.Channels.Length},Connected:{totalConnected},Authed:{totalAuthed},Disconnected:{totalDisconnected},Memory:{process.WorkingSet64}");
+            Console.WriteLine($"[{DateTime.Now:T}]Current:{server.Channels.Length:N0},Connected:{totalConnected:N0},Authed:{totalAuthed:N0},Disconnected:{totalDisconnected:N0},Memory:{process.WorkingSet64:N0}");
             for (var i = 0; i < 1000; i++)
             {
                 Task.Run(async () =>

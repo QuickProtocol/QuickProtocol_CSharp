@@ -22,7 +22,8 @@ namespace Quick.Protocol.Tcp
         protected override async Task<Stream> InnerConnectAsync()
         {
             if (tcpClient != null)
-                Dispose();
+                Disconnect();
+                
             //开始连接
             if (!string.IsNullOrEmpty(options.LocalHost) && options.LocalPort != null)
                 tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(options.LocalHost), options.LocalPort.Value));
