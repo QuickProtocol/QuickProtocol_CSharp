@@ -36,8 +36,9 @@ namespace Quick.Protocol
         private SemaphoreSlim sendLock;
         //断开连接锁对象
         private readonly object DISCONNECT_LOCK_OBJ = new object();
-        //内置包处理器
-        private Dictionary<byte,QpPackageHandler> buildinPackageHandlerDict;
+        private const byte PACKAGE_TYPE_MIN_VALUE = 100;
+        private const byte PACKAGE_TYPE_MAX_VALUE = 255;
+
         private Dictionary<byte,QpPackageHandler> packageHandlerDict = new();
         private List<CommandExecuterManager> commandExecuterManagerList = new();
         private List<NoticeHandlerManager> noticeHandlerManagerList = new();
@@ -191,10 +192,8 @@ namespace Quick.Protocol
         /// <returns></returns>
         public byte GetUnusedPackageType()
         {
-            for (byte i = 10; i <= 200; i++)
+            for (byte i = PACKAGE_TYPE_MIN_VALUE; i <= PACKAGE_TYPE_MAX_VALUE; i++)
             {
-                if (buildinPackageHandlerDict.ContainsKey(i))
-                    continue;
                 if (packageHandlerDict.ContainsKey(i))
                     continue;
                 return i;
@@ -239,11 +238,25 @@ namespace Quick.Protocol
         {
             if (qpPackageHandler == null)
                 return;
-            if (buildinPackageHandlerDict.ContainsKey(packageType)
-                || packageHandlerDict.ContainsKey(packageType))
-                throw new ArgumentException($"PackageType[{packageType}] is busy.");
+            if (packageType < PACKAGE_TYPE_MIN_VALUE || packageType > PACKAGE_TYPE_MAX_VALUE)
+                throw new ArgumentOutOfRangeException(nameof(packageType));
             lock (packageHandlerDict)
+            {
+                if (packageHandlerDict.ContainsKey(packageType))
+                    throw new ArgumentException($"PackageType[{packageType}] is busy.");
+
                 packageHandlerDict[packageType] = qpPackageHandler;
+            }
+        }
+
+        /// <summary>
+        /// 取消注册通知处理器管理器
+        /// </summary>
+        /// <param name="packageType"></param>
+        public void UnregisterPackageHandler(byte packageType)
+        {
+            lock (packageHandlerDict)
+                packageHandlerDict.Remove(packageType);
         }
 
         /// <summary>
@@ -341,13 +354,6 @@ namespace Quick.Protocol
         public QpChannel(QpChannelOptions options)
         {
             Options = options;
-            buildinPackageHandlerDict = new Dictionary<byte, QpPackageHandler>()
-            {
-                [QpPackageType.Heartbeat] = handleHeartbeatPackage,
-                [QpPackageType.Notice] = handleNoticePackage,
-                [QpPackageType.CommandRequest] = handleCommandRequestPackage,
-                [QpPackageType.CommandResponse] = handleCommandResponsePackage,
-            };
             passwordMd5Buffer = MD5.HashData(Encoding.UTF8.GetBytes(options.Password));
 
             foreach (var instructionSet in options.InstructionSet)

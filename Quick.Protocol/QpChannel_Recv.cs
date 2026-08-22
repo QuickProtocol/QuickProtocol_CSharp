@@ -169,27 +169,6 @@ namespace Quick.Protocol
             }
         }
 
-        protected async Task HandlePackage(byte packageType, ReadOnlySequence<byte> bodyBuffer)
-        {
-            if (Options.Logger is { LogPackage: true })
-            {
-                var sb = new StringBuilder();
-                sb.Append($"{DateTime.Now}: [Recv-Package]Type: {packageType}");
-                if (bodyBuffer.Length > 0)
-                {
-                    if (Options.Logger.LogContent)
-                        sb.Append(", Content: " + Convert.ToHexString(bodyBuffer.ToArray()));
-                    else
-                        sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-                }
-                Options.Logger.Log(sb.ToString());
-            }
-            if (!buildinPackageHandlerDict.TryGetValue(packageType, out var packageHandler))
-                packageHandlerDict.TryGetValue(packageType, out packageHandler);
-            if (packageHandler != null)
-                await packageHandler(this, packageType, bodyBuffer);
-        }
-
         protected void BeginReadPackage(CancellationToken token)
         {
             lastReadDataTime = DateTime.Now;

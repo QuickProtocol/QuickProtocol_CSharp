@@ -7,92 +7,116 @@ namespace Quick.Protocol
 {
     public abstract partial class QpChannel
     {
-        private async ValueTask handleHeartbeatPackage(QpChannel qpChannel, byte packageType, ReadOnlySequence<byte> bodyBuffer)
+       
+        protected async Task HandlePackage(byte packageType, ReadOnlySequence<byte> bodyBuffer)
         {
-            if (Options.Logger is { LogHeartbeat: true })
-                Options.Logger.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
-            HeartbeatPackageReceived?.Invoke(this, EventArgs.Empty);
-        }
-
-        private async ValueTask handleNoticePackage(QpChannel qpChannel, byte packageType, ReadOnlySequence<byte> bodyBuffer)
-        {
-            var typeNameLength = bodyBuffer.First.Span[0];
-            bodyBuffer = bodyBuffer.Slice(1);
-
-            var typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
-            bodyBuffer = bodyBuffer.Slice(typeNameLength);
-
-            var content = encoding.GetString(bodyBuffer);
-
-            if (Options.Logger is { LogNotice: true })
-                Options.Logger.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
-                    .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-            //异步等待执行通知处理器
-            await OnRawNoticePackageReceived(typeName, content);
-        }
-
-        private async ValueTask handleCommandRequestPackage(QpChannel qpChannel, byte packageType, ReadOnlySequence<byte> bodyBuffer)
-        {
-            var commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray()).ToLower();
-            bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
-
-            var typeNameLength = bodyBuffer.First.Span[0];
-            bodyBuffer = bodyBuffer.Slice(1);
-            if (bodyBuffer.Length < typeNameLength)
+            if (Options.Logger is { LogPackage: true })
             {
-                throw new IOException($"bodyBuffer.Length:{bodyBuffer.Length} < TypeNameLength: {typeNameLength}，Content:{encoding.GetString(bodyBuffer)}");
-            }
-            var typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
-            bodyBuffer = bodyBuffer.Slice(typeNameLength);
-
-            var content = encoding.GetString(bodyBuffer);
-
-            if (Options.Logger != null && Options.Logger.LogCommand)
-                Options.Logger.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
-                    .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-            //异步执行命令请求事件处理器
-            _ = OnCommandRequestReceived(commandId, typeName, content);
-        }
-
-        private async ValueTask handleCommandResponsePackage(QpChannel qpChannel, byte packageType, ReadOnlySequence<byte> bodyBuffer)
-        {
-            var commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray()).ToLower();
-            bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
-
-            var code = bodyBuffer.First.Span[0];
-            bodyBuffer = bodyBuffer.Slice(1);
-
-            string typeName = null;
-            string content = null;
-            string message = null;
-
-            //如果成功
-            if (code == 0)
-            {
-                var typeNameLength = bodyBuffer.First.Span[0];
-                bodyBuffer = bodyBuffer.Slice(1);
-
-                if (bodyBuffer.Length < typeNameLength)
+                var sb = new StringBuilder();
+                sb.Append($"{DateTime.Now}: [Recv-Package]Type: {packageType}");
+                if (bodyBuffer.Length > 0)
                 {
-                    throw new IOException($"bodyBuffer.Length:{bodyBuffer.Length} < TypeNameLength: {typeNameLength}，Content:{encoding.GetString(bodyBuffer)}");
+                    if (Options.Logger.LogContent)
+                        sb.Append(", Content: " + Convert.ToHexString(bodyBuffer.ToArray()));
+                    else
+                        sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
                 }
-                typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
-                bodyBuffer = bodyBuffer.Slice(typeNameLength);
-
-                content = encoding.GetString(bodyBuffer);
+                Options.Logger.Log(sb.ToString());
             }
-            else
+            switch (packageType)
             {
-                message = encoding.GetString(bodyBuffer);
-            }
+                case QpPackageType.Heartbeat:
+                    {
+                        if (Options.Logger is { LogHeartbeat: true })
+                            Options.Logger.Log("{0}: [Recv-HeartbeatPackage]", DateTime.Now);
+                        HeartbeatPackageReceived?.Invoke(this, EventArgs.Empty);
+                        break;
+                    }
+                case QpPackageType.Notice:
+                    {
+                        var typeNameLength = bodyBuffer.First.Span[0];
+                        bodyBuffer = bodyBuffer.Slice(1);
 
-            if (Options.Logger is { LogCommand: true })
-                Options.Logger.Log("{0}: [Recv-CommandResponsePackage]Code:{1}，Message：{2}，Type:{3},Content:{4}", DateTime.Now, code, message, typeName, Options
-                    .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                        var typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
+                        bodyBuffer = bodyBuffer.Slice(typeNameLength);
 
-            OnCommandResponseReceived(commandId, code, message, typeName, content);
+                        var content = encoding.GetString(bodyBuffer);
+
+                        if (Options.Logger is { LogNotice: true })
+                            Options.Logger.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
+                                .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                        //异步等待执行通知处理器
+                        await OnRawNoticePackageReceived(typeName, content);
+                        break;
+                    }
+                case QpPackageType.CommandRequest:
+                    {
+                        var commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray()).ToLower();
+                        bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
+
+                        var typeNameLength = bodyBuffer.First.Span[0];
+                        bodyBuffer = bodyBuffer.Slice(1);
+                        if (bodyBuffer.Length < typeNameLength)
+                        {
+                            throw new IOException($"bodyBuffer.Length:{bodyBuffer.Length} < TypeNameLength: {typeNameLength}，Content:{encoding.GetString(bodyBuffer)}");
+                        }
+                        var typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
+                        bodyBuffer = bodyBuffer.Slice(typeNameLength);
+
+                        var content = encoding.GetString(bodyBuffer);
+
+                        if (Options.Logger!=null && Options.Logger.LogCommand)
+                            Options.Logger.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
+                                .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                        //异步执行命令请求事件处理器
+                        _ = OnCommandRequestReceived(commandId, typeName, content);
+                        break;
+                    }
+                case QpPackageType.CommandResponse:
+                    {
+                        var commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray()).ToLower();
+                        bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
+
+                        var code = bodyBuffer.First.Span[0];
+                        bodyBuffer = bodyBuffer.Slice(1);
+
+                        string typeName = null;
+                        string content = null;
+                        string message = null;
+
+                        //如果成功
+                        if (code == 0)
+                        {
+                            var typeNameLength = bodyBuffer.First.Span[0];
+                            bodyBuffer = bodyBuffer.Slice(1);
+
+                            if (bodyBuffer.Length < typeNameLength)
+                            {
+                                throw new IOException($"bodyBuffer.Length:{bodyBuffer.Length} < TypeNameLength: {typeNameLength}，Content:{encoding.GetString(bodyBuffer)}");
+                            }
+                            typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
+                            bodyBuffer = bodyBuffer.Slice(typeNameLength);
+
+                            content = encoding.GetString(bodyBuffer);
+                        }
+                        else
+                        {
+                            message = encoding.GetString(bodyBuffer);
+                        }
+
+                        if (Options.Logger is { LogCommand: true })
+                            Options.Logger.Log("{0}: [Recv-CommandResponsePackage]Code:{1}，Message：{2}，Type:{3},Content:{4}", DateTime.Now, code, message, typeName, Options
+                                .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+
+                        OnCommandResponseReceived(commandId, code, message, typeName, content);
+                        break;
+                    }
+                default:
+                    if(packageHandlerDict.TryGetValue(packageType, out var packageHandler))
+                        await packageHandler(this, packageType, bodyBuffer);
+                    break;
+            }           
         }
-
 
         /// <summary>
         /// 接收到原始通知数据包时
