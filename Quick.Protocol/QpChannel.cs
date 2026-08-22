@@ -36,7 +36,9 @@ namespace Quick.Protocol
         private SemaphoreSlim sendLock;
         //断开连接锁对象
         private readonly object DISCONNECT_LOCK_OBJ = new object();
-
+        //内置包处理器
+        private Dictionary<byte,QpPackageHandler> buildinPackageHandlerDict;
+        private Dictionary<byte,QpPackageHandler> packageHandlerDict = new();
         private List<CommandExecuterManager> commandExecuterManagerList = new();
         private List<NoticeHandlerManager> noticeHandlerManagerList = new();
         private readonly Dictionary<Type, IQpSerializer> typeSerializerDict = new Dictionary<Type, IQpSerializer>();
@@ -183,6 +185,29 @@ namespace Quick.Protocol
                 noticeHandlerManagerList.Clear();
         }
 
+        /// <summary>
+        /// 获取未被使用的包类型
+        /// </summary>
+        /// <returns></returns>
+        public byte GetUnusedPackageType()
+        {
+            for (byte i = 10; i <= 200; i++)
+            {
+                if (buildinPackageHandlerDict.ContainsKey(i))
+                    continue;
+                if (packageHandlerDict.ContainsKey(i))
+                    continue;
+                return i;
+            }
+            throw new IOException($"All package types was used.");
+        }
+
+        public void ClearPackageHandlerDict()
+        {
+            lock(packageHandlerDict)
+                packageHandlerDict.Clear();
+        }
+
         // <summary>
         // 注册指令执行器管理器
         // </summary>
@@ -207,6 +232,21 @@ namespace Quick.Protocol
         }
 
         /// <summary>
+        /// 注册通知处理器管理器
+        /// </summary>
+        /// <param name="noticeHandlerManager"></param>
+        public void RegisterPackageHandler(byte packageType, QpPackageHandler qpPackageHandler)
+        {
+            if (qpPackageHandler == null)
+                return;
+            if (buildinPackageHandlerDict.ContainsKey(packageType)
+                || packageHandlerDict.ContainsKey(packageType))
+                throw new ArgumentException($"PackageType[{packageType}] is busy.");
+            lock (packageHandlerDict)
+                packageHandlerDict[packageType] = qpPackageHandler;
+        }
+
+        /// <summary>
         /// 断开连接时
         /// </summary>
         public virtual void Disconnect()
@@ -226,6 +266,7 @@ namespace Quick.Protocol
             ClearCommandDict();
             ClearCommandExecuterManagers();
             ClearNoticeHandlerManagers();
+            ClearPackageHandlerDict();
             enc?.Dispose();
             enc = null;
             dec?.Dispose();
@@ -300,6 +341,13 @@ namespace Quick.Protocol
         public QpChannel(QpChannelOptions options)
         {
             Options = options;
+            buildinPackageHandlerDict = new Dictionary<byte, QpPackageHandler>()
+            {
+                [QpPackageType.Heartbeat] = handleHeartbeatPackage,
+                [QpPackageType.Notice] = handleNoticePackage,
+                [QpPackageType.CommandRequest] = handleCommandRequestPackage,
+                [QpPackageType.CommandResponse] = handleCommandResponsePackage,
+            };
             passwordMd5Buffer = MD5.HashData(Encoding.UTF8.GetBytes(options.Password));
 
             foreach (var instructionSet in options.InstructionSet)

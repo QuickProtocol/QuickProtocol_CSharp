@@ -50,6 +50,7 @@ namespace Quick.Protocol
             ClearCommandExecuterManagers();
             RegisterCommandExecuterManagers([connectAndAuthCommandExecuterManager]);
             ClearNoticeHandlerManagers();
+            ClearPackageHandlerDict();
 
             InitQpPackageHandler_Stream(channelStream);
             var token = cts.Token;
