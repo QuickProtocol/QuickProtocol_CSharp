@@ -3,7 +3,7 @@
     /// <summary>
     /// 数据包类型
     /// </summary>
-    public static class QpPackageType
+    internal static class QpPackageType
     {
         /// <summary>
         /// 心跳数据包

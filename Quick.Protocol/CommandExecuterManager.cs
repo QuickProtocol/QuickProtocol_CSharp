@@ -8,30 +8,30 @@ namespace Quick.Protocol;
 /// <param name="channel"></param>
 /// <param name="request"></param>
 /// <returns></returns>
-public delegate ValueTask<TCmdResponse> CommandExecuter<TCmdRequest, TCmdResponse>(QpChannel channel, TCmdRequest request);
+public delegate ValueTask<TCmdResponse> QpCommandExecuter<TCmdRequest, TCmdResponse>(QpChannel channel, TCmdRequest request);
 /// <summary>
 /// 命令执行器代理
 /// </summary>
 /// <param name="channel"></param>
 /// <param name="request"></param>
 /// <returns></returns>
-public delegate ValueTask<object> CommandExecuter(QpChannel channel, object request);
+public delegate ValueTask<object> QpCommandExecuter(QpChannel channel, object request);
 
 public class CommandExecuterManager
 {
-    private Dictionary<string, CommandExecuter> commandExecuterDict = new Dictionary<string, CommandExecuter>();
+    private Dictionary<string, QpCommandExecuter> commandExecuterDict = new Dictionary<string, QpCommandExecuter>();
 
     /// <summary>
     /// 获取全部注册的命令请求类型名称
     /// </summary>
     public string[] GetRegisterCommandRequestTypeNames() => commandExecuterDict.Keys.ToArray();
 
-    public void Register(string cmdRequestTypeName, CommandExecuter commandExecuter)
+    public void Register(string cmdRequestTypeName, QpCommandExecuter commandExecuter)
     {
         commandExecuterDict[cmdRequestTypeName] = commandExecuter;
     }
 
-    public void Register<TCmdRequest, TCmdResponse>(CommandExecuter<TCmdRequest, TCmdResponse> commandExecuter)
+    public void Register<TCmdRequest, TCmdResponse>(QpCommandExecuter<TCmdRequest, TCmdResponse> commandExecuter)
         where TCmdRequest : class, new()
         where TCmdResponse : class, new()
     {
@@ -39,7 +39,7 @@ public class CommandExecuterManager
         commandExecuterDict[cmdRequestTypeName] = async (handler, request) => await commandExecuter(handler, (TCmdRequest)request);
     }
 
-    public void Register<TCmdRequest, TCmdResponse>(TCmdRequest request, CommandExecuter<TCmdRequest, TCmdResponse> commandExecuter)
+    public void Register<TCmdRequest, TCmdResponse>(TCmdRequest request, QpCommandExecuter<TCmdRequest, TCmdResponse> commandExecuter)
         where TCmdRequest : class, IQpCommandRequest<TCmdRequest, TCmdResponse>, new()
         where TCmdResponse : class, new()
     {

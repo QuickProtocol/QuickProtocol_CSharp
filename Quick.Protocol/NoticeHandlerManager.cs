@@ -1,4 +1,15 @@
+using System.Buffers;
+
 namespace Quick.Protocol;
+
+/// <summary>
+/// 包处理器代理
+/// </summary>
+/// <param name="channel"></param>
+/// <param name="packageType"></param>
+/// <param name="bodyBuffer"></param>
+/// <returns></returns>
+public delegate ValueTask QpPackageHandler(QpChannel channel, byte packageType, ReadOnlySequence<byte> bodyBuffer);
 
 /// <summary>
 /// 通知处理器代理
@@ -7,30 +18,30 @@ namespace Quick.Protocol;
 /// <param name="channel"></param>
 /// <param name="notice"></param>
 /// <returns></returns>
-public delegate ValueTask NoticeHandler<TNotice>(QpChannel channel, TNotice notice);
+public delegate ValueTask QpNoticeHandler<TNotice>(QpChannel channel, TNotice notice);
 /// <summary>
 /// 通知处理器代理
 /// </summary>
 /// <param name="channel"></param>
 /// <param name="request"></param>
 /// <returns></returns>
-public delegate ValueTask NoticeHandler(QpChannel channel, object notice);
+public delegate ValueTask QpNoticeHandler(QpChannel channel, object notice);
 
 public class NoticeHandlerManager
 {
-    private Dictionary<string, NoticeHandler> noticeHandlerDict = new Dictionary<string, NoticeHandler>();
+    private Dictionary<string, QpNoticeHandler> noticeHandlerDict = new Dictionary<string, QpNoticeHandler>();
 
     /// <summary>
     /// 获取全部注册的通知类型名称
     /// </summary>
     public string[] GetRegisterNoticeTypeNames() => noticeHandlerDict.Keys.ToArray();
 
-    public void Register(string noticeTypeName, NoticeHandler noticeHandler)
+    public void Register(string noticeTypeName, QpNoticeHandler noticeHandler)
     {
         noticeHandlerDict[noticeTypeName] = noticeHandler;
     }
 
-    public void Register<TNotice>(NoticeHandler<TNotice> noticeHandler)
+    public void Register<TNotice>(QpNoticeHandler<TNotice> noticeHandler)
         where TNotice : class, new()
     {
         var noticeTypeName = typeof(TNotice).FullName;
