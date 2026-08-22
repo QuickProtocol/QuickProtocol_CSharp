@@ -527,8 +527,8 @@ namespace Quick.Protocol
                 try { writeCompressPipe.Reader.Complete(); } catch { }
                 writeCompressPipe = null;
             }
-            sendLock.Dispose();
-            sendLock = new SemaphoreSlim(1, 1);
+            sendLock?.Dispose();
+            sendLock = null;
         }
     }
 }
