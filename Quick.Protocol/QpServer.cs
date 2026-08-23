@@ -16,7 +16,14 @@ namespace Quick.Protocol
         /// <summary>
         /// 已通过认证的通道
         /// </summary>
-        public QpServerChannel[] Channels { get; private set; } = new QpServerChannel[0];
+        public QpServerChannel[] Channels
+        {
+            get
+            {
+                lock (channelList)
+                    return channelList.ToArray();
+            }
+        }
 
         /// <summary>
         /// 通道正在连接(物理连接建立)
@@ -55,10 +62,7 @@ namespace Quick.Protocol
         {
             lock (channelList)
                 if (channelList.Contains(channel))
-                {
                     channelList.Remove(channel);
-                    Channels = channelList.ToArray();
-                }
         }
 
         protected void OnNewChannelConnected(Stream stream, string channelName, CancellationToken token, bool readFromStreamReturnZeroMeansFault = true)
@@ -78,10 +82,7 @@ namespace Quick.Protocol
             channel.Authenticated += (_, _) =>
             {
                 lock (channelList)
-                {
                     channelList.Add(channel);
-                    Channels = channelList.ToArray();
-                }
                 ChannelConnected?.Invoke(this, channel);
                 channel.Disconnected += (_, _) =>
                 {
@@ -114,7 +115,6 @@ namespace Quick.Protocol
             {
                 channels = channelList.ToArray();
                 channelList.Clear();
-                Channels = Array.Empty<QpServerChannel>();
             }
             foreach (var channel in channels)
             {
