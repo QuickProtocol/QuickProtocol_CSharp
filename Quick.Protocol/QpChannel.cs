@@ -413,15 +413,14 @@ namespace Quick.Protocol
                 {
                     case "DES":
                         symmetricAlgorithm = DES.Create();
-                        key = passwordMd5Buffer.Take(8).ToArray();
                         break;
                     case "AES":
                         symmetricAlgorithm = Aes.Create();
-                        key = passwordMd5Buffer.Take(16).ToArray();
                         break;
                     default:
                         throw new ArgumentException($"Unknown encrypt method: {EncryptAlgorithm}");
                 }
+                key = passwordMd5Buffer.Take(symmetricAlgorithm.KeySize / 8).ToArray();
                 symmetricAlgorithm.Mode = Enum.Parse<CipherMode>(EncryptMode);
                 symmetricAlgorithm.Padding = Enum.Parse<PaddingMode>(EncryptPadding);
                 enc = symmetricAlgorithm.CreateEncryptor(key, key);
