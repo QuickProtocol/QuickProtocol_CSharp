@@ -77,7 +77,6 @@ namespace Quick.Protocol
 
             //解密相关变量
             Pipe decryptPipe = null;
-            byte[] decryptBuffer = null;
             //解压相关变量
             Pipe decompressPipe = null;
 
@@ -131,10 +130,7 @@ namespace Quick.Protocol
                         {
                             //准备管道
                             if (decryptPipe == null)
-                            {
                                 decryptPipe = new Pipe();
-                                decryptBuffer = new byte[minimumBufferSize];
-                            }
                             packageBodyLength = 0;
 
                             //开始解密
@@ -142,13 +138,15 @@ namespace Quick.Protocol
                             using (var decryptStream = new CryptoStream(readMs, dec, CryptoStreamMode.Read))
                                 while (true)
                                 {
-                                    var decryptLength = await decryptStream.ReadAsync(decryptBuffer, 0, decryptBuffer.Length);
-                                    if (decryptLength <= 0)
+                                    var memory = decryptPipe.Writer.GetMemory(minimumBufferSize);
+                                    var count = await decryptStream.ReadAsync(memory);
+                                    if (count <= 0)
+                                    {
+                                        decryptPipe.Writer.Advance(0);
                                         break;
-                                    var span = decryptPipe.Writer.GetSpan(decryptLength);
-                                    decryptBuffer.CopyTo(span);
-                                    decryptPipe.Writer.Advance(decryptLength);
-                                    packageBodyLength += decryptLength;
+                                    }
+                                    decryptPipe.Writer.Advance(count);
+                                    packageBodyLength += count;
                                 }
                             await decryptPipe.Writer.FlushAsync().ConfigureAwait(false);
                             var ret = await decryptPipe.Reader.ReadAtLeastAsync(packageBodyLength);
