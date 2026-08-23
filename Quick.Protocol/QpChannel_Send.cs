@@ -5,6 +5,7 @@ using System.Text;
 using Quick.Protocol.Streams;
 using Quick.Utils;
 using System.Buffers.Binary;
+using System.Security.Cryptography;
 
 namespace Quick.Protocol
 {
@@ -24,8 +25,10 @@ namespace Quick.Protocol
             Disconnect();
         }
 
-        //压缩相关变量
+        //发送压缩相关变量
         private Pipe writeCompressPipe = null;
+        //发送加密相关变量
+        private Pipe writeEncryptPipe = null;
 
         private async Task writePackageBuffer(PipeReader currentReader, byte packageType,
             int packageBodyLength, bool ignoreCompressAndEncrypt = false)
@@ -94,20 +97,32 @@ namespace Quick.Protocol
                 //如果加密
                 if (EnableEncrypt)
                 {
+                    //准备管道
+                    if (writeEncryptPipe == null)
+                        writeEncryptPipe = new Pipe();
+
+                    packageBodyLength = 0;
                     try
                     {
                         //开始加密
-                        var ret = enc.TransformFinalBlock(packageBodyBuffer.ToArray(), 0,
-                            (int)packageBodyBuffer.Length);
-                        //加密完成，释放资源
+                        using (var readMs = new ReadOnlySequenceByteStream(packageBodyBuffer))
+                        using (var writeMs = new PipeWriterStream(writeEncryptPipe.Writer, true))
+                        using (var encryptStream = new CryptoStream(writeMs, enc, CryptoStreamMode.Write))
+                        {
+                            await readMs.CopyToAsync(encryptStream);
+                            await encryptStream.FlushFinalBlockAsync();
+                            await encryptStream.FlushAsync();
+                            packageBodyLength = Convert.ToInt32(writeMs.Length);
+                            await writeEncryptPipe.Writer.FlushAsync().ConfigureAwait(false);
+                        }
+                        //加密完成，释放缓存
                         currentReader?.AdvanceTo(packageBodyBuffer.End);
-
-                        packageBodyBuffer = new ReadOnlySequence<byte>(ret);
-                        packageBodyLength = ret.Length;
+                        var ret = await writeEncryptPipe.Reader.ReadAtLeastAsync(packageBodyLength);                        
+                        packageBodyBuffer = ret.Buffer;
 
                         //包总长度
                         packageTotalLength = PACKAGE_HEAD_LENGTH + packageBodyLength;
-                        currentReader = null;
+                        currentReader = writeEncryptPipe.Reader;
                     }
                     catch (Exception ex)
                     {

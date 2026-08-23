@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Pipelines;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.IO.Pipelines;
 
 namespace Quick.Protocol.Streams
 {
@@ -55,8 +48,7 @@ namespace Quick.Protocol.Streams
             {
                 return _pipeWriter.CompleteAsync();
             }
-
-            return default(ValueTask);
+            return default;
         }
 
         public override void Flush()

@@ -133,27 +133,34 @@ namespace Quick.Protocol
                                 decryptPipe = new Pipe();
                             packageBodyLength = 0;
 
-                            //开始解密
-                            using (var readMs = new ReadOnlySequenceByteStream(packageBodyBuffer))
-                            using (var decryptStream = new CryptoStream(readMs, dec, CryptoStreamMode.Read))
-                                while (true)
-                                {
-                                    var memory = decryptPipe.Writer.GetMemory(minimumBufferSize);
-                                    var count = await decryptStream.ReadAsync(memory);
-                                    if (count <= 0)
+                            try
+                            {
+                                //开始解密
+                                using (var readMs = new ReadOnlySequenceByteStream(packageBodyBuffer))
+                                using (var decryptStream = new CryptoStream(readMs, dec, CryptoStreamMode.Read))
+                                    while (true)
                                     {
-                                        decryptPipe.Writer.Advance(0);
-                                        break;
+                                        var memory = decryptPipe.Writer.GetMemory(minimumBufferSize);
+                                        var count = await decryptStream.ReadAsync(memory);
+                                        if (count <= 0)
+                                        {
+                                            decryptPipe.Writer.Advance(0);
+                                            break;
+                                        }
+                                        decryptPipe.Writer.Advance(count);
+                                        packageBodyLength += count;
                                     }
-                                    decryptPipe.Writer.Advance(count);
-                                    packageBodyLength += count;
-                                }
-                            await decryptPipe.Writer.FlushAsync().ConfigureAwait(false);
-                            var ret = await decryptPipe.Reader.ReadAtLeastAsync(packageBodyLength);
-                            //解密完成，释放缓存
-                            currentReader?.AdvanceTo(packageBodyBuffer.End);
-                            packageBodyBuffer = ret.Buffer;
-                            currentReader = decryptPipe.Reader;
+                                await decryptPipe.Writer.FlushAsync().ConfigureAwait(false);
+                                var ret = await decryptPipe.Reader.ReadAtLeastAsync(packageBodyLength);
+                                //解密完成，释放缓存
+                                currentReader?.AdvanceTo(packageBodyBuffer.End);
+                                packageBodyBuffer = ret.Buffer;
+                                currentReader = decryptPipe.Reader;
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new IOException("接收数据解密时出错", ex);
+                            }
                         }
 
                         //如果设置了压缩
