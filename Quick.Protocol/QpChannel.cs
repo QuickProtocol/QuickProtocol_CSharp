@@ -299,6 +299,12 @@ namespace Quick.Protocol
                 try { writeCompressPipe.Reader.Complete(); } catch { }
                 writeCompressPipe = null;
             }
+            if (writeEncryptPipe != null)
+            {
+                try { writeEncryptPipe.Writer.Complete(); } catch { }
+                try { writeEncryptPipe.Reader.Complete(); } catch { }
+                writeEncryptPipe = null;
+            }
             sendLock?.Dispose();
             sendLock = null;
         }
