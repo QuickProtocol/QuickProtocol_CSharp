@@ -1,13 +1,5 @@
-﻿using QpTestClient.Utils;
-using Quick.Protocol;
+﻿using Quick.Protocol;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace QpTestClient.Controls
@@ -41,11 +33,10 @@ namespace QpTestClient.Controls
                 showNetStat("当前连接没有配置启用网络统计功能");
                 return;
             }
-            showNetStat(@$"发送的字节数：{channel.BytesSent.ToString("N0")}
-接收的字节数：{channel.BytesReceived.ToString("N0")}
-每秒发送字节数：{channel.BytesSentPerSec.ToString("N0")}
-每秒接收字节数：{channel.BytesReceivedPerSec.ToString("N0")}
-包发送队列数量：{channel.PackageSendQueueCount}");
+            showNetStat(@$"发送的字节数：{channel.BytesSent:N0}
+接收的字节数：{channel.BytesReceived:N0}
+每秒发送字节数：{channel.BytesSentPerSec:N0}
+每秒接收字节数：{channel.BytesReceivedPerSec:N0}");
         }
 
         private void showNetStat(string content)
