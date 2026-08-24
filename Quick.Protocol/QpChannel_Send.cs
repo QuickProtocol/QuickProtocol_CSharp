@@ -213,7 +213,7 @@ namespace Quick.Protocol
                 await currentSendLock.WaitAsync().ConfigureAwait(false);
                 var packageBodyLength = 0;
                 if (packageBodyProvider != null)
-                    packageBodyLength = await packageBodyProvider(sendPipe).ConfigureAwait(false);
+                    packageBodyLength = await packageBodyProvider(sendPipe.Writer).ConfigureAwait(false);
                 await writePackageBuffer(sendPipe.Reader, packageType, packageBodyLength, ignoreCompressAndEncrypt);
             }
             catch (Exception ex)
@@ -237,10 +237,8 @@ namespace Quick.Protocol
 
         public async Task SendNoticePackage(string noticePackageTypeName, string noticePackageContent)
         {
-            await SendPackage(PACKAGETYPE_NOTICE, async pipe =>
+            await SendPackage(PACKAGETYPE_NOTICE, async writer =>
             {
-                var writer = pipe.Writer;
-
                 var typeName = noticePackageTypeName;
                 var content = noticePackageContent;
                 var bodyLength = 0;
@@ -291,9 +289,8 @@ namespace Quick.Protocol
         private async Task SendCommandRequestPackage(string commandId, string typeName, string content,
             bool ignoreCompressAndEncrypt)
         {
-            await SendPackage(PACKAGETYPE_COMMAND_REQUEST, async pipe =>
+            await SendPackage(PACKAGETYPE_COMMAND_REQUEST, async writer =>
             {
-                var writer = pipe.Writer;
                 var bodyLength = 0;
                 //写入指令编号
                 {
@@ -338,9 +335,8 @@ namespace Quick.Protocol
         public async Task SendCommandResponsePackage(string commandId, byte code, string message, string typeName,
             string content)
         {
-            await SendPackage(PACKAGETYPE_COMMAND_RESPONSE, async pipe =>
+            await SendPackage(PACKAGETYPE_COMMAND_RESPONSE, async writer =>
             {
-                var writer = pipe.Writer;
                 var bodyLength = 0;
                 //写入指令编号
                 {

@@ -6,9 +6,9 @@ namespace Quick.Protocol;
 /// <summary>
 /// 包体提供程序
 /// </summary>
-/// <param name="pipe"></param>
+/// <param name="writer"></param>
 /// <returns></returns>
-public delegate ValueTask<int> PackageBodyProvider(Pipe pipe);
+public delegate ValueTask<int> PackageBodyProvider(PipeWriter writer);
 
 /// <summary>
 /// 包处理器代理
