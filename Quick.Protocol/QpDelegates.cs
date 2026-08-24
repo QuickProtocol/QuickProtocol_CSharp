@@ -1,6 +1,14 @@
 ﻿using System.Buffers;
+using System.IO.Pipelines;
 
 namespace Quick.Protocol;
+
+/// <summary>
+/// 包体提供程序
+/// </summary>
+/// <param name="pipe"></param>
+/// <returns></returns>
+public delegate ValueTask<int> PackageBodyProvider(Pipe pipe);
 
 /// <summary>
 /// 包处理器代理

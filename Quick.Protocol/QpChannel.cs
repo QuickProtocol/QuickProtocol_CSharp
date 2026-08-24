@@ -140,11 +140,7 @@ namespace Quick.Protocol
         /// 每秒发送的字节数量
         /// </summary>
         public long BytesSentPerSec { get; private set; }
-        /// <summary>
-        /// 包发送队列数量
-        /// </summary>
-        public int PackageSendQueueCount = 0;
-
+        
         /// <summary>
         /// 最后一次连接的时间
         /// </summary>
