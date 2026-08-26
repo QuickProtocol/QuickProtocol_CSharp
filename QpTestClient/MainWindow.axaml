@@ -27,7 +27,7 @@
                       DoubleTapped="TvQpInstructions_DoubleTapped"
                       SelectionChanged="TvQpInstructions_SelectionChanged">
                 <TreeView.ContextMenu>
-                    <ContextMenu x:Name="cmsConnection">
+                    <ContextMenu x:Name="cmsConnection" Opening="CmsConnection_Opening">
                         <MenuItem Header="断开(_D)" x:Name="btnDisconnectConnection" Click="BtnDisconnectConnection_Click" IsVisible="False" />
                         <MenuItem Header="连接" x:Name="btnConnectConnection" Click="BtnConnectConnection_Click" />
                         <Separator x:Name="separatorConnection" IsVisible="False" />

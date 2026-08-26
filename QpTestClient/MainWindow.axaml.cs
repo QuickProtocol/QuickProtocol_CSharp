@@ -196,6 +196,24 @@ namespace QpTestClient
             return null;
         }
 
+        private void CmsConnection_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (tvQpInstructions.SelectedItem is not TreeViewItem node)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            var connectionContext = FindConnectionContext(node);
+            if (connectionContext == null)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            UpdateContextMenuVisibility(connectionContext);
+        }
+
         private void UpdateContextMenuVisibility(ConnectionContext connectionContext)
         {
             if (connectionContext.Connected)
