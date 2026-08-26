@@ -8,8 +8,8 @@ namespace QpTestClient
 {
     public partial class ConnectForm : Window
     {
-        public TestConnectionInfo? ConnectionInfo { get; private set; }
-        private QpClientOptions? clientOptions = null;
+        public TestConnectionInfo ConnectionInfo { get; private set; }
+        private QpClientOptions clientOptions = null;
 
         public ConnectForm()
         {
@@ -24,7 +24,7 @@ namespace QpTestClient
             Title = "编辑连接";
         }
 
-        private void ConnectForm_Loaded(object? sender, RoutedEventArgs e)
+        private void ConnectForm_Loaded(object sender, RoutedEventArgs e)
         {
             var items = QpClientTypeManager.Instance.GetAll();
             CbConnectType.Items.Clear();
@@ -46,7 +46,7 @@ namespace QpTestClient
             }
         }
 
-        private void CbConnectType_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        private void CbConnectType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (CbConnectType.SelectedItem is not QpClientTypeInfo qpClientTypeInfo)
                 return;
@@ -66,7 +66,7 @@ namespace QpTestClient
             PnlClientOptions.Child = control;
         }
 
-        private void BtnOk_Click(object? sender, RoutedEventArgs e)
+        private void BtnOk_Click(object sender, RoutedEventArgs e)
         {
             if (CbConnectType.SelectedItem is not QpClientTypeInfo qpClientTypeInfo)
                 return;
@@ -89,7 +89,7 @@ namespace QpTestClient
             Close(ConnectionInfo);
         }
 
-        private void BtnCancel_Click(object? sender, RoutedEventArgs e)
+        private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             Close(null);
         }

@@ -6,6 +6,7 @@ namespace QpTestClient.Controls
 {
     public partial class NoticeInfoControl : UserControl
     {
+        public NoticeInfoControl() { }
         public NoticeInfoControl(QpNoticeInfo item)
         {
             InitializeComponent();

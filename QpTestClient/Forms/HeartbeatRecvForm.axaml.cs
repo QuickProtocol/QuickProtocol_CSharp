@@ -10,9 +10,10 @@ namespace QpTestClient.Forms
     public partial class HeartbeatRecvForm : Window
     {
         private readonly ConnectionContext connectionContext;
-        private QpClient? client;
+        private QpClient client;
         private int maxLines;
 
+        public HeartbeatRecvForm() { }
         public HeartbeatRecvForm(ConnectionContext connectionContext)
         {
             this.connectionContext = connectionContext;
@@ -21,12 +22,12 @@ namespace QpTestClient.Forms
             Closing += HeartbeatRecvForm_Closing;
         }
 
-        private void HeartbeatRecvForm_Closing(object? sender, WindowClosingEventArgs e)
+        private void HeartbeatRecvForm_Closing(object sender, WindowClosingEventArgs e)
         {
             BtnStopRecv_Click(sender, new RoutedEventArgs());
         }
 
-        private void TxtFormTitle_TextChanged(object? sender, TextChangedEventArgs e)
+        private void TxtFormTitle_TextChanged(object sender, TextChangedEventArgs e)
         {
             Title = TxtFormTitle.Text?.Trim() ?? "心跳接收";
         }
@@ -42,7 +43,7 @@ namespace QpTestClient.Forms
             });
         }
 
-        private void BtnStartRecv_Click(object? sender, RoutedEventArgs e)
+        private void BtnStartRecv_Click(object sender, RoutedEventArgs e)
         {
             client = connectionContext.QpClient;
             if (client == null)
@@ -62,18 +63,18 @@ namespace QpTestClient.Forms
             client.HeartbeatPackageReceived += Client_HeartbeatPackageReceived;
         }
 
-        private void Client_HeartbeatPackageReceived(object? sender, EventArgs e)
+        private void Client_HeartbeatPackageReceived(object sender, EventArgs e)
         {
             PushLog("收到心跳数据包");
         }
 
-        private void Client_Disconnected(object? sender, EventArgs e)
+        private void Client_Disconnected(object sender, EventArgs e)
         {
             PushLog("连接已断开!");
             Dispatcher.UIThread.Post(() => BtnStopRecv_Click(sender, new RoutedEventArgs()));
         }
 
-        private void BtnStopRecv_Click(object? sender, RoutedEventArgs e)
+        private void BtnStopRecv_Click(object sender, RoutedEventArgs e)
         {
             TxtFormTitle.IsEnabled = true;
             NudMaxLines.IsEnabled = true;

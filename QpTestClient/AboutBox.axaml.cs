@@ -17,7 +17,7 @@ namespace QpTestClient
             Loaded += AboutBox_Loaded;
         }
 
-        private void AboutBox_Loaded(object? sender, RoutedEventArgs e)
+        private void AboutBox_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -36,7 +36,7 @@ namespace QpTestClient
             TextBoxDescription.Text = ProductInfoUtils.GetAssemblyDescription();
         }
 
-        private void OkButton_Click(object? sender, RoutedEventArgs e)
+        private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }

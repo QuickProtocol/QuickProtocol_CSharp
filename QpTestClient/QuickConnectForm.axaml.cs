@@ -7,7 +7,7 @@ namespace QpTestClient
 {
     public partial class QuickConnectForm : Window
     {
-        public TestConnectionInfo? ConnectionInfo { get; private set; }
+        public TestConnectionInfo ConnectionInfo { get; private set; }
 
         public QuickConnectForm()
         {
@@ -15,12 +15,12 @@ namespace QpTestClient
             Loaded += QuickConnectForm_Loaded;
         }
 
-        private void QuickConnectForm_Loaded(object? sender, RoutedEventArgs e)
+        private void QuickConnectForm_Loaded(object sender, RoutedEventArgs e)
         {
             TxtName.Text = "快速添加连接_" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
         }
 
-        private void TxtUrl_TextChanged(object? sender, TextChangedEventArgs e)
+        private void TxtUrl_TextChanged(object sender, TextChangedEventArgs e)
         {
             var url = TxtUrl.Text?.Trim();
             if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
@@ -32,7 +32,7 @@ namespace QpTestClient
             PnlPassword.IsVisible = string.IsNullOrEmpty(queryString.Get("Password"));
         }
 
-        private void BtnOk_Click(object? sender, RoutedEventArgs e)
+        private void BtnOk_Click(object sender, RoutedEventArgs e)
         {
             var name = TxtName.Text?.Trim();
             if (string.IsNullOrEmpty(name))
@@ -62,7 +62,7 @@ namespace QpTestClient
             }
 
             var uri = new Uri(url);
-            Quick.Protocol.QpClientOptions? options = null;
+            Quick.Protocol.QpClientOptions options = null;
             try
             {
                 options = Quick.Protocol.QpClientOptions.Parse(uri);
@@ -85,7 +85,7 @@ namespace QpTestClient
             Close(ConnectionInfo);
         }
 
-        private void BtnCancel_Click(object? sender, RoutedEventArgs e)
+        private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             Close(null);
         }

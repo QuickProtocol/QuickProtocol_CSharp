@@ -10,7 +10,8 @@ namespace QpTestClient.Forms
     {
         private readonly ConnectionContext connectionContext;
 
-        public CommandTestForm(ConnectionContext connectionContext, QpCommandInfo? qpCommandInfo = null)
+        public CommandTestForm() { }
+        public CommandTestForm(ConnectionContext connectionContext, QpCommandInfo qpCommandInfo = null)
         {
             this.connectionContext = connectionContext;
             InitializeComponent();
@@ -27,12 +28,12 @@ namespace QpTestClient.Forms
             }
         }
 
-        private void TxtFormTitle_TextChanged(object? sender, TextChangedEventArgs e)
+        private void TxtFormTitle_TextChanged(object sender, TextChangedEventArgs e)
         {
             Title = TxtFormTitle.Text?.Trim() ?? "命令测试";
         }
 
-        private async void BtnSend_Click(object? sender, RoutedEventArgs e)
+        private async void BtnSend_Click(object sender, RoutedEventArgs e)
         {
             TxtTestResponse.Clear();
 

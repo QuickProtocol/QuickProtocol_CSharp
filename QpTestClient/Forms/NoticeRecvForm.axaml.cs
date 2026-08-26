@@ -10,11 +10,12 @@ namespace QpTestClient.Forms
     public partial class NoticeRecvForm : Window
     {
         private readonly ConnectionContext connectionContext;
-        private QpClient? client;
-        private string? noticeTypeName;
+        private QpClient client;
+        private string noticeTypeName;
         private int maxLines;
 
-        public NoticeRecvForm(ConnectionContext connectionContext, QpNoticeInfo? noticeInfo = null)
+        public NoticeRecvForm() { }
+        public NoticeRecvForm(ConnectionContext connectionContext, QpNoticeInfo noticeInfo = null)
         {
             this.connectionContext = connectionContext;
             InitializeComponent();
@@ -32,12 +33,12 @@ namespace QpTestClient.Forms
             Closing += NoticeRecvForm_Closing;
         }
 
-        private void NoticeRecvForm_Closing(object? sender, WindowClosingEventArgs e)
+        private void NoticeRecvForm_Closing(object sender, WindowClosingEventArgs e)
         {
             BtnStopRecv_Click(sender, new RoutedEventArgs());
         }
 
-        private void TxtFormTitle_TextChanged(object? sender, TextChangedEventArgs e)
+        private void TxtFormTitle_TextChanged(object sender, TextChangedEventArgs e)
         {
             Title = TxtFormTitle.Text?.Trim() ?? "通知接收";
         }
@@ -53,7 +54,7 @@ namespace QpTestClient.Forms
             });
         }
 
-        private void BtnStartRecv_Click(object? sender, RoutedEventArgs e)
+        private void BtnStartRecv_Click(object sender, RoutedEventArgs e)
         {
             client = connectionContext.QpClient;
             if (client == null)
@@ -75,13 +76,13 @@ namespace QpTestClient.Forms
             client.RawNoticePackageReceived += Client_RawNoticePackageReceived;
         }
 
-        private void Client_Disconnected(object? sender, EventArgs e)
+        private void Client_Disconnected(object sender, EventArgs e)
         {
             PushLog("连接已断开!");
             Dispatcher.UIThread.Post(() => BtnStopRecv_Click(sender, new RoutedEventArgs()));
         }
 
-        private void Client_RawNoticePackageReceived(object? sender, RawNoticePackageReceivedEventArgs e)
+        private void Client_RawNoticePackageReceived(object sender, RawNoticePackageReceivedEventArgs e)
         {
             if (noticeTypeName != "*" && e.TypeName != noticeTypeName)
                 return;
@@ -91,7 +92,7 @@ namespace QpTestClient.Forms
                 PushLog(e.Content);
         }
 
-        private void BtnStopRecv_Click(object? sender, RoutedEventArgs e)
+        private void BtnStopRecv_Click(object sender, RoutedEventArgs e)
         {
             TxtFormTitle.IsEnabled = true;
             TxtNoticeTypeName.IsEnabled = true;

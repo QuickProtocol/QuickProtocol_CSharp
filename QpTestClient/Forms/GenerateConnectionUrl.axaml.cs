@@ -1,7 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
-using System;
 
 namespace QpTestClient.Forms
 {
@@ -9,6 +7,7 @@ namespace QpTestClient.Forms
     {
         private readonly ConnectionContext connectionContext;
 
+        public GenerateConnectionUrl() { }
         public GenerateConnectionUrl(ConnectionContext connectionContext)
         {
             this.connectionContext = connectionContext;
@@ -16,13 +15,13 @@ namespace QpTestClient.Forms
             Loaded += GenerateConnectionUrl_Loaded;
         }
 
-        private void GenerateConnectionUrl_Loaded(object? sender, RoutedEventArgs e)
+        private void GenerateConnectionUrl_Loaded(object sender, RoutedEventArgs e)
         {
             Title = $"生成[{connectionContext.ConnectionInfo.Name}]连接URL";
             Generate();
         }
 
-        private void Checkbox_IsCheckedChanged(object? sender, RoutedEventArgs e)
+        private void Checkbox_IsCheckedChanged(object sender, RoutedEventArgs e)
         {
             Generate();
         }
@@ -38,7 +37,7 @@ namespace QpTestClient.Forms
             ).ToString();
         }
 
-        private async void BtnCopy_Click(object? sender, RoutedEventArgs e)
+        private async void BtnCopy_Click(object sender, RoutedEventArgs e)
         {
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel?.Clipboard != null)

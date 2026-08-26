@@ -59,7 +59,7 @@ namespace QpTestClient
             }
             catch
             {
-                QpClient?.Dispose();
+                QpClient.Dispose();
                 QpClient = null;
                 throw;
             }
@@ -72,7 +72,7 @@ namespace QpTestClient
             }
             catch
             {
-                QpClient?.Dispose();
+                QpClient.Dispose();
                 QpClient = null;
                 throw;
             }

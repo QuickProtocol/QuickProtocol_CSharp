@@ -6,6 +6,7 @@ namespace QpTestClient.Controls
 {
     public partial class CommandInfoControl : UserControl
     {
+        public CommandInfoControl() { }
         public CommandInfoControl(QpCommandInfo item)
         {
             InitializeComponent();

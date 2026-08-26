@@ -20,8 +20,6 @@ namespace QpTestClient
     {
         public const string QPDFILE_FILTER = "qpd";
 
-        private TreeViewItem? selectedConnectionNode;
-
         public MainWindow()
         {
             InitializeComponent();
@@ -29,7 +27,7 @@ namespace QpTestClient
             Closing += MainWindow_Closing;
         }
 
-        private void MainWindow_Loaded(object? sender, RoutedEventArgs e)
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             var connectionInfos = QpdFileUtils.GetConnectionInfosFromQpbFileFolder();
             if (connectionInfos != null)
@@ -39,7 +37,7 @@ namespace QpTestClient
             }
         }
 
-        private async void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
+        private async void MainWindow_Closing(object sender, WindowClosingEventArgs e)
         {
             var items = tvQpInstructions.Items.Cast<TreeViewItem>().ToList();
             foreach (var item in items)
@@ -49,7 +47,7 @@ namespace QpTestClient
             }
         }
 
-        private async void BtnImportConnectionFile_Click(object? sender, RoutedEventArgs e)
+        private async void BtnImportConnectionFile_Click(object sender, RoutedEventArgs e)
         {
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
@@ -76,17 +74,17 @@ namespace QpTestClient
             }
         }
 
-        private void BtnExit_Click(object? sender, RoutedEventArgs e)
+        private void BtnExit_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void ShowContent(Control? item)
+        private void ShowContent(Control item)
         {
             ContentPresenter.Content = item;
         }
 
-        private void TvQpInstructions_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        private void TvQpInstructions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
@@ -160,7 +158,7 @@ namespace QpTestClient
             }
         }
 
-        private async void TvQpInstructions_DoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        private async void TvQpInstructions_DoubleTapped(object sender, Avalonia.Input.TappedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
@@ -184,7 +182,7 @@ namespace QpTestClient
             }
         }
 
-        private ConnectionContext? FindConnectionContext(TreeViewItem item)
+        private ConnectionContext FindConnectionContext(TreeViewItem item)
         {
             var current = item;
             while (current != null)
@@ -196,7 +194,7 @@ namespace QpTestClient
             return null;
         }
 
-        private void CmsConnection_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
+        private void CmsConnection_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
             {
@@ -309,27 +307,27 @@ namespace QpTestClient
                 DisplayInstructions(connectionNode, connectionInfo.Instructions);
         }
 
-        private async void BtnQuickAddConnection_Click(object? sender, RoutedEventArgs e)
+        private async void BtnQuickAddConnection_Click(object sender, RoutedEventArgs e)
         {
             var form = new QuickConnectForm();
-            var result = await form.ShowDialog<TestConnectionInfo?>(this);
+            var result = await form.ShowDialog<TestConnectionInfo>(this);
             if (result == null)
                 return;
             AddConnection(result);
             QpdFileUtils.SaveQpbFile(result);
         }
 
-        private async void BtnAddConnection_Click(object? sender, RoutedEventArgs e)
+        private async void BtnAddConnection_Click(object sender, RoutedEventArgs e)
         {
             var form = new ConnectForm();
-            var result = await form.ShowDialog<TestConnectionInfo?>(this);
+            var result = await form.ShowDialog<TestConnectionInfo>(this);
             if (result == null)
                 return;
             AddConnection(result);
             QpdFileUtils.SaveQpbFile(result);
         }
 
-        private void BtnDisconnectConnection_Click(object? sender, RoutedEventArgs e)
+        private void BtnDisconnectConnection_Click(object sender, RoutedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
@@ -337,7 +335,7 @@ namespace QpTestClient
                 connectionContext.Dispose();
         }
 
-        private async void BtnDelConnection_Click(object? sender, RoutedEventArgs e)
+        private async void BtnDelConnection_Click(object sender, RoutedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
@@ -382,7 +380,7 @@ namespace QpTestClient
             this.IsEnabled = true;
         }
 
-        private async void BtnConnectConnection_Click(object? sender, RoutedEventArgs e)
+        private async void BtnConnectConnection_Click(object sender, RoutedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
@@ -391,7 +389,7 @@ namespace QpTestClient
             await ConnectConnectionAsync(node, connectionContext);
         }
 
-        private void BtnRecvHeartbeat_Connection_Click(object? sender, RoutedEventArgs e)
+        private void BtnRecvHeartbeat_Connection_Click(object sender, RoutedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
@@ -401,7 +399,7 @@ namespace QpTestClient
             form.Show(this);
         }
 
-        private void BtnRecvNotice_Connection_Click(object? sender, RoutedEventArgs e)
+        private void BtnRecvNotice_Connection_Click(object sender, RoutedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
@@ -411,7 +409,7 @@ namespace QpTestClient
             form.Show(this);
         }
 
-        private void BtnTestCommand_Connection_Click(object? sender, RoutedEventArgs e)
+        private void BtnTestCommand_Connection_Click(object sender, RoutedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
@@ -421,7 +419,7 @@ namespace QpTestClient
             form.Show(this);
         }
 
-        private async void BtnEditConnection_Click(object? sender, RoutedEventArgs e)
+        private async void BtnEditConnection_Click(object sender, RoutedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
@@ -430,7 +428,7 @@ namespace QpTestClient
 
             var form = new ConnectForm();
             form.EditConnectionInfo(connectionContext.ConnectionInfo);
-            var result = await form.ShowDialog<TestConnectionInfo?>(this);
+            var result = await form.ShowDialog<TestConnectionInfo>(this);
             if (result == null)
                 return;
 
@@ -440,7 +438,7 @@ namespace QpTestClient
             QpdFileUtils.SaveQpbFile(result);
         }
 
-        private async void BtnExportConnectionFile_Click(object? sender, RoutedEventArgs e)
+        private async void BtnExportConnectionFile_Click(object sender, RoutedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
@@ -461,7 +459,7 @@ namespace QpTestClient
             await MessageBox.Show(this, "导出成功！", "提示");
         }
 
-        private async void BtnGenerateConnectionUrl_Click(object? sender, RoutedEventArgs e)
+        private async void BtnGenerateConnectionUrl_Click(object sender, RoutedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
@@ -493,21 +491,21 @@ namespace QpTestClient
             form.Show(this);
         }
 
-        private void BtnRecvNotice_Notice_Click(object? sender, RoutedEventArgs e)
+        private void BtnRecvNotice_Notice_Click(object sender, RoutedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
             OpenNoticeRecvForm(node);
         }
 
-        private void BtnTestCommand_Command_Click(object? sender, RoutedEventArgs e)
+        private void BtnTestCommand_Command_Click(object sender, RoutedEventArgs e)
         {
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
             OpenCommandTestForm(node);
         }
 
-        private async void AboutMenuItem_Click(object? sender, RoutedEventArgs e)
+        private async void AboutMenuItem_Click(object sender, RoutedEventArgs e)
         {
             var form = new AboutBox();
             await form.ShowDialog(this);

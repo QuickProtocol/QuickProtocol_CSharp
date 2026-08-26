@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using Quick.Protocol;
 using System;
 
@@ -12,6 +11,7 @@ namespace QpTestClient.Controls
         private string lastNetstatStr = string.Empty;
         private readonly DispatcherTimer timer;
 
+        public ConnectionInfoControl() { }
         public ConnectionInfoControl(ConnectionContext item)
         {
             this.item = item;
@@ -35,9 +35,9 @@ namespace QpTestClient.Controls
             timer.Start();
         }
 
-        private void Timer_Tick(object? sender, EventArgs e)
+        private void Timer_Tick(object sender, EventArgs e)
         {
-            QpChannel? channel = item.QpClient;
+            QpChannel channel = item.QpClient;
             if (!item.Connected || channel == null)
             {
                 ShowNetStat("当前未连接");
