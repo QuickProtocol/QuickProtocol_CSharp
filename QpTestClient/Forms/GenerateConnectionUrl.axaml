@@ -4,20 +4,25 @@
         Title="生成连接URL"
         Width="470" Height="440"
         WindowStartupLocation="CenterOwner"
-        CanResize="False">
-    <DockPanel Margin="15">
+        CanResize="False"
+        Background="{DynamicResource SemiColorBackground}">
+    <DockPanel Margin="20">
         <!-- 底部按钮 -->
         <Button DockPanel.Dock="Bottom" Content="复制" Width="100" Height="30"
-                HorizontalAlignment="Left" Margin="0,10,0,0" Click="BtnCopy_Click" />
+                HorizontalAlignment="Left" Margin="0,15,0,0" Click="BtnCopy_Click"
+                Theme="{DynamicResource SolidButton}" />
 
         <!-- 主内容 -->
-        <StackPanel Spacing="10">
+        <StackPanel Spacing="15">
             <CheckBox x:Name="CbIncludePassword" Content="包含密码" IsChecked="True"
                       IsCheckedChanged="Checkbox_IsCheckedChanged" />
             <CheckBox x:Name="CbIncludeOtherProperty" Content="包含其他属性"
                       IsCheckedChanged="Checkbox_IsCheckedChanged" />
-            <TextBox x:Name="TxtOutput" IsReadOnly="True" AcceptsReturn="True"
-                     TextWrapping="Wrap" />
+            <Border BorderBrush="{DynamicResource SemiColorBorder}" BorderThickness="1"
+                    CornerRadius="6" Padding="4">
+                <TextBox x:Name="TxtOutput" IsReadOnly="True" AcceptsReturn="True"
+                         TextWrapping="Wrap" />
+            </Border>
         </StackPanel>
     </DockPanel>
 </Window>

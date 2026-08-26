@@ -1,8 +1,9 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:semi="using:Semi.Avalonia"
              x:Class="QpTestClient.App"
              RequestedThemeVariant="Light">
     <Application.Styles>
-        <FluentTheme />
+        <semi:SemiTheme Locale="zh-CN" />
     </Application.Styles>
 </Application>

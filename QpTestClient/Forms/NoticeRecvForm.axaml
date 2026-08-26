@@ -3,31 +3,40 @@
         x:Class="QpTestClient.Forms.NoticeRecvForm"
         Title="通知接收"
         Width="650" Height="600"
-        WindowStartupLocation="CenterScreen">
-    <DockPanel Margin="10">
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource SemiColorBackground}">
+    <DockPanel Margin="12">
         <!-- 顶部控制区 -->
-        <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
+        <StackPanel DockPanel.Dock="Top" Spacing="10" Margin="0,0,0,12">
             <DockPanel>
-                <TextBlock Text="窗口标题:" Width="100" VerticalAlignment="Center" />
+                <TextBlock Text="窗口标题:" Width="100" VerticalAlignment="Center"
+                           Foreground="{DynamicResource SemiColorText0}" />
                 <TextBox x:Name="TxtFormTitle" TextChanged="TxtFormTitle_TextChanged" />
             </DockPanel>
             <DockPanel>
-                <TextBlock Text="通知类型:" Width="100" VerticalAlignment="Center" />
+                <TextBlock Text="通知类型:" Width="100" VerticalAlignment="Center"
+                           Foreground="{DynamicResource SemiColorText0}" />
                 <TextBox x:Name="TxtNoticeTypeName" />
             </DockPanel>
             <DockPanel>
-                <TextBlock Text="显示行数:" Width="100" VerticalAlignment="Center" />
+                <TextBlock Text="显示行数:" Width="100" VerticalAlignment="Center"
+                           Foreground="{DynamicResource SemiColorText0}" />
                 <NumericUpDown x:Name="NudMaxLines" Value="100" Minimum="1" Maximum="1000000"
                               Width="150" HorizontalAlignment="Left" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-                    <Button Content="开始接收" Width="100" Height="30" x:Name="BtnStartRecv" Click="BtnStartRecv_Click" />
-                    <Button Content="停止接收" Width="100" Height="30" x:Name="BtnStopRecv" Click="BtnStopRecv_Click" IsEnabled="False" />
+                    <Button Content="开始接收" Width="100" Height="30" x:Name="BtnStartRecv" Click="BtnStartRecv_Click"
+                            Theme="{DynamicResource SolidButton}" />
+                    <Button Content="停止接收" Width="100" Height="30" x:Name="BtnStopRecv" Click="BtnStopRecv_Click"
+                            IsEnabled="False" />
                 </StackPanel>
             </DockPanel>
         </StackPanel>
 
         <!-- 日志区 -->
-        <TextBox x:Name="TxtLog" IsReadOnly="True" AcceptsReturn="True"
-                 TextWrapping="Wrap" />
+        <Border BorderBrush="{DynamicResource SemiColorBorder}" BorderThickness="1"
+                CornerRadius="6" Padding="4">
+            <TextBox x:Name="TxtLog" IsReadOnly="True" AcceptsReturn="True"
+                     TextWrapping="Wrap" />
+        </Border>
     </DockPanel>
 </Window>

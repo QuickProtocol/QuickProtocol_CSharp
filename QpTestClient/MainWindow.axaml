@@ -1,10 +1,12 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:QpTestClient.Controls"
+        xmlns:ursa="using:Irihi.Ursa.Controls"
         x:Class="QpTestClient.MainWindow"
         Title="[QuickProtocol]测试客户端"
         Width="1300" Height="850"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource SemiColorBackground}">
     <DockPanel>
         <!-- 菜单栏 -->
         <Menu DockPanel.Dock="Top">
@@ -23,34 +25,41 @@
         <!-- 主内容区 -->
         <Grid ColumnDefinitions="*,6,*">
             <!-- 左侧树形视图 -->
-            <TreeView x:Name="tvQpInstructions" Grid.Column="0"
-                      DoubleTapped="TvQpInstructions_DoubleTapped"
-                      SelectionChanged="TvQpInstructions_SelectionChanged">
-                <TreeView.ContextMenu>
-                    <ContextMenu x:Name="cmsConnection" Opening="CmsConnection_Opening">
-                        <MenuItem Header="断开(_D)" x:Name="btnDisconnectConnection" Click="BtnDisconnectConnection_Click" IsVisible="False" />
-                        <MenuItem Header="连接" x:Name="btnConnectConnection" Click="BtnConnectConnection_Click" />
-                        <Separator x:Name="separatorConnection" IsVisible="False" />
-                        <MenuItem Header="接收心跳(_H).." x:Name="btnRecvHeartbeat_Connection" Click="BtnRecvHeartbeat_Connection_Click" IsVisible="False" />
-                        <MenuItem Header="接收通知(_R).." x:Name="btnRecvNotice_Connection" Click="BtnRecvNotice_Connection_Click" IsVisible="False" />
-                        <MenuItem Header="测试命令(_T).." x:Name="btnTestCommand_Connection" Click="BtnTestCommand_Connection_Click" IsVisible="False" />
-                        <Separator x:Name="separatorEdit" />
-                        <MenuItem Header="编辑(_E).." x:Name="btnEditConnection" Click="BtnEditConnection_Click" />
-                        <MenuItem Header="删除(_D)" x:Name="btnDelConnection" Click="BtnDelConnection_Click" />
-                        <MenuItem Header="导出(_X).." x:Name="btnExportConnectionFile" Click="BtnExportConnectionFile_Click" />
-                        <MenuItem Header="生成URL(_U).." x:Name="btnGenerateConnectionUrl" Click="BtnGenerateConnectionUrl_Click" />
-                    </ContextMenu>
-                </TreeView.ContextMenu>
-            </TreeView>
+            <Border Grid.Column="0" Background="{DynamicResource SemiColorBackground0}"
+                    BorderBrush="{DynamicResource SemiColorBorder}" BorderThickness="0,0,1,0">
+                <TreeView x:Name="tvQpInstructions"
+                          DoubleTapped="TvQpInstructions_DoubleTapped"
+                          SelectionChanged="TvQpInstructions_SelectionChanged">
+                    <TreeView.ContextMenu>
+                        <ContextMenu x:Name="cmsConnection" Opening="CmsConnection_Opening">
+                            <MenuItem Header="断开(_D)" x:Name="btnDisconnectConnection" Click="BtnDisconnectConnection_Click" IsVisible="False" />
+                            <MenuItem Header="连接" x:Name="btnConnectConnection" Click="BtnConnectConnection_Click" />
+                            <Separator x:Name="separatorConnection" IsVisible="False" />
+                            <MenuItem Header="接收心跳(_H).." x:Name="btnRecvHeartbeat_Connection" Click="BtnRecvHeartbeat_Connection_Click" IsVisible="False" />
+                            <MenuItem Header="接收通知(_R).." x:Name="btnRecvNotice_Connection" Click="BtnRecvNotice_Connection_Click" IsVisible="False" />
+                            <MenuItem Header="测试命令(_T).." x:Name="btnTestCommand_Connection" Click="BtnTestCommand_Connection_Click" IsVisible="False" />
+                            <Separator x:Name="separatorEdit" />
+                            <MenuItem Header="编辑(_E).." x:Name="btnEditConnection" Click="BtnEditConnection_Click" />
+                            <MenuItem Header="删除(_D)" x:Name="btnDelConnection" Click="BtnDelConnection_Click" />
+                            <MenuItem Header="导出(_X).." x:Name="btnExportConnectionFile" Click="BtnExportConnectionFile_Click" />
+                            <MenuItem Header="生成URL(_U).." x:Name="btnGenerateConnectionUrl" Click="BtnGenerateConnectionUrl_Click" />
+                        </ContextMenu>
+                    </TreeView.ContextMenu>
+                </TreeView>
+            </Border>
 
-            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" />
+            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch"
+                          Background="{DynamicResource SemiColorBorder}" />
 
             <!-- 右侧信息面板 -->
-            <DockPanel Grid.Column="2">
-                <TextBlock x:Name="GbNodeInfoHeader" DockPanel.Dock="Top" FontWeight="Bold"
-                           FontSize="14" Margin="8,4,8,4" Text="请选择节点" />
-                <ContentControl x:Name="ContentPresenter" />
-            </DockPanel>
+            <Border Grid.Column="2" Background="{DynamicResource SemiColorBackground}">
+                <DockPanel Margin="8">
+                    <TextBlock x:Name="GbNodeInfoHeader" DockPanel.Dock="Top" FontWeight="Bold"
+                               FontSize="14" Margin="0,0,0,8" Text="请选择节点"
+                               Foreground="{DynamicResource SemiColorText0}" />
+                    <ContentControl x:Name="ContentPresenter" />
+                </DockPanel>
+            </Border>
         </Grid>
     </DockPanel>
 </Window>

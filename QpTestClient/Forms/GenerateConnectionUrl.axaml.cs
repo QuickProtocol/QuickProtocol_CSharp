@@ -42,7 +42,7 @@ namespace QpTestClient.Forms
             var topLevel = TopLevel.GetTopLevel(this);
             if (topLevel?.Clipboard != null)
             {
-                await topLevel.Clipboard.SetTextAsync(TxtOutput.Text);
+                await Avalonia.Input.Platform.ClipboardExtensions.SetTextAsync(topLevel.Clipboard, TxtOutput.Text ?? string.Empty);
                 await MessageBox.Show(this, "已复制到剪贴板！", "提示");
             }
         }

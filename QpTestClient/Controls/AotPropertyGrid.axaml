@@ -8,10 +8,14 @@
         </ScrollViewer>
 
         <!-- 属性描述区 -->
-        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="0,1,0,0" Padding="5">
-            <StackPanel Spacing="2">
-                <TextBlock x:Name="LblPropertyName" FontWeight="Bold" FontSize="13" />
-                <TextBlock x:Name="LblPropertyDescription" TextWrapping="Wrap" />
+        <Border Grid.Row="1" BorderBrush="{DynamicResource SemiColorBorder}"
+                BorderThickness="0,1,0,0" Padding="8"
+                Background="{DynamicResource SemiColorBackground0}">
+            <StackPanel Spacing="4">
+                <TextBlock x:Name="LblPropertyName" FontWeight="Bold" FontSize="13"
+                           Foreground="{DynamicResource SemiColorText0}" />
+                <TextBlock x:Name="LblPropertyDescription" TextWrapping="Wrap"
+                           Foreground="{DynamicResource SemiColorText1}" />
             </StackPanel>
         </Border>
     </Grid>

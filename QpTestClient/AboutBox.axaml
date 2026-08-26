@@ -4,22 +4,27 @@
         Title="关于"
         Width="700" Height="500"
         WindowStartupLocation="CenterOwner"
-        CanResize="False">
-    <Grid ColumnDefinitions="Auto,*" Margin="20">
+        CanResize="False"
+        Background="{DynamicResource SemiColorBackground}">
+    <Grid ColumnDefinitions="Auto,*" Margin="24">
         <!-- Logo -->
         <Image x:Name="LogoImage" Grid.Column="0" Width="200" Stretch="Uniform"
-               Margin="0,0,20,0" VerticalAlignment="Top" />
+               Margin="0,0,24,0" VerticalAlignment="Top" />
 
         <!-- 信息面板 -->
-        <StackPanel Grid.Column="1" Spacing="10" VerticalAlignment="Top">
-            <TextBlock x:Name="LabelProductName" FontWeight="Bold" FontSize="16" />
-            <TextBlock x:Name="LabelVersion" />
-            <TextBlock x:Name="LabelCopyright" />
-            <TextBlock x:Name="LabelCompanyName" />
+        <StackPanel Grid.Column="1" Spacing="12" VerticalAlignment="Top">
+            <TextBlock x:Name="LabelProductName" FontWeight="Bold" FontSize="18"
+                       Foreground="{DynamicResource SemiColorText0}" />
+            <TextBlock x:Name="LabelVersion"
+                       Foreground="{DynamicResource SemiColorText1}" />
+            <TextBlock x:Name="LabelCopyright"
+                       Foreground="{DynamicResource SemiColorText1}" />
+            <TextBlock x:Name="LabelCompanyName"
+                       Foreground="{DynamicResource SemiColorText1}" />
             <TextBox x:Name="TextBoxDescription" IsReadOnly="True" AcceptsReturn="True"
                      Height="200" TextWrapping="Wrap" />
             <Button Content="确定(_O)" HorizontalAlignment="Right" Width="100" Height="30"
-                    Click="OkButton_Click" />
+                    Click="OkButton_Click" Theme="{DynamicResource SolidButton}" />
         </StackPanel>
     </Grid>
 </Window>

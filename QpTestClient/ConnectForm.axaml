@@ -4,32 +4,38 @@
         Title="添加连接"
         Width="820" Height="820"
         WindowStartupLocation="CenterOwner"
-        CanResize="False">
-    <DockPanel Margin="15">
+        CanResize="False"
+        Background="{DynamicResource SemiColorBackground}">
+    <DockPanel Margin="20">
         <!-- 底部按钮 -->
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
-                    HorizontalAlignment="Center" Spacing="15" Margin="0,15,0,0">
-            <Button Content="确定(_O)" Width="120" Height="35" Click="BtnOk_Click" />
+                    HorizontalAlignment="Center" Spacing="15" Margin="0,20,0,0">
+            <Button Content="确定(_O)" Width="120" Height="35" Click="BtnOk_Click"
+                    Theme="{DynamicResource SolidButton}" />
             <Button Content="取消(_C)" Width="120" Height="35" Click="BtnCancel_Click" />
         </StackPanel>
 
         <!-- 主内容 -->
         <ScrollViewer>
-            <StackPanel Spacing="10">
+            <StackPanel Spacing="15">
                 <!-- 名称 -->
                 <DockPanel>
-                    <TextBlock Text="名称:" Width="120" VerticalAlignment="Center" />
+                    <TextBlock Text="名称:" Width="120" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SemiColorText0}" />
                     <TextBox x:Name="TxtName" />
                 </DockPanel>
 
                 <!-- 连接方式 -->
                 <DockPanel>
-                    <TextBlock Text="连接方式:" Width="120" VerticalAlignment="Center" />
+                    <TextBlock Text="连接方式:" Width="120" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SemiColorText0}" />
                     <ComboBox x:Name="CbConnectType" SelectionChanged="CbConnectType_SelectionChanged" />
                 </DockPanel>
 
                 <!-- 属性面板 -->
-                <Border x:Name="PnlClientOptions" MinHeight="600" />
+                <Border x:Name="PnlClientOptions" MinHeight="600"
+                        BorderBrush="{DynamicResource SemiColorBorder}"
+                        BorderThickness="1" CornerRadius="6" Padding="8" />
             </StackPanel>
         </ScrollViewer>
     </DockPanel>

@@ -4,40 +4,46 @@
         Title="快速添加连接"
         Width="820" Height="540"
         WindowStartupLocation="CenterOwner"
-        CanResize="False">
-    <DockPanel Margin="15">
+        CanResize="False"
+        Background="{DynamicResource SemiColorBackground}">
+    <DockPanel Margin="20">
         <!-- 底部按钮 -->
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
-                    HorizontalAlignment="Center" Spacing="15" Margin="0,15,0,0">
-            <Button Content="确定(_O)" Width="120" Height="35" Click="BtnOk_Click" />
+                    HorizontalAlignment="Center" Spacing="15" Margin="0,20,0,0">
+            <Button Content="确定(_O)" Width="120" Height="35" Click="BtnOk_Click"
+                    Theme="{DynamicResource SolidButton}" />
             <Button Content="取消(_C)" Width="120" Height="35" Click="BtnCancel_Click" />
         </StackPanel>
 
         <!-- 主内容 -->
-        <StackPanel Spacing="10">
+        <StackPanel Spacing="15">
             <!-- 名称 -->
             <DockPanel>
-                <TextBlock Text="名称:" Width="120" VerticalAlignment="Center" />
+                <TextBlock Text="名称:" Width="120" VerticalAlignment="Center"
+                           Foreground="{DynamicResource SemiColorText0}" />
                 <TextBox x:Name="TxtName" />
             </DockPanel>
 
             <!-- URL -->
             <DockPanel>
-                <TextBlock Text="URL:" Width="120" VerticalAlignment="Center" />
+                <TextBlock Text="URL:" Width="120" VerticalAlignment="Center"
+                           Foreground="{DynamicResource SemiColorText0}" />
                 <TextBox x:Name="TxtUrl" TextChanged="TxtUrl_TextChanged" />
             </DockPanel>
 
             <!-- 示例 -->
             <DockPanel>
-                <TextBlock Text="示例:" Width="120" VerticalAlignment="Center" />
+                <TextBlock Text="示例:" Width="120" VerticalAlignment="Top"
+                           Foreground="{DynamicResource SemiColorText0}" Margin="0,8,0,0" />
                 <TextBox IsReadOnly="True" AcceptsReturn="True" Height="120"
                          Text="TCP: qp.tcp://127.0.0.1:3000&#x0a;WebSocket: qp.ws://127.0.0.1:3000&#x0a;命名管道: qp.pipe://./Quick.Protocol&#x0a;串口: qp.serial://./COM1" />
             </DockPanel>
 
             <!-- 密码面板 -->
-            <StackPanel x:Name="PnlPassword" Spacing="10">
+            <StackPanel x:Name="PnlPassword" Spacing="15">
                 <DockPanel>
-                    <TextBlock Text="密码:" Width="120" VerticalAlignment="Center" />
+                    <TextBlock Text="密码:" Width="120" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SemiColorText0}" />
                     <TextBox x:Name="TxtPassword" PasswordChar="●" />
                 </DockPanel>
             </StackPanel>
