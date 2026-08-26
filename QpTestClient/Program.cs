@@ -1,15 +1,12 @@
+using Avalonia;
 using System;
-using System.Windows.Forms;
 
 namespace QpTestClient
 {
     static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             Quick.Protocol.Pipeline.QpPipelineClientOptions.RegisterUriSchema();
             Quick.Protocol.Tcp.QpTcpClientOptions.RegisterUriSchema();
@@ -19,10 +16,14 @@ namespace QpTestClient
 
             QpClientTypeManager.Instance.Init();
 
-            Application.SetHighDpiMode(HighDpiMode.SystemAware);
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
         }
+
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .LogToTrace();
     }
 }

@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="QpTestClient.Controls.ConnectionInfoControl">
+    <TabControl>
+        <TabItem Header="基本">
+            <Border x:Name="TpBasic" />
+        </TabItem>
+        <TabItem Header="网络统计">
+            <TextBox x:Name="TxtNetstat" IsReadOnly="True" AcceptsReturn="True"
+                     TextWrapping="Wrap" />
+        </TabItem>
+    </TabControl>
+</UserControl>

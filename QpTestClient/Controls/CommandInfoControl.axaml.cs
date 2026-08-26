@@ -1,18 +1,16 @@
-﻿using Quick.Protocol;
+using Avalonia.Controls;
+using Quick.Protocol;
 using System.Text;
-using System.Windows.Forms;
 
 namespace QpTestClient.Controls
 {
     public partial class CommandInfoControl : UserControl
     {
-        private QpCommandInfo item;
         public CommandInfoControl(QpCommandInfo item)
         {
-            this.item = item;
             InitializeComponent();
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.AppendLine($"命令名称：{item.Name}");
             sb.AppendLine($"请求类名称：{item.RequestTypeName}");
             sb.AppendLine($"响应类名称：{item.ResponseTypeName}");
@@ -22,9 +20,9 @@ namespace QpTestClient.Controls
                 sb.AppendLine("---------------------");
                 sb.AppendLine(item.Description);
             }
-            txtBasic.Text = sb.ToString();
-            txtRequestSchemaSample.Text = item.RequestTypeSchemaSample;
-            txtResponseSchemaSample.Text = item.ResponseTypeSchemaSample;
+            TxtBasic.Text = sb.ToString();
+            TxtRequestSchemaSample.Text = item.RequestTypeSchemaSample;
+            TxtResponseSchemaSample.Text = item.ResponseTypeSchemaSample;
         }
     }
 }

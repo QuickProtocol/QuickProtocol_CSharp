@@ -1,11 +1,6 @@
-﻿using Quick.Protocol;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+using Avalonia.Controls;
+using Quick.Protocol;
 using System.Text;
-using System.Windows.Forms;
 
 namespace QpTestClient.Controls
 {
@@ -15,17 +10,17 @@ namespace QpTestClient.Controls
         {
             InitializeComponent();
 
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.AppendLine($"通知名称：{item.Name}");
-            sb.AppendLine($"类名称：{item.NoticeTypeName}");            
+            sb.AppendLine($"类名称：{item.NoticeTypeName}");
             if (!string.IsNullOrEmpty(item.Description))
             {
                 sb.AppendLine("描述:");
                 sb.AppendLine("---------------------");
                 sb.AppendLine(item.Description);
             }
-            txtBasic.Text = sb.ToString();
-            txtSchemaSample.Text = item.NoticeTypeSchemaSample;
+            TxtBasic.Text = sb.ToString();
+            TxtSchemaSample.Text = item.NoticeTypeSchemaSample;
         }
     }
 }

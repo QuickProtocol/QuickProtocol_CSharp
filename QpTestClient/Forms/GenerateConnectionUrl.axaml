@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="QpTestClient.Forms.GenerateConnectionUrl"
+        Title="生成连接URL"
+        Width="470" Height="440"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <DockPanel Margin="15">
+        <!-- 底部按钮 -->
+        <Button DockPanel.Dock="Bottom" Content="复制" Width="100" Height="30"
+                HorizontalAlignment="Left" Margin="0,10,0,0" Click="BtnCopy_Click" />
+
+        <!-- 主内容 -->
+        <StackPanel Spacing="10">
+            <CheckBox x:Name="CbIncludePassword" Content="包含密码" IsChecked="True"
+                      IsCheckedChanged="Checkbox_IsCheckedChanged" />
+            <CheckBox x:Name="CbIncludeOtherProperty" Content="包含其他属性"
+                      IsCheckedChanged="Checkbox_IsCheckedChanged" />
+            <TextBox x:Name="TxtOutput" IsReadOnly="True" AcceptsReturn="True"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+    </DockPanel>
+</Window>

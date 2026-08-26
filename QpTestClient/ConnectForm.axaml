@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="QpTestClient.ConnectForm"
+        Title="添加连接"
+        Width="820" Height="820"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <DockPanel Margin="15">
+        <!-- 底部按钮 -->
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                    HorizontalAlignment="Center" Spacing="15" Margin="0,15,0,0">
+            <Button Content="确定(_O)" Width="120" Height="35" Click="BtnOk_Click" />
+            <Button Content="取消(_C)" Width="120" Height="35" Click="BtnCancel_Click" />
+        </StackPanel>
+
+        <!-- 主内容 -->
+        <ScrollViewer>
+            <StackPanel Spacing="10">
+                <!-- 名称 -->
+                <DockPanel>
+                    <TextBlock Text="名称:" Width="120" VerticalAlignment="Center" />
+                    <TextBox x:Name="TxtName" />
+                </DockPanel>
+
+                <!-- 连接方式 -->
+                <DockPanel>
+                    <TextBlock Text="连接方式:" Width="120" VerticalAlignment="Center" />
+                    <ComboBox x:Name="CbConnectType" SelectionChanged="CbConnectType_SelectionChanged" />
+                </DockPanel>
+
+                <!-- 属性面板 -->
+                <Border x:Name="PnlClientOptions" MinHeight="600" />
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

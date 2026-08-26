@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="QpTestClient.Controls.AotPropertyGrid">
+    <Grid RowDefinitions="*,Auto">
+        <!-- 属性列表区 -->
+        <ScrollViewer Grid.Row="0">
+            <StackPanel x:Name="PnlProperty" Spacing="0" />
+        </ScrollViewer>
+
+        <!-- 属性描述区 -->
+        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="0,1,0,0" Padding="5">
+            <StackPanel Spacing="2">
+                <TextBlock x:Name="LblPropertyName" FontWeight="Bold" FontSize="13" />
+                <TextBlock x:Name="LblPropertyDescription" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

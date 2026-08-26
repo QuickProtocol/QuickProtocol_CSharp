@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="QpTestClient.Controls.CommandInfoControl">
+    <TabControl>
+        <TabItem Header="基本">
+            <TextBox x:Name="TxtBasic" IsReadOnly="True" AcceptsReturn="True"
+                     TextWrapping="Wrap" />
+        </TabItem>
+        <TabItem Header="请求示例">
+            <TextBox x:Name="TxtRequestSchemaSample" IsReadOnly="True" AcceptsReturn="True"
+                     TextWrapping="Wrap" />
+        </TabItem>
+        <TabItem Header="响应示例">
+            <TextBox x:Name="TxtResponseSchemaSample" IsReadOnly="True" AcceptsReturn="True"
+                     TextWrapping="Wrap" />
+        </TabItem>
+    </TabControl>
+</UserControl>

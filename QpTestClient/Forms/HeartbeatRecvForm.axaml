@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="QpTestClient.Forms.HeartbeatRecvForm"
+        Title="心跳接收"
+        Width="650" Height="600"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel Margin="10">
+        <!-- 顶部控制区 -->
+        <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
+            <DockPanel>
+                <TextBlock Text="窗口标题:" Width="100" VerticalAlignment="Center" />
+                <TextBox x:Name="TxtFormTitle" TextChanged="TxtFormTitle_TextChanged" />
+            </DockPanel>
+            <DockPanel>
+                <TextBlock Text="显示行数:" Width="100" VerticalAlignment="Center" />
+                <NumericUpDown x:Name="NudMaxLines" Value="100" Minimum="1" Maximum="1000000"
+                              Width="150" HorizontalAlignment="Left" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                    <Button Content="开始接收" Width="100" Height="30" x:Name="BtnStartRecv" Click="BtnStartRecv_Click" />
+                    <Button Content="停止接收" Width="100" Height="30" x:Name="BtnStopRecv" Click="BtnStopRecv_Click" IsEnabled="False" />
+                </StackPanel>
+            </DockPanel>
+        </StackPanel>
+
+        <!-- 日志区 -->
+        <TextBox x:Name="TxtLog" IsReadOnly="True" AcceptsReturn="True"
+                 TextWrapping="Wrap" />
+    </DockPanel>
+</Window>
