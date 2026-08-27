@@ -60,7 +60,17 @@ jobs:
           user: ${{ secrets.NUGET_USER }}
 
       - name: Push to nuget.org
-        run: dotnet nuget push "./artifacts/*.nupkg" \
-          --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
-          --source https://api.nuget.org/v3/index.json \
-          --skip-duplicate
+        run: |
+          shopt -s nullglob
+          pkgs=( ./artifacts/*.nupkg )
+          if [ ${#pkgs[@]} -eq 0 ]; then
+            echo "::error::No .nupkg found in ./artifacts, aborting."
+            exit 1
+          fi
+          for pkg in "${pkgs[@]}"; do
+            echo "Pushing $pkg"
+            dotnet nuget push "$pkg" \
+              --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          done
