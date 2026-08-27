@@ -29,23 +29,8 @@
                     BorderBrush="{DynamicResource SemiColorBorder}" BorderThickness="0,0,1,0">
                 <TreeView x:Name="tvQpInstructions"
                           DoubleTapped="TvQpInstructions_DoubleTapped"
-                          SelectionChanged="TvQpInstructions_SelectionChanged">
-                    <TreeView.ContextMenu>
-                        <ContextMenu x:Name="cmsConnection" Opening="CmsConnection_Opening">
-                            <MenuItem Header="断开(_D)" x:Name="btnDisconnectConnection" Click="BtnDisconnectConnection_Click" IsVisible="False" />
-                            <MenuItem Header="连接" x:Name="btnConnectConnection" Click="BtnConnectConnection_Click" />
-                            <Separator x:Name="separatorConnection" IsVisible="False" />
-                            <MenuItem Header="接收心跳(_H).." x:Name="btnRecvHeartbeat_Connection" Click="BtnRecvHeartbeat_Connection_Click" IsVisible="False" />
-                            <MenuItem Header="接收通知(_R).." x:Name="btnRecvNotice_Connection" Click="BtnRecvNotice_Connection_Click" IsVisible="False" />
-                            <MenuItem Header="测试命令(_T).." x:Name="btnTestCommand_Connection" Click="BtnTestCommand_Connection_Click" IsVisible="False" />
-                            <Separator x:Name="separatorEdit" />
-                            <MenuItem Header="编辑(_E).." x:Name="btnEditConnection" Click="BtnEditConnection_Click" />
-                            <MenuItem Header="删除(_D)" x:Name="btnDelConnection" Click="BtnDelConnection_Click" />
-                            <MenuItem Header="导出(_X).." x:Name="btnExportConnectionFile" Click="BtnExportConnectionFile_Click" />
-                            <MenuItem Header="生成URL(_U).." x:Name="btnGenerateConnectionUrl" Click="BtnGenerateConnectionUrl_Click" />
-                        </ContextMenu>
-                    </TreeView.ContextMenu>
-                </TreeView>
+                          SelectionChanged="TvQpInstructions_SelectionChanged" />
+
             </Border>
 
             <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch"

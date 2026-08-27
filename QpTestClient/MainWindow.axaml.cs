@@ -20,6 +20,22 @@ namespace QpTestClient
     {
         public const string QPDFILE_FILTER = "qpd";
 
+        private ContextMenu _cmsConnection;
+        private ContextMenu _cmsNotice;
+        private ContextMenu _cmsCommand;
+
+        // 连接菜单项引用
+        private MenuItem _btnDisconnectConnection;
+        private MenuItem _btnConnectConnection;
+        private Separator _separatorConnection;
+        private MenuItem _btnRecvHeartbeat_Connection;
+        private MenuItem _btnRecvNotice_Connection;
+        private MenuItem _btnTestCommand_Connection;
+        private MenuItem _btnEditConnection;
+        private MenuItem _btnDelConnection;
+        private MenuItem _btnExportConnectionFile;
+        private MenuItem _btnGenerateConnectionUrl;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -29,6 +45,68 @@ namespace QpTestClient
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            // 创建连接节点右键菜单
+            _btnDisconnectConnection = new MenuItem { Header = "断开(_D)", IsVisible = false };
+            _btnDisconnectConnection.Click += BtnDisconnectConnection_Click;
+
+            _btnConnectConnection = new MenuItem { Header = "连接" };
+            _btnConnectConnection.Click += BtnConnectConnection_Click;
+
+            _separatorConnection = new Separator { IsVisible = false };
+
+            _btnRecvHeartbeat_Connection = new MenuItem { Header = "接收心跳(_H)..", IsVisible = false };
+            _btnRecvHeartbeat_Connection.Click += BtnRecvHeartbeat_Connection_Click;
+
+            _btnRecvNotice_Connection = new MenuItem { Header = "接收通知(_R)..", IsVisible = false };
+            _btnRecvNotice_Connection.Click += BtnRecvNotice_Connection_Click;
+
+            _btnTestCommand_Connection = new MenuItem { Header = "测试命令(_T)..", IsVisible = false };
+            _btnTestCommand_Connection.Click += BtnTestCommand_Connection_Click;
+
+            var separatorEdit = new Separator();
+
+            _btnEditConnection = new MenuItem { Header = "编辑(_E).." };
+            _btnEditConnection.Click += BtnEditConnection_Click;
+
+            _btnDelConnection = new MenuItem { Header = "删除(_D)" };
+            _btnDelConnection.Click += BtnDelConnection_Click;
+
+            _btnExportConnectionFile = new MenuItem { Header = "导出(_X).." };
+            _btnExportConnectionFile.Click += BtnExportConnectionFile_Click;
+
+            _btnGenerateConnectionUrl = new MenuItem { Header = "生成URL(_U).." };
+            _btnGenerateConnectionUrl.Click += BtnGenerateConnectionUrl_Click;
+
+            _cmsConnection = new ContextMenu
+            {
+                Items =
+                {
+                    _btnDisconnectConnection,
+                    _btnConnectConnection,
+                    _separatorConnection,
+                    _btnRecvHeartbeat_Connection,
+                    _btnRecvNotice_Connection,
+                    _btnTestCommand_Connection,
+                    separatorEdit,
+                    _btnEditConnection,
+                    _btnDelConnection,
+                    _btnExportConnectionFile,
+                    _btnGenerateConnectionUrl
+                }
+            };
+            _cmsConnection.Opening += CmsConnection_Opening;
+
+            // 创建通知节点右键菜单
+            var btnRecvNotice = new MenuItem { Header = "接收通知(_R).." };
+            btnRecvNotice.Click += BtnRecvNotice_Notice_Click;
+            _cmsNotice = new ContextMenu { Items = { btnRecvNotice } };
+
+            // 创建命令节点右键菜单
+            var btnTestCommand = new MenuItem { Header = "测试(_T).." };
+            btnTestCommand.Click += BtnTestCommand_Command_Click;
+            _cmsCommand = new ContextMenu { Items = { btnTestCommand } };
+
+            // 加载连接信息
             var connectionInfos = QpdFileUtils.GetConnectionInfosFromQpbFileFolder();
             if (connectionInfos != null)
             {
@@ -202,8 +280,8 @@ namespace QpTestClient
                 return;
             }
 
-            var connectionContext = FindConnectionContext(node);
-            if (connectionContext == null)
+            // 只在连接节点上显示连接菜单
+            if (node.Tag is not ConnectionContext connectionContext)
             {
                 e.Cancel = true;
                 return;
@@ -216,29 +294,29 @@ namespace QpTestClient
         {
             if (connectionContext.Connected)
             {
-                btnConnectConnection.IsVisible = false;
-                btnDisconnectConnection.IsVisible = true;
-                separatorConnection.IsVisible = true;
-                btnRecvHeartbeat_Connection.IsVisible = true;
-                btnRecvNotice_Connection.IsVisible = true;
-                btnTestCommand_Connection.IsVisible = true;
-                btnEditConnection.IsVisible = false;
-                btnDelConnection.IsVisible = false;
-                btnExportConnectionFile.IsVisible = false;
-                btnGenerateConnectionUrl.IsVisible = false;
+                _btnConnectConnection.IsVisible = false;
+                _btnDisconnectConnection.IsVisible = true;
+                _separatorConnection.IsVisible = true;
+                _btnRecvHeartbeat_Connection.IsVisible = true;
+                _btnRecvNotice_Connection.IsVisible = true;
+                _btnTestCommand_Connection.IsVisible = true;
+                _btnEditConnection.IsVisible = false;
+                _btnDelConnection.IsVisible = false;
+                _btnExportConnectionFile.IsVisible = false;
+                _btnGenerateConnectionUrl.IsVisible = false;
             }
             else
             {
-                btnConnectConnection.IsVisible = true;
-                btnDisconnectConnection.IsVisible = false;
-                separatorConnection.IsVisible = false;
-                btnRecvHeartbeat_Connection.IsVisible = false;
-                btnRecvNotice_Connection.IsVisible = false;
-                btnTestCommand_Connection.IsVisible = false;
-                btnEditConnection.IsVisible = true;
-                btnDelConnection.IsVisible = true;
-                btnExportConnectionFile.IsVisible = true;
-                btnGenerateConnectionUrl.IsVisible = true;
+                _btnConnectConnection.IsVisible = true;
+                _btnDisconnectConnection.IsVisible = false;
+                _separatorConnection.IsVisible = false;
+                _btnRecvHeartbeat_Connection.IsVisible = false;
+                _btnRecvNotice_Connection.IsVisible = false;
+                _btnTestCommand_Connection.IsVisible = false;
+                _btnEditConnection.IsVisible = true;
+                _btnDelConnection.IsVisible = true;
+                _btnExportConnectionFile.IsVisible = true;
+                _btnGenerateConnectionUrl.IsVisible = true;
             }
         }
 
@@ -301,7 +379,8 @@ namespace QpTestClient
                         var noticeNode = new TreeViewItem
                         {
                             Header = CreateTreeItemHeader(ICON_NOTICE_TYPE, noticeInfo.Name),
-                            Tag = noticeInfo
+                            Tag = noticeInfo,
+                            ContextMenu = _cmsNotice
                         };
                         noticesNode.Items.Add(noticeNode);
                     }
@@ -319,7 +398,8 @@ namespace QpTestClient
                         var commandNode = new TreeViewItem
                         {
                             Header = CreateTreeItemHeader(ICON_COMMAND_TYPE, commandInfo.Name),
-                            Tag = commandInfo
+                            Tag = commandInfo,
+                            ContextMenu = _cmsCommand
                         };
                         commandsNode.Items.Add(commandNode);
                     }
@@ -334,7 +414,8 @@ namespace QpTestClient
             var connectionNode = new TreeViewItem
             {
                 Header = CreateTreeItemHeader(ICON_DISCONNECTED, connectionInfo.Name),
-                Tag = new ConnectionContext(connectionInfo)
+                Tag = new ConnectionContext(connectionInfo),
+                ContextMenu = _cmsConnection
             };
             tvQpInstructions.Items.Add(connectionNode);
             if (connectionInfo.Instructions != null)
