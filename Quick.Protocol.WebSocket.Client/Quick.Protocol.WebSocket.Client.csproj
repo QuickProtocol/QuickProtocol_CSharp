@@ -10,11 +10,16 @@
 		<Product>Quick.Protocol</Product>
 		<Description>WebSocket client support for Quick.Protocol</Description>
 		<PackageIcon>logo.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>QuickProtocol</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
 	  <None Include="..\Resource\logo.png">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	  <None Include="README.md">
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
 	  </None>

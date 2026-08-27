@@ -11,6 +11,7 @@
 		<Company />
 		<Description>A simple protocol for TCP,Pipeline,SerialPort,WebSocket.</Description>
 		<PackageIcon>logo.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>QuickProtocol</PackageTags>
 		<IsAotCompatible>true</IsAotCompatible>
 		<IncludeSymbols>true</IncludeSymbols>
@@ -19,6 +20,10 @@
 
 	<ItemGroup>
 		<None Include="..\Resource\logo.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="README.md">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
