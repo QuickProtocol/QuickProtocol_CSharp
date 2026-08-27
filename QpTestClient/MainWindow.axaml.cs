@@ -528,7 +528,7 @@ namespace QpTestClient
             if (node.Tag is not ConnectionContext connectionContext)
                 return;
             var form = new HeartbeatRecvForm(connectionContext);
-            form.Show(this);
+            form.Show();
         }
 
         private void BtnRecvNotice_Connection_Click(object sender, RoutedEventArgs e)
@@ -538,7 +538,7 @@ namespace QpTestClient
             if (node.Tag is not ConnectionContext connectionContext)
                 return;
             var form = new NoticeRecvForm(connectionContext);
-            form.Show(this);
+            form.Show();
         }
 
         private void BtnTestCommand_Connection_Click(object sender, RoutedEventArgs e)
@@ -548,7 +548,7 @@ namespace QpTestClient
             if (node.Tag is not ConnectionContext connectionContext)
                 return;
             var form = new CommandTestForm(connectionContext);
-            form.Show(this);
+            form.Show();
         }
 
         private async void BtnEditConnection_Click(object sender, RoutedEventArgs e)

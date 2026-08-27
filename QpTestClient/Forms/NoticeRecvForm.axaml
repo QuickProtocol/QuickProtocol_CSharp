@@ -35,7 +35,8 @@
         <!-- 日志区 -->
         <Border BorderBrush="{DynamicResource SemiColorBorder}" BorderThickness="1"
                 CornerRadius="6" Padding="4">
-            <TextBox x:Name="TxtLog" IsReadOnly="True" AcceptsReturn="True"
+            <TextBox x:Name="TxtLog" IsReadOnly="True"
+                     VerticalAlignment="Stretch" VerticalContentAlignment="Top"
                      TextWrapping="Wrap" />
         </Border>
     </DockPanel>

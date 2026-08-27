@@ -20,7 +20,8 @@
                       IsCheckedChanged="Checkbox_IsCheckedChanged" />
             <Border BorderBrush="{DynamicResource SemiColorBorder}" BorderThickness="1"
                     CornerRadius="6" Padding="4">
-                <TextBox x:Name="TxtOutput" IsReadOnly="True" AcceptsReturn="True"
+                <TextBox x:Name="TxtOutput" IsReadOnly="True"
+                         VerticalAlignment="Stretch" VerticalContentAlignment="Top"
                          TextWrapping="Wrap" />
             </Border>
         </StackPanel>

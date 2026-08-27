@@ -47,6 +47,7 @@ namespace Quick.Protocol.WebSocket.Client
         protected override void LoadFromUri(Uri uri)
         {
             Url = uri.ToString();
+            Url = Url.Substring(0, Url.Length - uri.Query.Length);
             base.LoadFromUri(uri);
         }
 

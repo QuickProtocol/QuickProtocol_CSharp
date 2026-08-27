@@ -31,7 +31,8 @@
                 <DockPanel>
                     <TextBlock DockPanel.Dock="Top" Text="请求内容" FontWeight="Bold" Margin="0,0,0,8"
                                Foreground="{DynamicResource SemiColorText0}" />
-                    <TextBox x:Name="TxtTestRequest" AcceptsReturn="True"
+                    <TextBox x:Name="TxtTestRequest"
+                             VerticalAlignment="Stretch" VerticalContentAlignment="Top"
                              TextWrapping="Wrap" />
                 </DockPanel>
             </Border>
@@ -45,7 +46,8 @@
                 <DockPanel>
                     <TextBlock DockPanel.Dock="Top" Text="结果" FontWeight="Bold" Margin="0,0,0,8"
                                Foreground="{DynamicResource SemiColorText0}" />
-                    <TextBox x:Name="TxtTestResponse" IsReadOnly="True" AcceptsReturn="True"
+                    <TextBox x:Name="TxtTestResponse" IsReadOnly="True"
+                             VerticalAlignment="Stretch" VerticalContentAlignment="Top"
                              TextWrapping="Wrap" />
                 </DockPanel>
             </Border>
