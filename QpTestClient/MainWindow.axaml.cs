@@ -46,6 +46,8 @@ namespace QpTestClient
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            this.Title += $" ver:{ProductInfoUtils.GetAssemblyVersion()}";
+
             // 创建连接节点右键菜单
             _btnDisconnectConnection = new MenuItem { Header = "断开(_D)", IsVisible = false };
             _btnDisconnectConnection.Click += BtnDisconnectConnection_Click;
