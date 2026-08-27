@@ -164,11 +164,18 @@ namespace QpTestClient
 
         private void TvQpInstructions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if(tvQpInstructions.SelectedItem==null)
+            {
+                GbNodeInfoHeader.Text = "请选择节点";
+                ShowContent(null);
+                return;
+            }
             if (tvQpInstructions.SelectedItem is not TreeViewItem node)
                 return;
 
             var nodeObj = node.Tag;
-            GbNodeInfoHeader.Text = node.Header?.ToString() ?? "请选择节点";
+
+            GbNodeInfoHeader.Text = ((Control)node.Header).Tag.ToString();
 
             if (nodeObj == null)
             {
@@ -335,13 +342,14 @@ namespace QpTestClient
         {
             return new StackPanel
             {
-                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Orientation = Orientation.Horizontal,
                 Spacing = 8,
                 Children =
                 {
                     CreateTreeItemIcon(iconData),
-                    new TextBlock { Text = text, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center }
-                }
+                    new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center }
+                },
+                Tag = text
             };
         }
 
