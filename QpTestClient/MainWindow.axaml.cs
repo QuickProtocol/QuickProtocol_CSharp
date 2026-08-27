@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Avalonia.Media;
 
 namespace QpTestClient
 {
@@ -327,18 +328,21 @@ namespace QpTestClient
             }
         }
 
-        private static Avalonia.Controls.Control CreateTreeItemIcon(string iconData)
+        private static Control CreateTreeItemIcon(string iconData, IBrush iconForeground)
         {
-            return new Avalonia.Controls.PathIcon
+            var pathIcon = new PathIcon
             {
-                Data = Avalonia.Media.Geometry.Parse(iconData),
+                Data = Geometry.Parse(iconData),
                 Width = 16,
                 Height = 16,
                 Margin = new Avalonia.Thickness(0, 0, 8, 0)
             };
+            if (iconForeground != null)
+                pathIcon.Foreground = iconForeground;
+            return pathIcon;
         }
 
-        private static StackPanel CreateTreeItemHeader(string iconData, string text)
+        private static StackPanel CreateTreeItemHeader(string iconData, string text, IBrush iconForeground = null)
         {
             return new StackPanel
             {
@@ -346,7 +350,7 @@ namespace QpTestClient
                 Spacing = 8,
                 Children =
                 {
-                    CreateTreeItemIcon(iconData),
+                    CreateTreeItemIcon(iconData, iconForeground),
                     new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center }
                 },
                 Tag = text
@@ -354,8 +358,7 @@ namespace QpTestClient
         }
 
         // Semi Design Icons (Material Design paths)
-        private const string ICON_DISCONNECTED = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z";
-        private const string ICON_CONNECTED = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z";
+        private const string ICON_CONNECTED = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z";
         private const string ICON_INSTRUCTION = "M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z";
         private const string ICON_NOTICE = "M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z";
         private const string ICON_COMMAND = "M20 19.59V8l-6-6H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c.45 0 .85-.15 1.19-.4l-4.43-4.43c-.8.52-1.74.83-2.76.83-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5c0 1.02-.31 1.96-.83 2.75L20 19.59z";
@@ -421,7 +424,7 @@ namespace QpTestClient
                 return;
             var connectionNode = new TreeViewItem
             {
-                Header = CreateTreeItemHeader(ICON_DISCONNECTED, connectionInfo.Name),
+                Header = CreateTreeItemHeader(ICON_CONNECTED, connectionInfo.Name),
                 Tag = new ConnectionContext(connectionInfo),
                 ContextMenu = _cmsConnection
             };
@@ -483,13 +486,13 @@ namespace QpTestClient
 
                 await connectionContext.Connect();
                 // 更新图标为已连接状态
-                connectionNode.Header = CreateTreeItemHeader(ICON_CONNECTED, connectionContext.ConnectionInfo.Name);
+                connectionNode.Header = CreateTreeItemHeader(ICON_CONNECTED, connectionContext.ConnectionInfo.Name, (IBrush)this.FindResource("SemiColorPrimary"));
                 connectionContext.Disconnected += (s, e) =>
                 {
                     Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
                         // 更新图标为未连接状态
-                        connectionNode.Header = CreateTreeItemHeader(ICON_DISCONNECTED, connectionContext.ConnectionInfo.Name);
+                        connectionNode.Header = CreateTreeItemHeader(ICON_CONNECTED, connectionContext.ConnectionInfo.Name);
                         connectionContext.Dispose();
                     });
                 };
