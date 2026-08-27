@@ -9,7 +9,7 @@
     <Grid ColumnDefinitions="Auto,*" Margin="24">
         <!-- Logo -->
         <Image x:Name="LogoImage" Grid.Column="0" Width="200" Stretch="Uniform"
-               Margin="0,0,24,0" VerticalAlignment="Top" />
+               Margin="0,0,24,0" VerticalAlignment="Top" Source="avares://QpTestClient/Images/logo-large.png" />
 
         <!-- 信息面板 -->
         <StackPanel Grid.Column="1" Spacing="12" VerticalAlignment="Top">

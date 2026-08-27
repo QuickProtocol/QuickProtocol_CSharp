@@ -18,12 +18,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="Images\connection.ico" />
-		<None Remove="Images\ilQpInstructions.Images.0.png" />
-		<None Remove="Images\ilQpInstructions.Images.1.png" />
-		<None Remove="Images\ilQpInstructions.Images.2.png" />
-		<None Remove="Images\ilQpInstructions.Images.3.png" />
-		<None Remove="Images\ilQpInstructions.Images.4.png" />
 		<None Remove="Images\logo-large.png" />
 		<None Remove="Images\logo.ico" />
 	</ItemGroup>
