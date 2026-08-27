@@ -1,0 +1,94 @@
+name: Release QpTestClient
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.rid }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: windows-latest
+            rid: win-x86
+          - os: windows-latest
+            rid: win-arm64
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: ubuntu-24.04-arm   # 原生 arm64 runner，避免交叉编译的 sysroot 问题
+            rid: linux-arm64
+          - os: macos-latest       # Apple Silicon，原生编译 osx-arm64
+            rid: osx-arm64
+          - os: macos-latest       # 在 arm64 上交叉编译 osx-x64
+            rid: osx-x64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Linux 上 .NET 原生 AOT 需要 clang 与 zlib 开发库
+      - name: Install Linux build dependencies
+        if: startsWith(matrix.rid, 'linux')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang zlib1g-dev
+
+      # QpTestClient 是 WinExe + PublishAot 的 Avalonia GUI 程序，
+      # 以 self-contained + 单文件方式发布（各平台原生/交叉编译）。
+      - name: Publish (AOT, self-contained, single-file)
+        run: dotnet publish QpTestClient/QpTestClient.csproj -c Release -r ${{ matrix.rid }} -p:PublishAot=true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --self-contained -o ./publish
+
+      - name: Zip artifact (Windows)
+        if: startsWith(matrix.rid, 'win')
+        shell: pwsh
+        run: Compress-Archive -Path ./publish/* -DestinationPath "./QpTestClient-${{ matrix.rid }}.zip"
+
+      - name: Zip artifact (Linux/macOS)
+        if: ${{ !startsWith(matrix.rid, 'win') }}
+        run: zip -r "./QpTestClient-${{ matrix.rid }}.zip" ./publish
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QpTestClient-${{ matrix.rid }}
+          path: ./QpTestClient-${{ matrix.rid }}.zip
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: QpTestClient ${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          files: ./artifacts/**/*.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
