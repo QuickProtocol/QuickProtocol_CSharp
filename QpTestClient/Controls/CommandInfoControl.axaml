@@ -4,15 +4,18 @@
              Background="{DynamicResource SemiColorBackground}">
     <TabControl>
         <TabItem Header="基本">
-            <TextBox x:Name="TxtBasic" IsReadOnly="True" AcceptsReturn="True"
+            <TextBox x:Name="TxtBasic" IsReadOnly="True"
+                     VerticalAlignment="Stretch" VerticalContentAlignment="Top"
                      TextWrapping="Wrap" Margin="4" />
         </TabItem>
         <TabItem Header="请求示例">
-            <TextBox x:Name="TxtRequestSchemaSample" IsReadOnly="True" AcceptsReturn="True"
+            <TextBox x:Name="TxtRequestSchemaSample" IsReadOnly="True"
+                     VerticalAlignment="Stretch" VerticalContentAlignment="Top"
                      TextWrapping="Wrap" Margin="4" />
         </TabItem>
         <TabItem Header="响应示例">
-            <TextBox x:Name="TxtResponseSchemaSample" IsReadOnly="True" AcceptsReturn="True"
+            <TextBox x:Name="TxtResponseSchemaSample" IsReadOnly="True"
+                     VerticalAlignment="Stretch" VerticalContentAlignment="Top"
                      TextWrapping="Wrap" Margin="4" />
         </TabItem>
     </TabControl>

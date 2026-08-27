@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using QpTestClient.Controls;
@@ -7,7 +8,6 @@ using QpTestClient.Utils;
 using Quick.Protocol;
 using Quick.Utils;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -195,7 +195,7 @@ namespace QpTestClient
                     foreach (var noticeInfo in qpInstruction.NoticeInfos)
                         sb.AppendLine($"    {noticeInfo.Name}");
                 }
-                ShowContent(new TextBox { Text = sb.ToString(), IsReadOnly = true, AcceptsReturn = true });
+                ShowContent(new TextBox { Text = sb.ToString(), IsReadOnly = true, VerticalAlignment = VerticalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Top });
             }
             else if (nodeObj is QpNoticeInfo[] noticeInfos)
             {
@@ -209,7 +209,7 @@ namespace QpTestClient
                         sb.AppendLine();
                     }
                 }
-                ShowContent(new TextBox { Text = sb.ToString(), IsReadOnly = true, AcceptsReturn = true });
+                ShowContent(new TextBox { Text = sb.ToString(), IsReadOnly = true, VerticalAlignment = VerticalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Top });
             }
             else if (nodeObj is QpNoticeInfo noticeInfo)
             {

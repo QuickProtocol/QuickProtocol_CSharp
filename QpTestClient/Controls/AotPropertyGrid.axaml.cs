@@ -42,6 +42,10 @@ namespace QpTestClient.Controls
                 foreach (var child in panel.Children)
                     TravelChild(child, action);
             }
+            else if (control is Border border)
+            {
+                TravelChild(border.Child, action);
+            }
             else if (control is ContentControl contentControl && contentControl.Content is Control child1)
             {
                 TravelChild(child1, action);
@@ -289,7 +293,7 @@ namespace QpTestClient.Controls
         /// </summary>
         public void GenerateControls()
         {
-            for (var i = pnlPropertyControls.Count - 1; i >= 0; i--)
+            for (var i = 0; i < pnlPropertyControls.Count; i++)
             {
                 PnlProperty.Children.Add(pnlPropertyControls[i]);
             }

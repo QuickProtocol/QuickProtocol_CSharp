@@ -7,8 +7,7 @@
             <Border x:Name="TpBasic" Padding="4" />
         </TabItem>
         <TabItem Header="网络统计">
-            <TextBox x:Name="TxtNetstat" IsReadOnly="True" AcceptsReturn="True"
-                     TextWrapping="Wrap" Margin="4" />
+            <TextBox x:Name="TxtNetstat" IsReadOnly="True" TextWrapping="Wrap" Margin="4" VerticalAlignment="Stretch" VerticalContentAlignment="Top" />
         </TabItem>
     </TabControl>
 </UserControl>
