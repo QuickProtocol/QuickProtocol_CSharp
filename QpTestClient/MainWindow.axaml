@@ -4,7 +4,7 @@
         xmlns:ursa="using:Irihi.Ursa.Controls"
         x:Class="QpTestClient.MainWindow"
         Title="[QuickProtocol]测试客户端"
-        Width="1300" Height="850"
+        Width="960" Height="600"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource SemiColorBackground}">
     <DockPanel>
@@ -23,7 +23,7 @@
         </Menu>
 
         <!-- 主内容区 -->
-        <Grid ColumnDefinitions="*,6,*">
+        <Grid ColumnDefinitions="*,6,2*">
             <!-- 左侧树形视图 -->
             <Border Grid.Column="0" Background="{DynamicResource SemiColorBackground0}"
                     BorderBrush="{DynamicResource SemiColorBorder}" BorderThickness="0,0,1,0">

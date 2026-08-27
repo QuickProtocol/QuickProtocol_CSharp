@@ -2,9 +2,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="QpTestClient.AboutBox"
         Title="关于"
-        Width="700" Height="500"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
+        Width="620" Height="400"
         Background="{DynamicResource SemiColorBackground}">
     <Grid ColumnDefinitions="Auto,*" Margin="24">
         <!-- Logo -->
@@ -21,7 +21,7 @@
                        Foreground="{DynamicResource SemiColorText1}" />
             <TextBlock x:Name="LabelCompanyName"
                        Foreground="{DynamicResource SemiColorText1}" />
-            <TextBox x:Name="TextBoxDescription" IsReadOnly="True" AcceptsReturn="True"
+            <TextBox x:Name="TextBoxDescription" IsReadOnly="True" AcceptsReturn="True" VerticalContentAlignment="Top"
                      Height="200" TextWrapping="Wrap" />
             <Button Content="确定(_O)" HorizontalAlignment="Right" Width="100" Height="30"
                     Click="OkButton_Click" Theme="{DynamicResource SolidButton}" />

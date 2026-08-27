@@ -1,11 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform.Storage;
 using QpTestClient.Utils;
-using System;
-using System.IO;
-using System.Reflection;
 
 namespace QpTestClient
 {
@@ -19,15 +14,6 @@ namespace QpTestClient
 
         private void AboutBox_Loaded(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var assembly = Assembly.GetExecutingAssembly();
-                using var stream = assembly.GetManifestResourceStream($"{nameof(QpTestClient)}.Images.logo-large.png");
-                if (stream != null)
-                    LogoImage.Source = new Bitmap(stream);
-            }
-            catch { }
-
             Title = $"关于 {ProductInfoUtils.GetAssemblyTitle()}";
             LabelProductName.Text = ProductInfoUtils.GetAssemblyProduct();
             LabelVersion.Text = $"版本 {ProductInfoUtils.GetAssemblyVersion()}";
