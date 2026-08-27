@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="QpTestClient.QuickConnectForm"
         Title="快速添加连接"
-        Width="820" Height="540"
+        Width="620" Height="400"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
         Background="{DynamicResource SemiColorBackground}">
@@ -35,7 +35,7 @@
             <DockPanel>
                 <TextBlock Text="示例:" Width="120" VerticalAlignment="Top"
                            Foreground="{DynamicResource SemiColorText0}" Margin="0,8,0,0" />
-                <TextBox IsReadOnly="True" AcceptsReturn="True" Height="120"
+                <TextBox IsReadOnly="True" AcceptsReturn="True" Height="120" VerticalContentAlignment="Top"
                          Text="TCP: qp.tcp://127.0.0.1:3000&#x0a;WebSocket: qp.ws://127.0.0.1:3000&#x0a;命名管道: qp.pipe://./Quick.Protocol&#x0a;串口: qp.serial://./COM1" />
             </DockPanel>
 
