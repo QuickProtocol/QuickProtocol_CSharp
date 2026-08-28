@@ -25,7 +25,6 @@ namespace Quick.Protocol
         private Stream QpPackageHandler_Stream;
         public QpChannelOptions Options { get; }
 
-        private readonly byte[] passwordMd5Buffer;
         private SymmetricAlgorithm symmetricAlgorithm;
         private ICryptoTransform enc;
         private ICryptoTransform dec;
@@ -39,7 +38,7 @@ namespace Quick.Protocol
         /// <summary>
         /// 包类型最小值
         /// </summary>
-        private const byte PACKAGE_TYPE_MIN_VALUE = 100;
+        private const byte PACKAGE_TYPE_MIN_VALUE = 10;
         /// <summary>
         /// 包类型最大值
         /// </summary>
@@ -366,7 +365,6 @@ namespace Quick.Protocol
         public QpChannel(QpChannelOptions options)
         {
             Options = options;
-            passwordMd5Buffer = MD5.HashData(Encoding.UTF8.GetBytes(options.Password));
 
             foreach (var instructionSet in options.InstructionSet)
             {
@@ -404,7 +402,6 @@ namespace Quick.Protocol
 
             if (EnableEncrypt)
             {
-                byte[] key;
                 switch (EncryptAlgorithm)
                 {
                     case "DES":
@@ -416,11 +413,12 @@ namespace Quick.Protocol
                     default:
                         throw new ArgumentException($"Unknown encrypt method: {EncryptAlgorithm}");
                 }
-                key = passwordMd5Buffer.Take(symmetricAlgorithm.KeySize / 8).ToArray();
+                var key = MD5.HashData(encoding.GetBytes(Options.Password)).Take(symmetricAlgorithm.KeySize / 8).ToArray();
+                var iv = MD5.HashData(encoding.GetBytes(AuthenticateQuestion)).Take(symmetricAlgorithm.KeySize / 8).ToArray();
                 symmetricAlgorithm.Mode = Enum.Parse<CipherMode>(EncryptMode);
                 symmetricAlgorithm.Padding = Enum.Parse<PaddingMode>(EncryptPadding);
-                enc = symmetricAlgorithm.CreateEncryptor(key, key);
-                dec = symmetricAlgorithm.CreateDecryptor(key, key);
+                enc = symmetricAlgorithm.CreateEncryptor(key, iv);
+                dec = symmetricAlgorithm.CreateDecryptor(key, iv);
             }
         }
 

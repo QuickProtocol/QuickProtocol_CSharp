@@ -19,11 +19,11 @@ namespace Quick.Protocol.Commands.HandShake
         /// <summary>
         /// 加密算法
         /// </summary>
-        public string EncryptAlgorithm { get; set; } = "DES";
+        public string EncryptAlgorithm { get; set; } = "AES";
         /// <summary>
-        /// 加密模式
+        /// 加密模式，默认使用ECB
         /// </summary>
-        public string EncryptMode { get; set; } = "ECB";
+        public string EncryptMode { get; set; } = "CBC";
         /// <summary>
         /// 加密填充
         /// </summary>
