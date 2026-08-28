@@ -39,6 +39,8 @@ namespace Quick.Protocol
         private SemaphoreSlim sendLock;
         //断开连接锁对象
         private readonly object DISCONNECT_LOCK_OBJ = new object();
+        //同一连接会话内是否已执行过释放（用于保证 Disconnect 幂等、不可重入；(重新)建立连接时复位）
+        private bool _disconnectInvoked = false;
         /// <summary>
         /// 包类型最小值
         /// </summary>
@@ -292,47 +294,54 @@ namespace Quick.Protocol
         }
 
         /// <summary>
-        /// 断开连接时
+        /// 断开连接时。
+        /// 设计为幂等且不可重入：同一“连接会话”内，无论被多少条路径（读错误/写错误/服务端停止/显式 Dispose）
+        /// 并发或重复调用，资源释放逻辑（流、加密器、管道、发送锁等）只会执行一次，
+        /// 避免对同一 Stream / ICryptoTransform / SemaphoreSlim 重复释放。
+        /// 下一次（重新）建立连接时（即 InitChannelStream 传入非空流），内部标记会被重置，从而允许再次断开。
         /// </summary>
         public virtual void Disconnect()
         {
-            var shouldRaiseDisconnectedEvent = false;
+            bool shouldRaiseDisconnectedEvent;
             lock (DISCONNECT_LOCK_OBJ)
             {
-                if (IsConnected)
+                //同一会话内已执行过释放则直接返回，保证幂等、不可重入
+                if (_disconnectInvoked)
+                    return;
+                _disconnectInvoked = true;
+
+                shouldRaiseDisconnectedEvent = IsConnected;
+                IsConnected = false;
+
+                InitChannelStream(null);
+                ClearCommandDict();
+                InitCommandExecuterManagers(null);
+                InitNoticeHandlerManagers(null);
+                ClearPackageHandlerDict();
+                enc?.Dispose();
+                enc = null;
+                dec?.Dispose();
+                dec = null;
+                symmetricAlgorithm?.Dispose();
+                symmetricAlgorithm = null;
+
+                if (writeCompressPipe != null)
                 {
-                    IsConnected = false;
-                    shouldRaiseDisconnectedEvent = true;
+                    try { writeCompressPipe.Writer.Complete(); } catch { }
+                    try { writeCompressPipe.Reader.Complete(); } catch { }
+                    writeCompressPipe = null;
                 }
+                if (writeEncryptPipe != null)
+                {
+                    try { writeEncryptPipe.Writer.Complete(); } catch { }
+                    try { writeEncryptPipe.Reader.Complete(); } catch { }
+                    writeEncryptPipe = null;
+                }
+                sendLock?.Dispose();
+                sendLock = null;
             }
-            InitChannelStream(null);
             if (shouldRaiseDisconnectedEvent)
                 Disconnected?.Invoke(this, EventArgs.Empty);
-            ClearCommandDict();
-            InitCommandExecuterManagers(null);
-            InitNoticeHandlerManagers(null);
-            ClearPackageHandlerDict();
-            enc?.Dispose();
-            enc = null;
-            dec?.Dispose();
-            dec = null;
-            symmetricAlgorithm?.Dispose();
-            symmetricAlgorithm = null;
-
-            if (writeCompressPipe != null)
-            {
-                try { writeCompressPipe.Writer.Complete(); } catch { }
-                try { writeCompressPipe.Reader.Complete(); } catch { }
-                writeCompressPipe = null;
-            }
-            if (writeEncryptPipe != null)
-            {
-                try { writeEncryptPipe.Writer.Complete(); } catch { }
-                try { writeEncryptPipe.Reader.Complete(); } catch { }
-                writeEncryptPipe = null;
-            }
-            sendLock?.Dispose();
-            sendLock = null;
         }
 
         /// <summary>
@@ -460,6 +469,13 @@ namespace Quick.Protocol
         {
             var preStream = channelStream;
             channelStream = stream;
+
+            //(重新)建立连接：复位“已断开”标记，允许后续再次断开（释放逻辑重新可被触发）
+            if (stream != null)
+            {
+                lock (DISCONNECT_LOCK_OBJ)
+                    _disconnectInvoked = false;
+            }
 
             try { preStream?.Dispose(); }
             catch (Exception ex)
