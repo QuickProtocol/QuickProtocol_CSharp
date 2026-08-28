@@ -26,15 +26,18 @@ namespace Quick.Protocol.Pipeline
 
         protected override async Task InnerAcceptAsync(CancellationToken token)
         {
+            NamedPipeServerStream serverStream = null;
             try
             {
-                var serverStream = new NamedPipeServerStream(options.PipeName, PipeDirection.InOut, options.MaxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                serverStream = new NamedPipeServerStream(options.PipeName, PipeDirection.InOut, options.MaxNumberOfServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                 await serverStream.WaitForConnectionAsync(token);
                 OnNewChannelConnected(serverStream, $"{QpPipelineClientOptions.URI_SCHEMA}://./{options.PipeName}", token);
             }
             catch (OperationCanceledException) { }
             catch
             {
+                if (serverStream != null)
+                    await serverStream.DisposeAsync();
                 await Task.Delay(1000, token);
             }
         }
