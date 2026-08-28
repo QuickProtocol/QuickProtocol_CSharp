@@ -33,7 +33,13 @@ namespace Quick.Protocol
                 if (bodyBuffer.Length > 0)
                 {
                     if (Options.Logger.LogContent)
-                        sb.Append(", Content: " + Convert.ToHexString(bodyBuffer.ToArray()));
+                    {
+                        var bodyBufferLength = (int)bodyBuffer.Length;
+                        var logBuffer = ArrayPool<byte>.Shared.Rent(bodyBufferLength);
+                        bodyBuffer.CopyTo(logBuffer);
+                        sb.Append(", Content: " + Convert.ToHexString(logBuffer.AsSpan(0,bodyBufferLength)));
+                        ArrayPool<byte>.Shared.Return(logBuffer);
+                    }
                     else
                         sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
                 }

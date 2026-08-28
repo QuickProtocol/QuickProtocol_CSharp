@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Quick.Utils;
 using System;
+using System.Threading.Tasks;
 
 namespace QpTestClient
 {
@@ -32,7 +33,7 @@ namespace QpTestClient
             PnlPassword.IsVisible = string.IsNullOrEmpty(queryString.Get("Password"));
         }
 
-        private void BtnOk_Click(object sender, RoutedEventArgs e)
+        private async Task BtnOk_Click(object sender, RoutedEventArgs e)
         {
             var name = TxtName.Text?.Trim();
             if (string.IsNullOrEmpty(name))
@@ -62,14 +63,14 @@ namespace QpTestClient
             }
 
             var uri = new Uri(url);
-            Quick.Protocol.QpClientOptions options = null;
+            Quick.Protocol.QpClientOptions options;
             try
             {
                 options = Quick.Protocol.QpClientOptions.Parse(uri);
             }
             catch (Exception ex)
             {
-                // TODO: Show error message
+                await MessageBox.Show(this, "错误", $"URL解析出错，原因：{ExceptionUtils.GetExceptionMessage(ex)}");
                 return;
             }
 
