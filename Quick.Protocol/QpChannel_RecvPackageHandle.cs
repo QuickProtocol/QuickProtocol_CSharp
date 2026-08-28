@@ -23,6 +23,8 @@ namespace Quick.Protocol
         /// 指令响应数据包
         /// </summary>
         public const byte PACKAGETYPE_COMMAND_RESPONSE = 3;
+        //收到未知包事件参数
+        private UnknownPackageReceivedEventArgs unknownPackageReceivedEventArgs = null;
 
         protected async Task HandlePackage(byte packageType, ReadOnlySequence<byte> bodyBuffer)
         {
@@ -37,7 +39,7 @@ namespace Quick.Protocol
                         var bodyBufferLength = (int)bodyBuffer.Length;
                         var logBuffer = ArrayPool<byte>.Shared.Rent(bodyBufferLength);
                         bodyBuffer.CopyTo(logBuffer);
-                        sb.Append(", Content: " + Convert.ToHexString(logBuffer.AsSpan(0,bodyBufferLength)));
+                        sb.Append(", Content: " + Convert.ToHexString(logBuffer.AsSpan(0, bodyBufferLength)));
                         ArrayPool<byte>.Shared.Return(logBuffer);
                     }
                     else
@@ -150,7 +152,9 @@ namespace Quick.Protocol
                     }
                     else
                     {
-                        var eventArgs = UnknownPackageReceivedEventArgs.Instance;
+                        if (unknownPackageReceivedEventArgs == null)
+                            unknownPackageReceivedEventArgs = new();
+                        var eventArgs = unknownPackageReceivedEventArgs;
                         eventArgs.PackageType = packageType;
                         eventArgs.BodyBuffer = bodyBuffer;
                         UnknownPackageReceived?.Invoke(this, eventArgs);

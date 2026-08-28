@@ -11,16 +11,6 @@ public class QpEventArgs : EventArgs
 /// </summary>
 public class UnknownPackageReceivedEventArgs : QpEventArgs
 {
-    private static UnknownPackageReceivedEventArgs _Instance;
-    internal static UnknownPackageReceivedEventArgs Instance
-    {
-        get
-        {
-            if (_Instance == null)
-                _Instance = new();
-            return _Instance;
-        }
-    }
     /// <summary>
     /// 包类型
     /// </summary>
