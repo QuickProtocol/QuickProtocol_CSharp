@@ -337,8 +337,9 @@ namespace Quick.Protocol
                     try { writeEncryptPipe.Reader.Complete(); } catch { }
                     writeEncryptPipe = null;
                 }
-                sendLock?.Dispose();
-                sendLock = null;
+                // 注意：sendLock 为通道级资源（构造时创建、跨重连复用），此处不可 Dispose/置空，
+                // 否则会与在途发送（SendPackage 持有/等待该信号量）产生 ObjectDisposedException 竞态。
+                // 仅在 Dispose()（对象彻底销毁）时释放，见下方 Dispose。
             }
             if (shouldRaiseDisconnectedEvent)
                 Disconnected?.Invoke(this, EventArgs.Empty);
@@ -661,6 +662,9 @@ namespace Quick.Protocol
             IsConnected = false;
             Disconnect();
             IsDisposed = true;
+            // sendLock 为通道级资源（构造时创建、跨重连复用），仅在对象彻底销毁时释放，
+            // 不可在可重连的 Disconnect 中释放，否则会与在途发送产生竞态。
+            sendLock?.Dispose();
         }
     }
 }

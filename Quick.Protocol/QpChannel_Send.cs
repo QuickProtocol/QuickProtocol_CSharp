@@ -223,7 +223,9 @@ namespace Quick.Protocol
             }
             finally
             {
-                currentSendLock?.Release();
+                // sendLock 仅在通道对象 Dispose 时释放；若本发送恰与 Dispose 并发，Release 可能抛
+                // ObjectDisposedException，此处忽略以免 finally 异常掩盖 try 中的真实异常。
+                try { currentSendLock?.Release(); } catch (ObjectDisposedException) { }
             }
         }
 
