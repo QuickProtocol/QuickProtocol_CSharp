@@ -20,6 +20,10 @@ namespace Quick.Protocol
         /// 命令编号长度(字节数)
         /// </summary>
         public const int COMMAND_ID_LENGTH = 16;
+        /// <summary>
+        /// 最小传输超时时间
+        /// </summary>
+        public const int MIN_TRANSPORT_TIMEOUT = 3000;
         private const int minimumBufferSize = 1024;
 
         protected Stream channelStream;

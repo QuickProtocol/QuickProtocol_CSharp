@@ -9,9 +9,9 @@ namespace Quick.Protocol
         public new QpServerOptions Options { get; }
         private readonly string channelName;
         //通过认证后，才允许使用的命令执行管理器列表
-        private readonly List<CommandExecuterManager> authedCommandExecuterManagerList = null;
+        private readonly CommandExecuterManager[] authedCommandExecuterManagers = null;
         //通过认证后，才允许使用的通知处理器管理器列表
-        private readonly List<NoticeHandlerManager> authedNoticeHandlerManagerList = null;
+        private readonly NoticeHandlerManager[] authedNoticeHandlerManagers = null;
 
         public override string ChannelName => channelName;
         public Stream GetChannelStream() => channelStream;
@@ -30,8 +30,7 @@ namespace Quick.Protocol
         {
             this.channelName = channelName;
             Options = options;
-            authedCommandExecuterManagerList = options.CommandExecuterManagerList;
-            authedNoticeHandlerManagerList = options.NoticeHandlerManagerList;
+            
             serverCancellationToken = cancellationToken;
             ReadFromStreamReturnZeroMeansFault = readFromStreamReturnZeroMeansFault;
 
@@ -45,8 +44,12 @@ namespace Quick.Protocol
             connectAndAuthCommandExecuterManager.Register(new Commands.HandShake.Request(), handShake);
             connectAndAuthCommandExecuterManager.Register(new Commands.GetQpInstructions.Request(), getQpInstructions);
 
-            authedCommandExecuterManagerList.Insert(0, connectAndAuthCommandExecuterManager);
-            
+            if (Options.CommandExecuterManagerList == null)
+                authedCommandExecuterManagers = [connectAndAuthCommandExecuterManager];
+            else
+                authedCommandExecuterManagers = [connectAndAuthCommandExecuterManager, .. Options.CommandExecuterManagerList];
+            authedNoticeHandlerManagers = Options.NoticeHandlerManagerList?.ToArray();
+
             InitCommandExecuterManagers([connectAndAuthCommandExecuterManager]);
             InitNoticeHandlerManagers(null);
             ClearPackageHandlerDict();
@@ -118,11 +121,11 @@ namespace Quick.Protocol
 
         private async ValueTask<Commands.HandShake.Response> handShake(QpChannel handler, Commands.HandShake.Request request)
         {
-            if (request.TransportTimeout < 3000)
-                throw new ArgumentException($"'TransportTimeout' must greater than 3000");
+            if (request.TransportTimeout < MIN_TRANSPORT_TIMEOUT)
+                throw new ArgumentException($"'TransportTimeout' must greater than {MIN_TRANSPORT_TIMEOUT}");
 
-            InitCommandExecuterManagers(authedCommandExecuterManagerList.ToArray());
-            InitNoticeHandlerManagers(authedNoticeHandlerManagerList.ToArray());
+            InitCommandExecuterManagers(authedCommandExecuterManagers);
+            InitNoticeHandlerManagers(authedNoticeHandlerManagers);
             EnableCompress = request.EnableCompress;
             EnableEncrypt = request.EnableEncrypt;
             EncryptAlgorithm = request.EncryptAlgorithm;
