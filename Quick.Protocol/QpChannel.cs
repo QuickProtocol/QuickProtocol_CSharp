@@ -45,8 +45,10 @@ namespace Quick.Protocol
         private const byte PACKAGE_TYPE_MAX_VALUE = 255;
 
         private Dictionary<byte, QpPackageHandler> packageHandlerDict = new();
-        private List<CommandExecuterManager> commandExecuterManagerList = new();
-        private List<NoticeHandlerManager> noticeHandlerManagerList = new();
+        private volatile CommandExecuterManager[] commandExecuterManagers = Array.Empty<CommandExecuterManager>();
+        private readonly object commandExecuterManagerLock = new();
+        private volatile NoticeHandlerManager[] noticeHandlerManagers = Array.Empty<NoticeHandlerManager>();
+        private readonly object noticeHandlerManagerLock = new();
         private readonly Dictionary<Type, IQpSerializer> typeSerializerDict = new Dictionary<Type, IQpSerializer>();
         private readonly Dictionary<string, Type> commandRequestTypeDict = new Dictionary<string, Type>();
         private readonly Dictionary<string, Type> commandResponseTypeDict = new Dictionary<string, Type>();
@@ -174,14 +176,14 @@ namespace Quick.Protocol
 
         public void ClearCommandExecuterManagers()
         {
-            lock (commandExecuterManagerList)
-                commandExecuterManagerList.Clear();
+            lock (commandExecuterManagerLock)
+                commandExecuterManagers = Array.Empty<CommandExecuterManager>();
         }
 
         public void ClearNoticeHandlerManagers()
         {
-            lock (noticeHandlerManagerList)
-                noticeHandlerManagerList.Clear();
+            lock (noticeHandlerManagerLock)
+                noticeHandlerManagers = Array.Empty<NoticeHandlerManager>();
         }
 
         /// <summary>
@@ -208,24 +210,36 @@ namespace Quick.Protocol
         // <summary>
         // 注册指令执行器管理器
         // </summary>
-        public void RegisterCommandExecuterManagers(IEnumerable<CommandExecuterManager> commandExecuterManagers)
+        public void RegisterCommandExecuterManager(CommandExecuterManager commandExecuterManager)
         {
             if (commandExecuterManagers == null)
                 return;
-            lock (commandExecuterManagerList)
-                commandExecuterManagerList.AddRange(commandExecuterManagers);
+            lock (commandExecuterManagerLock)
+            {
+                var next = new List<CommandExecuterManager>(commandExecuterManagers)
+                {
+                    commandExecuterManager
+                };
+                commandExecuterManagers = next.ToArray();
+            }
         }
 
         /// <summary>
         /// 注册通知处理器管理器
         /// </summary>
         /// <param name="noticeHandlerManager"></param>
-        public void RegisterNoticeHandlerManagers(IEnumerable<NoticeHandlerManager> noticeHandlerManagers)
+        public void RegisterNoticeHandlerManager(NoticeHandlerManager noticeHandlerManager)
         {
             if (noticeHandlerManagers == null)
                 return;
-            lock (noticeHandlerManagerList)
-                noticeHandlerManagerList.AddRange(noticeHandlerManagers);
+            lock (noticeHandlerManagerLock)
+            {
+                var next = new List<NoticeHandlerManager>(noticeHandlerManagers)
+                {
+                    noticeHandlerManager
+                };
+                noticeHandlerManagers = next.ToArray();
+            }
         }
 
         /// <summary>

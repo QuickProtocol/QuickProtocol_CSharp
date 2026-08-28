@@ -184,7 +184,8 @@ namespace Quick.Protocol
 
             //处理通知
             var hasNoticeHandler = false;
-            foreach (var noticeHandlerManager in noticeHandlerManagerList)
+            var currentNoticeHandlerManagers = noticeHandlerManagers;
+            foreach (var noticeHandlerManager in currentNoticeHandlerManagers)
             {
                 if (noticeHandlerManager.CanHandleNoticed(typeName))
                 {
@@ -241,7 +242,8 @@ namespace Quick.Protocol
                 });
 
                 var hasCommandExecuter = false;
-                foreach (var commandExecuterManager in commandExecuterManagerList)
+                var currentCommandExecuterManagers = commandExecuterManagers;
+                foreach (var commandExecuterManager in currentCommandExecuterManagers)
                 {
                     if (commandExecuterManager.CanExecuteCommand(typeName))
                     {
