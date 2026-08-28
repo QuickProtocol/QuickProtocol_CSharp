@@ -352,7 +352,7 @@ namespace Quick.Protocol
         {
             if (typeSerializerDict.TryGetValue(type, out var ret))
                 return ret;
-            return null;
+            throw new InvalidOperationException($"Can't found TypeSerializer for type: {type.FullName}");
         }
 
         /// <summary>
