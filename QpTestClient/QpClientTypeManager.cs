@@ -23,9 +23,9 @@ namespace QpTestClient
             propertyGrid.RegisterProperty("连接超时", "单位：毫秒", () => options.ConnectionTimeout, t => options.ConnectionTimeout = t);
             propertyGrid.RegisterProperty("传输超时", "单位：毫秒", () => options.TransportTimeout, t => options.TransportTimeout = t);
             propertyGrid.RegisterProperty("加密", "", () => options.EnableEncrypt, t => options.EnableEncrypt = t);
-            propertyGrid.RegisterProperty("加密算法", "", () => options.EncryptAlgorithm, t => options.EncryptAlgorithm = t);
-            propertyGrid.RegisterProperty("加密模式", "", () => options.EncryptMode, t => options.EncryptMode = t);
-            propertyGrid.RegisterProperty("加密填充", "", () => options.EncryptPadding, t => options.EncryptPadding = t);
+            propertyGrid.RegisterProperty("加密算法", "AES,DES", () => options.EncryptAlgorithm, t => options.EncryptAlgorithm = t);
+            propertyGrid.RegisterProperty("加密模式", "ECB,CBC,CFB,OFB", () => options.EncryptMode, t => options.EncryptMode = t);
+            propertyGrid.RegisterProperty("加密填充", "PKCS7,Zeros,ISO10126,ANSIX923,None", () => options.EncryptPadding, t => options.EncryptPadding = t);
             propertyGrid.RegisterProperty("压缩", "", () => options.EnableCompress, t => options.EnableCompress = t);
             propertyGrid.RegisterProperty("最大包大小", "单位：字节", () => options.MaxPackageSize, t => options.MaxPackageSize = t);
             propertyGrid.RegisterProperty("网络统计", "", () => options.EnableNetstat, t => options.EnableNetstat = t);
