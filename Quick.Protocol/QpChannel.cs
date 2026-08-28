@@ -160,19 +160,16 @@ namespace Quick.Protocol
 
         public void ClearCommandDict()
         {
-            lock (commandDict)
+            try
             {
-                try
+                foreach (var kvp in commandDict)
                 {
-                    foreach (var kvp in commandDict)
-                    {
-                        if (commandDict.TryRemove(kvp.Key, out var ctx))
-                            ctx.Timeout();
-                    }
+                    if (commandDict.TryRemove(kvp.Key, out var ctx))
+                        ctx.Timeout();
                 }
-                catch { }
-                commandDict.Clear();
             }
+            catch { }
+            commandDict.Clear();
         }
 
         public void ClearCommandExecuterManagers()
