@@ -16,7 +16,10 @@ public class UnknownPackageReceivedEventArgs : QpEventArgs
     /// </summary>
     public byte PackageType { get; set; }
     /// <summary>
-    /// 包体
+    /// 包体。
+    /// 注意：该缓冲区直接指向接收管道（System.IO.Pipelines）的内存，属于零拷贝设计，
+    /// 仅在 <see cref="QpChannel.UnknownPackageReceived"/> 事件处理期间有效。
+    /// 请勿在事件返回后保留此引用或异步/延迟读取，否则可能读到已被回收（AdvanceTo）的内存。
     /// </summary>
     public ReadOnlySequence<byte> BodyBuffer { get; set; }
 }

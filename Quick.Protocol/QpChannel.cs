@@ -311,7 +311,10 @@ namespace Quick.Protocol
         /// </summary>
         public event EventHandler HeartbeatPackageReceived;
         /// <summary>
-        /// 收到未知数据包事件
+        /// 收到未知数据包事件。
+        /// 重要：事件参数 <see cref="UnknownPackageReceivedEventArgs.BodyBuffer"/> 为指向接收管道的零拷贝缓冲区，
+        /// 仅在本次事件处理期间有效。处理程序必须在同步执行过程中读取其内容，
+        /// 切勿保存引用供后续（异步/延迟）使用，否则缓冲区被回收后读取会得到无效数据。
         /// </summary>
         public event EventHandler<UnknownPackageReceivedEventArgs> UnknownPackageReceived;
         /// <summary>
