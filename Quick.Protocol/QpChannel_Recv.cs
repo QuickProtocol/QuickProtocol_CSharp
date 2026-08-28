@@ -24,7 +24,7 @@ namespace Quick.Protocol
         {
             LastException = exception;
             Options.Logger?.Log("[ReadError]{0}: {1}", DateTime.Now, ExceptionUtils.GetExceptionString(exception));
-            InitQpPackageHandler_Stream(null);
+            InitChannelStream(null);
             Disconnect();
         }
 
@@ -230,7 +230,7 @@ namespace Quick.Protocol
             {
                 try
                 {
-                    await FillRecvPipeAsync(QpPackageHandler_Stream, pipe.Writer, token).ConfigureAwait(false);
+                    await FillRecvPipeAsync(channelStream, pipe.Writer, token).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

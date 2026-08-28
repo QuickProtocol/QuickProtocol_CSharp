@@ -22,7 +22,7 @@ namespace Quick.Protocol
         public const int COMMAND_ID_LENGTH = 16;
         private const int minimumBufferSize = 1024;
 
-        private Stream QpPackageHandler_Stream;
+        protected Stream channelStream;
         public QpChannelOptions Options { get; }
 
         private SymmetricAlgorithm symmetricAlgorithm;
@@ -271,7 +271,7 @@ namespace Quick.Protocol
                     shouldRaiseDisconnectedEvent = true;
                 }
             }
-            InitQpPackageHandler_Stream(null);
+            InitChannelStream(null);
             if (shouldRaiseDisconnectedEvent)
                 Disconnected?.Invoke(this, EventArgs.Empty);
             ClearCommandDict();
@@ -337,7 +337,7 @@ namespace Quick.Protocol
 
         protected void ChangeTransportTimeout()
         {
-            var stream = QpPackageHandler_Stream;
+            var stream = channelStream;
             if (stream != null && stream.CanTimeout)
             {
                 stream.WriteTimeout = TransportTimeout;
@@ -419,10 +419,10 @@ namespace Quick.Protocol
             }
         }
 
-        protected void InitQpPackageHandler_Stream(Stream stream)
+        protected void InitChannelStream(Stream stream)
         {
-            var preStream = QpPackageHandler_Stream;
-            QpPackageHandler_Stream = stream;
+            var preStream = channelStream;
+            channelStream = stream;
 
             try { preStream?.Dispose(); }
             catch (Exception ex)
@@ -486,7 +486,7 @@ namespace Quick.Protocol
             while (!cancellationToken.IsCancellationRequested)
             {
                 await Task.Delay(HeartBeatInterval, cancellationToken);
-                if (QpPackageHandler_Stream == null)
+                if (channelStream == null)
                     return;
                 await SendHeartbeatPackage();
             }
@@ -502,7 +502,7 @@ namespace Quick.Protocol
                 long preBytesReceived = BytesReceived;
                 long preBytesSent = BytesSent;
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
-                if (QpPackageHandler_Stream == null)
+                if (channelStream == null)
                     return;
                 BytesReceivedPerSec = BytesReceived - preBytesReceived;
                 BytesSentPerSec = BytesSent - preBytesSent;

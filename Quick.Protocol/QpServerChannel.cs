@@ -4,7 +4,6 @@ namespace Quick.Protocol
 {
     public class QpServerChannel : QpChannel
     {
-        private Stream stream;
         private CancellationTokenSource cts;
         private readonly CancellationToken serverCancellationToken;
         public new QpServerOptions Options { get; }
@@ -15,7 +14,7 @@ namespace Quick.Protocol
         private readonly List<NoticeHandlerManager> authedNoticeHandlerManagerList = null;
 
         public override string ChannelName => channelName;
-        public Stream GetStream() => stream;
+        public Stream GetChannelStream() => channelStream;
 
         /// <summary>
         /// 通过认证时
@@ -29,7 +28,6 @@ namespace Quick.Protocol
 
         public QpServerChannel(Stream channelStream, string channelName, CancellationToken cancellationToken, QpServerOptions options, bool readFromStreamReturnZeroMeansFault = true) : base(options)
         {
-            this.stream = channelStream;
             this.channelName = channelName;
             Options = options;
             this.authedCommandExecuterManagerList = options.CommandExecuterManagerList;
@@ -52,7 +50,7 @@ namespace Quick.Protocol
             ClearNoticeHandlerManagers();
             ClearPackageHandlerDict();
 
-            InitQpPackageHandler_Stream(channelStream);
+            InitChannelStream(channelStream);
             var token = cts.Token;
             //开始读取其他数据包
             BeginReadPackage(token);
@@ -153,15 +151,9 @@ namespace Quick.Protocol
         public override void Disconnect()
         {
             base.Disconnect();
-            try
-            {
-                cts?.Cancel();
-                cts?.Dispose();
-                cts = null;
-                stream?.Dispose();
-                stream = null;
-            }
-            catch { }
+            cts?.Cancel();
+            cts?.Dispose();
+            cts = null;
         }
         protected override void OnWriteError(Exception exception)
         {
@@ -178,7 +170,7 @@ namespace Quick.Protocol
                     if (Options.Logger is { LogConnection: true })
                         Options.Logger.Log("[ProtocolErrorHandler]{0}: Begin ProtocolErrorHandler invoke...", DateTime.Now);
 
-                    Options.ProtocolErrorHandler.Invoke(stream, protocolException.ReadBuffer);
+                    Options.ProtocolErrorHandler.Invoke(channelStream, protocolException.ReadBuffer);
                     return;
                 }
             }

@@ -117,7 +117,7 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
         private void OnChannelAuthenticateTimeoutOrDisconnected(object sender, QpServerChannel e)
         {
-            var stream = e.GetStream();
+            var stream = e.GetChannelStream();
             if (stream == null)
                 return;
             if (stream is not PipesStream pipesStream)

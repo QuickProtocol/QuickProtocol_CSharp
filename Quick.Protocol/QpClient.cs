@@ -36,7 +36,7 @@ namespace Quick.Protocol
 
             var stream = await InnerConnectAsync().ConfigureAwait(false);
             //初始化网络
-            InitQpPackageHandler_Stream(stream);
+            InitChannelStream(stream);
 
             //开始读取其他数据包
             BeginReadPackage(token);
