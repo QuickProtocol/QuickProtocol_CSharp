@@ -573,37 +573,39 @@ namespace Quick.Protocol
             var commandContext = new CommandContext(requestTypeName);
             commandDict.TryAdd(commandContext.Id, commandContext);
 
-            if (timeout <= 0)
+            try
             {
-                await SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, ignoreCompressAndEncrypt).ConfigureAwait(false);
-                return await commandContext.ResponseTask.ConfigureAwait(false);
-            }
-            //如果设置了超时
-            else
-            {
-                try
+                if (timeout <= 0)
+                {
+                    await SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, ignoreCompressAndEncrypt).ConfigureAwait(false);
+                    return await commandContext.ResponseTask.ConfigureAwait(false);
+                }
+                //如果设置了超时
+                else
                 {
                     await SendCommandRequestPackage(commandContext.Id, requestTypeName, requestContent, ignoreCompressAndEncrypt)
                         .WaitAsync(TimeSpan.FromMilliseconds(timeout))
                         .ConfigureAwait(false);
+                    return await commandContext.ResponseTask
+                        .WaitAsync(TimeSpan.FromMilliseconds(timeout))
+                        .ConfigureAwait(false);
                 }
-                catch
+            }
+            catch
+            {
+                //响应（或发送）最终未完成时清理字典，避免 commandDict 泄漏
+                //（响应已成功/已报错时，OnCommandResponseReceived 已完成并移除该条目，IsCompleted 为真，跳过）
+                if (!commandContext.ResponseTask.IsCompleted)
                 {
                     if (Options.Logger is { LogCommand: true })
                         Options.Logger.Log(
                             "{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now,
                             commandContext.Id, requestTypeName,
                             Options.Logger.LogContent ? requestContent : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-
-                    if (!commandContext.ResponseTask.IsCompleted)
-                    {
-                        commandContext.Timeout();
-                        commandDict.TryRemove(commandContext.Id, out _);
-                    }
+                    commandContext.Timeout();
+                    commandDict.TryRemove(commandContext.Id, out _);
                 }
-                return await commandContext.ResponseTask
-                    .WaitAsync(TimeSpan.FromMilliseconds(timeout))
-                    .ConfigureAwait(false);
+                throw;
             }
         }
 
@@ -622,35 +624,37 @@ namespace Quick.Protocol
             var commandContext = new CommandContext(typeName);
             commandDict.TryAdd(commandContext.Id, commandContext);
 
-            CommandResponseTypeNameAndContent ret = null;
-            if (timeout <= 0)
+            CommandResponseTypeNameAndContent ret;
+            try
             {
-                await SendCommandRequestPackage(commandContext.Id, typeName, requestContent, ignoreCompressAndEncrypt).ConfigureAwait(false);
-                ret = await commandContext.ResponseTask.ConfigureAwait(false);
-            }
-            //如果设置了超时
-            else
-            {
-                try
+                if (timeout <= 0)
+                {
+                    await SendCommandRequestPackage(commandContext.Id, typeName, requestContent, ignoreCompressAndEncrypt).ConfigureAwait(false);
+                    ret = await commandContext.ResponseTask.ConfigureAwait(false);
+                }
+                //如果设置了超时
+                else
                 {
                     await SendCommandRequestPackage(commandContext.Id, typeName, requestContent, ignoreCompressAndEncrypt)
                         .WaitAsync(TimeSpan.FromMilliseconds(timeout))
                         .ConfigureAwait(false);
+                    ret = await commandContext.ResponseTask
+                        .WaitAsync(TimeSpan.FromMilliseconds(timeout))
+                        .ConfigureAwait(false);
                 }
-                catch
+            }
+            catch
+            {
+                //响应（或发送）最终未完成时清理字典，避免 commandDict 泄漏
+                //（响应已成功/已报错时，OnCommandResponseReceived 已完成并移除该条目，IsCompleted 为真，跳过）
+                if (!commandContext.ResponseTask.IsCompleted)
                 {
                     if (Options.Logger is { LogCommand: true })
                         Options.Logger.Log("{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandContext.Id, typeName, Options.Logger.LogContent ? requestContent : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-
-                    if (!commandContext.ResponseTask.IsCompleted)
-                    {
-                        commandContext.Timeout();
-                        commandDict.TryRemove(commandContext.Id, out _);
-                    }
+                    commandContext.Timeout();
+                    commandDict.TryRemove(commandContext.Id, out _);
                 }
-                ret = await commandContext.ResponseTask
-                    .WaitAsync(TimeSpan.FromMilliseconds(timeout))
-                    .ConfigureAwait(false);
+                throw;
             }
             var responseType = typeof(TCmdResponse);
             var responseSerializer = getTypeSerializer(responseType);
