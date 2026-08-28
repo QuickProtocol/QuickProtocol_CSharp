@@ -30,8 +30,8 @@ namespace Quick.Protocol
         {
             this.channelName = channelName;
             Options = options;
-            this.authedCommandExecuterManagerList = options.CommandExecuterManagerList;
-            this.authedNoticeHandlerManagerList = options.NoticeHandlerManagerList;
+            authedCommandExecuterManagerList = options.CommandExecuterManagerList;
+            authedNoticeHandlerManagerList = options.NoticeHandlerManagerList;
             serverCancellationToken = cancellationToken;
             ReadFromStreamReturnZeroMeansFault = readFromStreamReturnZeroMeansFault;
 
@@ -45,9 +45,10 @@ namespace Quick.Protocol
             connectAndAuthCommandExecuterManager.Register(new Commands.HandShake.Request(), handShake);
             connectAndAuthCommandExecuterManager.Register(new Commands.GetQpInstructions.Request(), getQpInstructions);
 
-            ClearCommandExecuterManagers();
-            RegisterCommandExecuterManagers([connectAndAuthCommandExecuterManager]);
-            ClearNoticeHandlerManagers();
+            authedCommandExecuterManagerList.Insert(0, connectAndAuthCommandExecuterManager);
+            
+            InitCommandExecuterManagers([connectAndAuthCommandExecuterManager]);
+            InitNoticeHandlerManagers(null);
             ClearPackageHandlerDict();
 
             InitChannelStream(channelStream);
@@ -119,8 +120,9 @@ namespace Quick.Protocol
         {
             if (request.TransportTimeout < 3000)
                 throw new ArgumentException($"'TransportTimeout' must greater than 3000");
-            RegisterCommandExecuterManagers(authedCommandExecuterManagerList);
-            RegisterNoticeHandlerManagers(authedNoticeHandlerManagerList);
+
+            InitCommandExecuterManagers(authedCommandExecuterManagerList.ToArray());
+            InitNoticeHandlerManagers(authedNoticeHandlerManagerList.ToArray());
             EnableCompress = request.EnableCompress;
             EnableEncrypt = request.EnableEncrypt;
             EncryptAlgorithm = request.EncryptAlgorithm;

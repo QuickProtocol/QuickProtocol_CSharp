@@ -28,8 +28,11 @@ namespace Quick.Protocol
             Disconnect();
             Init();
 
-            RegisterCommandExecuterManagers(Options.CommandExecuterManagerList);
-            RegisterNoticeHandlerManagers(Options.NoticeHandlerManagerList);
+            if (Options.CommandExecuterManagerList != null)
+                InitCommandExecuterManagers(Options.CommandExecuterManagerList.ToArray());
+                
+            if (Options.NoticeHandlerManagerList != null)
+                InitNoticeHandlerManagers(Options.NoticeHandlerManagerList.ToArray());
 
             cts = new CancellationTokenSource();
             var token = cts.Token;

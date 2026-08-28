@@ -174,18 +174,6 @@ namespace Quick.Protocol
             commandDict.Clear();
         }
 
-        public void ClearCommandExecuterManagers()
-        {
-            lock (commandExecuterManagerLock)
-                commandExecuterManagers = Array.Empty<CommandExecuterManager>();
-        }
-
-        public void ClearNoticeHandlerManagers()
-        {
-            lock (noticeHandlerManagerLock)
-                noticeHandlerManagers = Array.Empty<NoticeHandlerManager>();
-        }
-
         /// <summary>
         /// 获取未被使用的包类型
         /// </summary>
@@ -207,12 +195,26 @@ namespace Quick.Protocol
                 packageHandlerDict.Clear();
         }
 
+        /// <summary>
+        /// 初始化指令执行器管理器
+        /// </summary>
+        /// <param name="commandExecuterManagers"></param>
+        protected void InitCommandExecuterManagers(CommandExecuterManager[] commandExecuterManagers)
+        {
+            lock (commandExecuterManagerLock)
+            {
+                this.commandExecuterManagers = commandExecuterManagers;
+                if(this.commandExecuterManagers==null)
+                this.commandExecuterManagers = Array.Empty<CommandExecuterManager>();
+            }
+        }
+
         // <summary>
         // 注册指令执行器管理器
         // </summary>
         public void RegisterCommandExecuterManager(CommandExecuterManager commandExecuterManager)
         {
-            if (commandExecuterManagers == null)
+            if (commandExecuterManager == null)
                 return;
             lock (commandExecuterManagerLock)
             {
@@ -225,12 +227,26 @@ namespace Quick.Protocol
         }
 
         /// <summary>
+        /// 初始化通知处理管理器
+        /// </summary>
+        /// <param name="noticeHandlerManagers"></param>
+        protected void InitNoticeHandlerManagers(NoticeHandlerManager[] noticeHandlerManagers)
+        {
+            lock (noticeHandlerManagerLock)
+            {
+                this.noticeHandlerManagers = noticeHandlerManagers;
+                if(this.noticeHandlerManagers==null)
+                    this.noticeHandlerManagers= Array.Empty<NoticeHandlerManager>();
+            }
+        }
+
+        /// <summary>
         /// 注册通知处理器管理器
         /// </summary>
         /// <param name="noticeHandlerManager"></param>
         public void RegisterNoticeHandlerManager(NoticeHandlerManager noticeHandlerManager)
         {
-            if (noticeHandlerManagers == null)
+            if (noticeHandlerManager == null)
                 return;
             lock (noticeHandlerManagerLock)
             {
@@ -289,8 +305,8 @@ namespace Quick.Protocol
             if (shouldRaiseDisconnectedEvent)
                 Disconnected?.Invoke(this, EventArgs.Empty);
             ClearCommandDict();
-            ClearCommandExecuterManagers();
-            ClearNoticeHandlerManagers();
+            InitCommandExecuterManagers(null);
+            InitNoticeHandlerManagers(null);
             ClearPackageHandlerDict();
             enc?.Dispose();
             enc = null;
