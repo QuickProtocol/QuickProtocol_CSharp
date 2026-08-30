@@ -29,6 +29,7 @@ class Program
 
         await TestTcpServerClient();
         await TestTcpReconnection();
+        await TestTcpCompressAndEncrypt();
         await TestPipelineServerClient();
         await TestServerDispose();
         await TestClientDispose();
@@ -184,6 +185,109 @@ class Program
         client.Dispose();
         server.Stop();
         Console.WriteLine();
+    }
+
+    /// <summary>
+    /// 大负载往返测试：覆盖「明文/仅压缩/仅加密/压缩+加密」四种组合。
+    /// 负载取 200KB，同时是两处历史缺陷的回归守卫：
+    /// 1) 包体达到 Pipe 默认背压阈值 64KB 时，await FlushAsync() 会先阻塞、
+    ///    而解除背压的 ReadAtLeastAsync 排在其后 —— 顺序颠倒即死锁，通道永久挂死；
+    /// 2) 每种组合连续发送两个不同负载，第二个用于验证管道读取位置被正确推进：
+    ///    若 AdvanceTo 被跳过，管道残留上次字节，后续包会读到脏数据，往返内容必然不一致。
+    /// </summary>
+    static async Task TestTcpCompressAndEncrypt()
+    {
+        Console.WriteLine("[Test] TCP large-payload round-trip (200KB)");
+
+        const int payloadLength = 200 * 1024;
+
+        var cases = new (bool Compress, bool Encrypt, string Label)[]
+        {
+            (false, false, "plain"),
+            (true, false, "compress"),
+            (false, true, "encrypt"),
+            (true, true, "compress+encrypt"),
+        };
+
+        foreach (var c in cases)
+            await RunCompressEncryptRoundTrip(c.Label, c.Compress, c.Encrypt, payloadLength, 15000);
+
+        Console.WriteLine();
+    }
+
+    /// <summary>
+    /// 构造高熵大负载：压缩后仍然足够大，可跨越多个 Pipe 内存段，
+    /// 从而覆盖 writePackageBuffer 中「逐段写出」的多段分支。
+    /// </summary>
+    static string BuildLargePayload(int length, int seed)
+    {
+        const string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var random = new Random(seed);
+        var chars = new char[length];
+        for (var i = 0; i < length; i++)
+            chars[i] = alphabet[random.Next(alphabet.Length)];
+        return new string(chars);
+    }
+
+    static async Task RunCompressEncryptRoundTrip(string name, bool enableCompress, bool enableEncrypt,
+        int payloadLength, int timeoutMs)
+    {
+        var port = 3400 + Random.Shared.Next(100);
+        var serverOptions = new QpTcpServerOptions
+        {
+            Address = IPAddress.Loopback.ToString(),
+            Port = port,
+            Password = "TestPass",
+            ServerProgram = "SmokeTest"
+        };
+        var server = CreateAndStartServer(serverOptions);
+        await Task.Delay(500);
+
+        var clientOptions = new QpTcpClientOptions
+        {
+            Host = "127.0.0.1",
+            Port = port,
+            Password = "TestPass",
+            EnableCompress = enableCompress,
+            EnableEncrypt = enableEncrypt
+        };
+        var client = clientOptions.CreateClient();
+        try
+        {
+            await client.ConnectAsync();
+            Assert(client.IsConnected, $"[{name}] Client connected");
+
+            // 等待服务端完成通道注册
+            await Task.Delay(500);
+
+            var payload1 = BuildLargePayload(payloadLength, seed: 1);
+            var payload2 = BuildLargePayload(Math.Max(1024, payloadLength / 2), seed: 2);
+
+            var rep1 = await client.SendCommand(new Quick.Protocol.Commands.PrivateCommand.Request
+            {
+                Action = "echo",
+                Content = payload1
+            }, timeoutMs);
+            Assert(rep1?.Content == payload1, $"[{name}] Payload round-trip");
+
+            // 再发一次：验证管道读取位置已推进，未残留上一次的字节
+            var rep2 = await client.SendCommand(new Quick.Protocol.Commands.PrivateCommand.Request
+            {
+                Action = "echo",
+                Content = payload2
+            }, timeoutMs);
+            Assert(rep2?.Content == payload2, $"[{name}] Second round-trip (pipes advanced)");
+        }
+        catch (Exception ex)
+        {
+            Assert(false, $"[{name}] Exception: {ex.GetType().Name}: {ex.Message}");
+        }
+        finally
+        {
+            client.Dispose();
+            server.Stop();
+            await Task.Delay(100);
+        }
     }
 
     static async Task TestPipelineServerClient()
