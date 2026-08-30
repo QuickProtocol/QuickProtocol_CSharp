@@ -39,7 +39,6 @@ namespace Quick.Protocol.Http.Server.AspNetCore
             private Pipe readPipe;
             private Pipe writePipe;
             private QpHttpServerOptions options;
-            private byte[] buffer;
 
             public QpHttpContext(QpHttpServerOptions options, string channelId, string connectionInfo, CancellationTokenSource cts)
             {
@@ -50,7 +49,6 @@ namespace Quick.Protocol.Http.Server.AspNetCore
                 readPipe = new();
                 writePipe = new();
                 Stream = new PipesStream(channelId, readPipe, writePipe);
-                buffer = new byte[options.MaxHttpResponseSize];
             }
 
             public async Task OnDataRecvAsync(Stream body)
@@ -76,15 +74,9 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
                     rep.ContentType = "application/octet-stream";
                     rep.ContentLength = readResult.Buffer.Length;
-                    var currentSeq = readResult.Buffer;
-                    while (currentSeq.Length > 0)
-                    {
-                        var length = Math.Min(buffer.Length, (int)currentSeq.Length);
-                        currentSeq.CopyTo(buffer);
-                        await rep.Body.WriteAsync(buffer, 0, length);
-                        currentSeq = currentSeq.Slice(length);
-                    }
-                    writePipe.Reader.AdvanceTo(readResult.Buffer.GetPosition(readResult.Buffer.Length));
+                    foreach (var memory in readResult.Buffer)
+                        await rep.Body.WriteAsync(memory).ConfigureAwait(false);
+                    writePipe.Reader.AdvanceTo(readResult.Buffer.End);
                 }
                 catch (OperationCanceledException)
                 {

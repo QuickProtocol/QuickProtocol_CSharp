@@ -46,11 +46,6 @@ namespace Quick.Protocol.Http.Server.AspNetCore
         /// </summary>
         [JsonConverter(typeof(QpJsonInt32Converter))]
         public int LongPollingTimeout { get; set; } = 100 * 1000;
-        /// <summary>
-        /// 最大HTTP响应大小
-        /// </summary>
-        [JsonConverter(typeof(QpJsonInt32Converter))]
-        public int MaxHttpResponseSize { get; set; } = 100 * 1024;
 
         public override QpServer CreateServer()
         {
