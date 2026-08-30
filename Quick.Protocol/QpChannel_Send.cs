@@ -152,9 +152,8 @@ namespace Quick.Protocol
                 //发送
                 var reader = sendRawPipe.Reader;
                 var rawRet = await reader.ReadAtLeastAsync(packageTotalLength);
-                using (var sequenceByteStream = new ReadOnlySequenceByteStream(rawRet.Buffer))
-                    await sequenceByteStream.CopyToAsync(stream)
-                        .WaitAsync(TimeSpan.FromMilliseconds(TransportTimeout))
+                foreach(var memory in rawRet.Buffer)
+                    await stream.WriteAsync(memory)
                         .ConfigureAwait(false);
                 if (Options.EnableNetstat)
                 {
