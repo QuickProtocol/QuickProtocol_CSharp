@@ -40,144 +40,169 @@ namespace Quick.Protocol
             //不带包头的包体
             ReadOnlySequence<byte> packageBodyBuffer = ReadOnlySequence<byte>.Empty;
             ReadResult readRet;
-            if (packageBodyLength > 0)
+            //是否已从 currentReader 读取过包体。
+            //注意：加密过程中 packageBodyLength 会被临时置 0，
+            //因此不能用 packageBodyLength > 0 判断是否需要推进读取位置，必须用独立标记。
+            var bodyRead = false;
+            try
             {
-                readRet = await currentReader.ReadAtLeastAsync(packageBodyLength);
-                packageBodyBuffer = readRet.Buffer;
-            }
-
-            int packageTotalLength = PACKAGE_HEAD_LENGTH + packageBodyLength;
-
-            if (Options.Logger is { LogPackage: true })
-            {
-                var sb = new StringBuilder();
-                sb.Append($"{DateTime.Now}: [Send-Package]Type: {packageType}");
                 if (packageBodyLength > 0)
                 {
-                    if (Options.Logger.LogContent)
-                        sb.Append(", Content: " + Convert.ToHexString(packageBodyBuffer.ToArray()));
-                    else
-                        sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-                }
-
-                Options.Logger.Log(sb.ToString());
-            }
-
-            //如果有包体，且启用了压缩或者加密
-            if (packageBodyLength > 0 && !ignoreCompressAndEncrypt &&
-                (EnableCompress || EnableEncrypt))
-            {
-                //如果压缩
-                if (EnableCompress)
-                {
-                    if (writeCompressPipe == null)
-                        writeCompressPipe = new Pipe();
-                    using (var inStream = new ReadOnlySequenceByteStream(packageBodyBuffer))
-                    using (var outStream = new PipeWriterStream(writeCompressPipe.Writer, true))
-                    {
-                        using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))
-                        {
-                            await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
-                        }
-
-                        packageBodyLength = Convert.ToInt32(outStream.Length);
-                        await writeCompressPipe.Writer.FlushAsync().ConfigureAwait(false);
-                    }
-
-                    //压缩完成，释放资源
-                    currentReader?.AdvanceTo(packageBodyBuffer.End);
-                    readRet = await writeCompressPipe.Reader.ReadAtLeastAsync(packageBodyLength).ConfigureAwait(false);
+                    readRet = await currentReader.ReadAtLeastAsync(packageBodyLength);
                     packageBodyBuffer = readRet.Buffer;
-
-                    //包总长度
-                    packageTotalLength = PACKAGE_HEAD_LENGTH + packageBodyLength;
-                    currentReader = writeCompressPipe.Reader;
+                    bodyRead = true;
                 }
 
-                //如果加密
-                if (EnableEncrypt)
-                {
-                    //准备管道
-                    if (writeEncryptPipe == null)
-                        writeEncryptPipe = new Pipe();
+                int packageTotalLength = PACKAGE_HEAD_LENGTH + packageBodyLength;
 
-                    packageBodyLength = 0;
-                    try
-                    {
-                        //开始加密
-                        using (var readMs = new ReadOnlySequenceByteStream(packageBodyBuffer))
-                        using (var writeMs = new PipeWriterStream(writeEncryptPipe.Writer, true))
-                        using (var encryptStream = new CryptoStream(writeMs, enc, CryptoStreamMode.Write))
-                        {
-                            await readMs.CopyToAsync(encryptStream);
-                            await encryptStream.FlushFinalBlockAsync();
-                            await encryptStream.FlushAsync();
-                            packageBodyLength = Convert.ToInt32(writeMs.Length);
-                            await writeEncryptPipe.Writer.FlushAsync().ConfigureAwait(false);
-                        }
-                        //加密完成，释放缓存
-                        currentReader?.AdvanceTo(packageBodyBuffer.End);
-                        var ret = await writeEncryptPipe.Reader.ReadAtLeastAsync(packageBodyLength);                        
-                        packageBodyBuffer = ret.Buffer;
-
-                        //包总长度
-                        packageTotalLength = PACKAGE_HEAD_LENGTH + packageBodyLength;
-                        currentReader = writeEncryptPipe.Reader;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new IOException("发送数据加密时出错", ex);
-                    }
-                }
-            }
-
-            //发送数据
-            {
-                var writer = sendRawPipe.Writer;
-                var headMemory = writer.GetMemory(PACKAGE_HEAD_LENGTH);
-                //包头
-                BinaryPrimitives.WriteInt32BigEndian(headMemory.Span, packageTotalLength);
-                headMemory.Span[4] = packageType;
-                writer.Advance(PACKAGE_HEAD_LENGTH);
-                //包体
-                if (packageBodyLength > 0)
-                {
-                    var bodyMemory = writer.GetMemory(packageBodyLength);
-                    packageBodyBuffer.CopyTo(bodyMemory.Span);
-                    writer.Advance(packageBodyLength);
-                }
-
-                await writer.FlushAsync().ConfigureAwait(false);
-
-                //发送
-                var reader = sendRawPipe.Reader;
-                var rawRet = await reader.ReadAtLeastAsync(packageTotalLength);
-                foreach(var memory in rawRet.Buffer)
-                    await stream.WriteAsync(memory)
-                        .ConfigureAwait(false);
-                if (Options.EnableNetstat)
-                {
-                    BytesSent += packageTotalLength;
-                    if (BytesSent > LONG_HALF_MAX_VALUE)
-                        BytesSent = 0;
-                }
-
-                if (Options.Logger is { LogRaw: true })
+                if (Options.Logger is { LogPackage: true })
                 {
                     var sb = new StringBuilder();
-                    sb.Append($"{DateTime.Now}: [Send-Raw]Length: {packageTotalLength}");
-                    if (Options.Logger.LogContent)
-                        sb.Append(", Content: " + Convert.ToHexString(rawRet.Buffer.ToArray()));
-                    else
-                        sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                    sb.Append($"{DateTime.Now}: [Send-Package]Type: {packageType}");
+                    if (packageBodyLength > 0)
+                    {
+                        if (Options.Logger.LogContent)
+                            sb.Append(", Content: " + Convert.ToHexString(packageBodyBuffer.ToArray()));
+                        else
+                            sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                    }
+
                     Options.Logger.Log(sb.ToString());
                 }
 
-                reader.AdvanceTo(rawRet.Buffer.End);
+                //如果有包体，且启用了压缩或者加密
+                if (packageBodyLength > 0 && !ignoreCompressAndEncrypt &&
+                    (EnableCompress || EnableEncrypt))
+                {
+                    //如果压缩
+                    if (EnableCompress)
+                    {
+                        if (writeCompressPipe == null)
+                            writeCompressPipe = new Pipe();
+                        using (var inStream = new ReadOnlySequenceByteStream(packageBodyBuffer))
+                        using (var outStream = new PipeWriterStream(writeCompressPipe.Writer, true))
+                        {
+                            using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))
+                            {
+                                await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
+                            }
+
+                            packageBodyLength = Convert.ToInt32(outStream.Length);
+                            await writeCompressPipe.Writer.FlushAsync().ConfigureAwait(false);
+                        }
+
+                        //压缩完成，释放资源
+                        currentReader?.AdvanceTo(packageBodyBuffer.End);
+                        readRet = await writeCompressPipe.Reader.ReadAtLeastAsync(packageBodyLength).ConfigureAwait(false);
+                        packageBodyBuffer = readRet.Buffer;
+
+                        //包总长度
+                        packageTotalLength = PACKAGE_HEAD_LENGTH + packageBodyLength;
+                        currentReader = writeCompressPipe.Reader;
+                    }
+
+                    //如果加密
+                    if (EnableEncrypt)
+                    {
+                        //准备管道
+                        if (writeEncryptPipe == null)
+                            writeEncryptPipe = new Pipe();
+
+                        packageBodyLength = 0;
+                        try
+                        {
+                            //开始加密
+                            using (var readMs = new ReadOnlySequenceByteStream(packageBodyBuffer))
+                            using (var writeMs = new PipeWriterStream(writeEncryptPipe.Writer, true))
+                            using (var encryptStream = new CryptoStream(writeMs, enc, CryptoStreamMode.Write))
+                            {
+                                await readMs.CopyToAsync(encryptStream);
+                                await encryptStream.FlushFinalBlockAsync();
+                                await encryptStream.FlushAsync();
+                                packageBodyLength = Convert.ToInt32(writeMs.Length);
+                                await writeEncryptPipe.Writer.FlushAsync().ConfigureAwait(false);
+                            }
+                            //加密完成，释放缓存
+                            currentReader?.AdvanceTo(packageBodyBuffer.End);
+                            var ret = await writeEncryptPipe.Reader.ReadAtLeastAsync(packageBodyLength);
+                            packageBodyBuffer = ret.Buffer;
+
+                            //包总长度
+                            packageTotalLength = PACKAGE_HEAD_LENGTH + packageBodyLength;
+                            currentReader = writeEncryptPipe.Reader;
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new IOException("发送数据加密时出错", ex);
+                        }
+                    }
+                }
+
+                //发送数据
+                {
+                    var writer = sendRawPipe.Writer;
+                    var headMemory = writer.GetMemory(PACKAGE_HEAD_LENGTH);
+                    //包头
+                    BinaryPrimitives.WriteInt32BigEndian(headMemory.Span, packageTotalLength);
+                    headMemory.Span[4] = packageType;
+                    writer.Advance(PACKAGE_HEAD_LENGTH);
+                    //包体
+                    if (packageBodyLength > 0)
+                    {
+                        var bodyMemory = writer.GetMemory(packageBodyLength);
+                        packageBodyBuffer.CopyTo(bodyMemory.Span);
+                        writer.Advance(packageBodyLength);
+                    }
+
+                    await writer.FlushAsync().ConfigureAwait(false);
+
+                    //发送
+                    var reader = sendRawPipe.Reader;
+                    var rawRet = await reader.ReadAtLeastAsync(packageTotalLength);
+                    try
+                    {
+                        foreach (var memory in rawRet.Buffer)
+                            await stream.WriteAsync(memory).AsTask()
+                                .WaitAsync(TimeSpan.FromMilliseconds(TransportTimeout))
+                                .ConfigureAwait(false);
+                        if (Options.EnableNetstat)
+                        {
+                            BytesSent += packageTotalLength;
+                            if (BytesSent > LONG_HALF_MAX_VALUE)
+                                BytesSent = 0;
+                        }
+
+                        if (Options.Logger is { LogRaw: true })
+                        {
+                            var sb = new StringBuilder();
+                            sb.Append($"{DateTime.Now}: [Send-Raw]Length: {packageTotalLength}");
+                            if (Options.Logger.LogContent)
+                                sb.Append(", Content: " + Convert.ToHexString(rawRet.Buffer.ToArray()));
+                            else
+                                sb.Append(QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                            Options.Logger.Log(sb.ToString());
+                        }
+                    }
+                    finally
+                    {
+                        //无论写出成功与否都必须推进读取位置：否则 sendRawPipe 会残留未消费字节，
+                        //下次发送会连带把旧数据一起写出，造成字节流错位。
+                        reader.AdvanceTo(rawRet.Buffer.End);
+                    }
+                }
+                await stream.FlushAsync().ConfigureAwait(false);
             }
-            if (packageBodyLength > 0)
-                currentReader?.AdvanceTo(packageBodyBuffer.End);
-            await stream.FlushAsync().ConfigureAwait(false);
+            finally
+            {
+                //无论成功或异常都必须推进包体读取位置，否则管道残留未消费字节，
+                //下次发送会连带写出旧数据，造成字节流错位。
+                //尤其 sendPipe 是通道级 readonly Pipe（Disconnect 也不会 Complete 它），
+                //残留未消费字节会永久污染该通道，连重连都无法恢复。
+                if (bodyRead)
+                {
+                    try { currentReader?.AdvanceTo(packageBodyBuffer.End); } catch { }
+                }
+            }
         }
         
         /// <summary>
