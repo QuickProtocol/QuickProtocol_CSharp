@@ -129,8 +129,10 @@ namespace Quick.Protocol
                         if (EnableEncrypt)
                         {
                             //准备管道
+                            //使用关闭背压的管道选项：本管道是「先整体解密写入、再整体读出」的暂存，
+                            //若沿用默认 64KB 背压，FlushAsync 会先阻塞、而解除背压的读取在其后，形成死锁。
                             if (decryptPipe == null)
-                                decryptPipe = new Pipe();
+                                decryptPipe = new Pipe(STAGING_PIPE_OPTIONS);
                             packageBodyLength = 0;
 
                             try
@@ -168,7 +170,7 @@ namespace Quick.Protocol
                         {
                             //准备管道
                             if (decompressPipe == null)
-                                decompressPipe = new Pipe();
+                                decompressPipe = new Pipe(STAGING_PIPE_OPTIONS);
 
                             packageBodyLength = 0;
                             //开始解压

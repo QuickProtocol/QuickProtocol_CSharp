@@ -11,8 +11,18 @@ namespace Quick.Protocol
 {
     public abstract partial class QpChannel
     {
-        private readonly Pipe sendPipe = new Pipe();
-        private readonly Pipe sendRawPipe = new Pipe();
+        /// <summary>
+        /// 发送/接收侧暂存管道选项：关闭背压（pauseWriterThreshold 取 long.MaxValue）。
+        /// 这些管道仅用于「先完整组包/转换，再整体取出」的暂存，写入与读取是严格串行的
+        /// （写满一个包 → 立刻读完 → AdvanceTo），不存在并发流式生产，背压没有收益。
+        /// 若沿用默认的 64KB 背压阈值，await FlushAsync() 会在数据量达到阈值时阻塞，
+        /// 而紧随其后的 ReadAtLeastAsync 才是解除背压的读取方——顺序颠倒即形成死锁，
+        /// 任何 ≥64KB 的包都会永久挂死通道。
+        /// </summary>
+        private static readonly PipeOptions STAGING_PIPE_OPTIONS = new PipeOptions(pauseWriterThreshold: long.MaxValue);
+
+        private readonly Pipe sendPipe = new Pipe(STAGING_PIPE_OPTIONS);
+        private readonly Pipe sendRawPipe = new Pipe(STAGING_PIPE_OPTIONS);
 
         /// <summary>
         /// 当发送出错时
@@ -78,7 +88,7 @@ namespace Quick.Protocol
                     if (EnableCompress)
                     {
                         if (writeCompressPipe == null)
-                            writeCompressPipe = new Pipe();
+                            writeCompressPipe = new Pipe(STAGING_PIPE_OPTIONS);
                         using (var inStream = new ReadOnlySequenceByteStream(packageBodyBuffer))
                         using (var outStream = new PipeWriterStream(writeCompressPipe.Writer, true))
                         {
@@ -106,7 +116,7 @@ namespace Quick.Protocol
                     {
                         //准备管道
                         if (writeEncryptPipe == null)
-                            writeEncryptPipe = new Pipe();
+                            writeEncryptPipe = new Pipe(STAGING_PIPE_OPTIONS);
 
                         packageBodyLength = 0;
                         try
