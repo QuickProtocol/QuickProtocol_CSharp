@@ -89,14 +89,11 @@ namespace Quick.Protocol
                     {
                         if (writeCompressPipe == null)
                             writeCompressPipe = new Pipe(STAGING_PIPE_OPTIONS);
-                        using (var inStream = new ReadOnlySequenceByteStream(packageBodyBuffer))
                         using (var outStream = new PipeWriterStream(writeCompressPipe.Writer, true))
                         {
                             using (var gzStream = new GZipStream(outStream, CompressionMode.Compress, true))
-                            {
-                                await inStream.CopyToAsync(gzStream).ConfigureAwait(false);
-                            }
-
+                                foreach (var memory in packageBodyBuffer)
+                                    await gzStream.WriteAsync(memory);
                             packageBodyLength = Convert.ToInt32(outStream.Length);
                             await writeCompressPipe.Writer.FlushAsync().ConfigureAwait(false);
                         }
@@ -122,11 +119,11 @@ namespace Quick.Protocol
                         try
                         {
                             //开始加密
-                            using (var readMs = new ReadOnlySequenceByteStream(packageBodyBuffer))
                             using (var writeMs = new PipeWriterStream(writeEncryptPipe.Writer, true))
                             using (var encryptStream = new CryptoStream(writeMs, enc, CryptoStreamMode.Write))
                             {
-                                await readMs.CopyToAsync(encryptStream);
+                                foreach (var memory in packageBodyBuffer)
+                                    await encryptStream.WriteAsync(memory);
                                 await encryptStream.FlushFinalBlockAsync();
                                 await encryptStream.FlushAsync();
                                 packageBodyLength = Convert.ToInt32(writeMs.Length);
