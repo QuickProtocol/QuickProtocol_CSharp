@@ -64,17 +64,13 @@ public class HttpClientsStream : Stream
         }
     }
 
+    /// <summary>
+    /// 不支持同步读取。底层是 PipeReader + HttpClient，均只有异步 API，
+    /// 以 .Result 阻塞等待会在带 SynchronizationContext 的线程（UI / 老式 ASP.NET）上死锁。
+    /// 本流的使用方（QpChannel 收发循环）全部走异步重载。
+    /// </summary>
     public override int Read(byte[] buffer, int offset, int count)
-    {
-        var readRet = recvPipe.Reader.ReadAsync(cts.Token).Result;
-        if (readRet.Buffer.IsEmpty)
-            return 0;
-        var ret = Math.Min((int)readRet.Buffer.Length, count);
-        var srcBuffer = readRet.Buffer.Slice(0, ret);
-        srcBuffer.CopyTo(new Span<byte>(buffer, offset, ret));
-        recvPipe.Reader.AdvanceTo(readRet.Buffer.GetPosition(ret));
-        return ret;
-    }
+        => throw new NotSupportedException($"{nameof(HttpClientsStream)} 不支持同步读取，请使用 ReadAsync。");
 
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
@@ -88,13 +84,12 @@ public class HttpClientsStream : Stream
         return ret;
     }
 
+    /// <summary>
+    /// 不支持同步写入。理由同 <see cref="Read(byte[], int, int)"/>：HttpClient 无同步 API，
+    /// 以 .Result 阻塞等待会在带 SynchronizationContext 的线程上死锁。
+    /// </summary>
     public override void Write(byte[] buffer, int offset, int count)
-    {
-        var httpContent = new ByteArrayContent(buffer, offset, count);
-        var rep = sendClient.PostAsync(url, httpContent).Result;
-        if (!rep.IsSuccessStatusCode)
-            throw new IOException($"{rep.StatusCode} {rep.ReasonPhrase}");
-    }
+        => throw new NotSupportedException($"{nameof(HttpClientsStream)} 不支持同步写入，请使用 WriteAsync。");
 
     public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {

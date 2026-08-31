@@ -23,11 +23,13 @@ namespace Quick.Protocol.WebSocket.Client
             this.client = client;
         }
 
+        /// <summary>
+        /// 不支持同步读取。ClientWebSocket 仅提供异步 API，若在此以 .Result 阻塞等待，
+        /// 从带 SynchronizationContext 的线程（UI / 老式 ASP.NET）调用会死锁。
+        /// 本流的使用方（QpChannel 收发循环）全部走异步重载。
+        /// </summary>
         public override int Read(byte[] buffer, int offset, int count)
-        {
-            var result = client.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), CancellationToken.None).Result;
-            return result.Count;
-        }
+            => throw new NotSupportedException($"{nameof(WebSocketClientStream)} 不支持同步读取，请使用 ReadAsync。");
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             => ReadAsync(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
@@ -42,14 +44,12 @@ namespace Quick.Protocol.WebSocket.Client
             return result.Count;
         }
 
+        /// <summary>
+        /// 不支持同步写入。理由同 <see cref="Read(byte[], int, int)"/>：ClientWebSocket 无同步 API，
+        /// 以 .Wait() 阻塞等待会在带 SynchronizationContext 的线程上死锁。
+        /// </summary>
         public override void Write(byte[] buffer, int offset, int count)
-        {
-            client.SendAsync(
-                new ArraySegment<byte>(buffer, offset, count),
-                System.Net.WebSockets.WebSocketMessageType.Binary,
-                true,
-                CancellationToken.None).Wait();
-        }
+            => throw new NotSupportedException($"{nameof(WebSocketClientStream)} 不支持同步写入，请使用 WriteAsync。");
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             => WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).AsTask();
