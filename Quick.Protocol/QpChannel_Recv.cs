@@ -7,6 +7,7 @@ using Quick.Protocol.Streams;
 using Quick.Utils;
 using System.Buffers.Binary;
 using System.Security.Cryptography;
+using System.Runtime.InteropServices;
 
 namespace Quick.Protocol
 {
@@ -71,8 +72,6 @@ namespace Quick.Protocol
             //包体长度
             int packageBodyLength;
             byte packageType;
-            //暂存包头缓存
-            var packageHeadBuffer = new byte[PACKAGE_HEAD_LENGTH];
             ReadOnlySequence<byte> packageBodyBuffer;
 
             //解密相关变量
@@ -94,12 +93,32 @@ namespace Quick.Protocol
                             return;
                         if (ret.Buffer.Length < PACKAGE_HEAD_LENGTH)
                             throw new ProtocolException(ret.Buffer, $"包头读取错误！包头长度：{PACKAGE_HEAD_LENGTH}，读取数据长度：{ret.Buffer.Length}");
+                        
+                        var packageHeadBuffer = ret.Buffer.Slice(0, 5);
 
-                        //解析包总长度
-                        var packageTotalLength = parsePackageTotalLength(ret.Buffer, packageHeadBuffer);
+                        var packageTotalLength = 0;
+                        if (packageHeadBuffer.IsSingleSegment)
+                        {
+                            var packageHeadSpan = packageHeadBuffer.FirstSpan;
+                            packageTotalLength = BinaryPrimitives.ReadInt32BigEndian(packageHeadSpan);
+                            packageType = packageHeadSpan[PACKAGE_TOTAL_LENGTH_LENGTH];
+                        }
+                        else
+                        {
+                            var numberSpan = MemoryMarshal.CreateSpan(ref packageTotalLength, 1);
+                            var byteSpan = MemoryMarshal.AsBytes(numberSpan);
+                            packageHeadBuffer.Slice(0, byteSpan.Length).CopyTo(byteSpan);
+                            //如果是小端字节序，则交换
+                            if (BitConverter.IsLittleEndian)
+                                byteSpan.Reverse();
+                            packageType = packageHeadBuffer.Slice(byteSpan.Length).FirstSpan[0];
+                        }
+                        if (packageTotalLength < PACKAGE_HEAD_LENGTH)
+                            throw new ProtocolException(ret.Buffer, $"包长度[{packageTotalLength}]必须大于等于{PACKAGE_HEAD_LENGTH}！");
+                        if (packageTotalLength > Options.MaxPackageSize)
+                            throw new ProtocolException(ret.Buffer, $"包长度[{packageTotalLength}]大于最大包大小[{Options.MaxPackageSize}]");
+
                         packageBodyLength = packageTotalLength - PACKAGE_HEAD_LENGTH;
-
-                        packageType = packageHeadBuffer[PACKAGE_TOTAL_LENGTH_LENGTH];
                         currentReader.AdvanceTo(ret.Buffer.Start);
 
                         //读取完整包
@@ -260,18 +279,6 @@ namespace Quick.Protocol
                     await pipe.Reader.CompleteAsync();
                 }
             });
-        }
-
-        //解析包总长度
-        private int parsePackageTotalLength(ReadOnlySequence<byte> sequence, byte[] buffer)
-        {
-            sequence.Slice(0, PACKAGE_HEAD_LENGTH).CopyTo(buffer);
-            var packageTotalLength = BinaryPrimitives.ReadInt32BigEndian(new ReadOnlySpan<byte>(buffer));
-            if (packageTotalLength < PACKAGE_HEAD_LENGTH)
-                throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]必须大于等于{PACKAGE_HEAD_LENGTH}！");
-            if (packageTotalLength > Options.MaxPackageSize)
-                throw new ProtocolException(new ReadOnlySequence<byte>(buffer), $"包长度[{packageTotalLength}]大于最大包大小[{Options.MaxPackageSize}]");
-            return packageTotalLength;
         }
     }
 }
