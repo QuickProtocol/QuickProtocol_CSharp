@@ -9,5 +9,13 @@
     <ProjectReference Include="..\Quick.Protocol\Quick.Protocol.csproj" />
     <ProjectReference Include="..\Quick.Protocol.Tcp\Quick.Protocol.Tcp.csproj" />
     <ProjectReference Include="..\Quick.Protocol.Pipeline\Quick.Protocol.Pipeline.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.Http.Client\Quick.Protocol.Http.Client.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.Http.Server.AspNetCore\Quick.Protocol.Http.Server.AspNetCore.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.WebSocket.Client\Quick.Protocol.WebSocket.Client.csproj" />
+    <ProjectReference Include="..\Quick.Protocol.WebSocket.Server.AspNetCore\Quick.Protocol.WebSocket.Server.AspNetCore.csproj" />
+  </ItemGroup>
+  <!-- HTTP / WebSocket 服务端基于 ASP.NET Core，需在测试宿主内启动 Kestrel -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 </Project>
