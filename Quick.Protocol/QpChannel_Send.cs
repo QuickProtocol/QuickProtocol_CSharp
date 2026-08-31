@@ -95,12 +95,12 @@ namespace Quick.Protocol
                                 foreach (var memory in packageBodyBuffer)
                                     await gzStream.WriteAsync(memory);
                             packageBodyLength = Convert.ToInt32(outStream.Length);
-                            await writeCompressPipe.Writer.FlushAsync().ConfigureAwait(false);
+                            await writeCompressPipe.Writer.FlushAsync();
                         }
 
                         //压缩完成，释放资源
                         currentReader?.AdvanceTo(packageBodyBuffer.End);
-                        readRet = await writeCompressPipe.Reader.ReadAtLeastAsync(packageBodyLength).ConfigureAwait(false);
+                        readRet = await writeCompressPipe.Reader.ReadAtLeastAsync(packageBodyLength);
                         packageBodyBuffer = readRet.Buffer;
 
                         //包总长度
@@ -127,7 +127,7 @@ namespace Quick.Protocol
                                 await encryptStream.FlushFinalBlockAsync();
                                 await encryptStream.FlushAsync();
                                 packageBodyLength = Convert.ToInt32(writeMs.Length);
-                                await writeEncryptPipe.Writer.FlushAsync().ConfigureAwait(false);
+                                await writeEncryptPipe.Writer.FlushAsync();
                             }
                             //加密完成，释放缓存
                             currentReader?.AdvanceTo(packageBodyBuffer.End);
@@ -161,7 +161,7 @@ namespace Quick.Protocol
                         writer.Advance(packageBodyLength);
                     }
 
-                    await writer.FlushAsync().ConfigureAwait(false);
+                    await writer.FlushAsync();
 
                     //发送
                     var reader = sendRawPipe.Reader;
@@ -197,7 +197,7 @@ namespace Quick.Protocol
                         reader.AdvanceTo(rawRet.Buffer.End);
                     }
                 }
-                await stream.FlushAsync().ConfigureAwait(false);
+                await stream.FlushAsync();
             }
             finally
             {
@@ -245,7 +245,7 @@ namespace Quick.Protocol
                 var packageBodyLength = 0;
                 if (packageBodyProvider != null)
                     packageBodyLength = await packageBodyProvider(sendPipe.Writer).ConfigureAwait(false);
-                await writePackageBuffer(sendPipe.Reader, packageType, packageBodyLength, ignoreCompressAndEncrypt);
+                await writePackageBuffer(sendPipe.Reader, packageType, packageBodyLength, ignoreCompressAndEncrypt).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
