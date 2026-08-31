@@ -72,14 +72,24 @@ public class HttpClientsStream : Stream
     public override int Read(byte[] buffer, int offset, int count)
         => throw new NotSupportedException($"{nameof(HttpClientsStream)} 不支持同步读取，请使用 ReadAsync。");
 
-    public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        => ReadAsync(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+
+    /// <summary>
+    /// 直接把管道数据拷入调用方内存，避免基类默认实现的 byte[] 中转，
+    /// 且返回 ValueTask（数据已缓冲、同步完成时零分配）。
+    /// </summary>
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
         var readRet = await recvPipe.Reader.ReadAsync(cancellationToken);
+        //每次 ReadAsync 都必须配对一次 AdvanceTo，否则下一次 ReadAsync 会抛 InvalidOperationException
         if (readRet.Buffer.IsEmpty)
+        {
+            recvPipe.Reader.AdvanceTo(readRet.Buffer.Start);
             return 0;
-        var ret = Math.Min((int)readRet.Buffer.Length, count);
-        var srcBuffer = readRet.Buffer.Slice(0, ret);
-        srcBuffer.CopyTo(new Span<byte>(buffer, offset, ret));
+        }
+        var ret = Math.Min((int)readRet.Buffer.Length, buffer.Length);
+        readRet.Buffer.Slice(0, ret).CopyTo(buffer.Span);
         recvPipe.Reader.AdvanceTo(readRet.Buffer.GetPosition(ret));
         return ret;
     }
@@ -91,12 +101,19 @@ public class HttpClientsStream : Stream
     public override void Write(byte[] buffer, int offset, int count)
         => throw new NotSupportedException($"{nameof(HttpClientsStream)} 不支持同步写入，请使用 WriteAsync。");
 
-    public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        => WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).AsTask();
+
+    /// <summary>
+    /// 用 ReadOnlyMemoryContent 直接包装调用方内存（与 ByteArrayContent 一样不复制数据），
+    /// 免去基类默认实现在非数组支撑内存上的租用+拷贝。
+    /// </summary>
+    public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        var httpContent = new ByteArrayContent(buffer, offset, count);
-        var rep = await sendClient.PostAsync(url, httpContent, cancellationToken);
-        if (!rep.IsSuccessStatusCode)
-            throw new IOException($"{rep.StatusCode} {rep.ReasonPhrase}");
+        var httpContent = new ReadOnlyMemoryContent(buffer);
+        using (var rep = await sendClient.PostAsync(url, httpContent, cancellationToken))
+            if (!rep.IsSuccessStatusCode)
+                throw new IOException($"{rep.StatusCode} {rep.ReasonPhrase}");
     }
 
     protected override void Dispose(bool disposing)
