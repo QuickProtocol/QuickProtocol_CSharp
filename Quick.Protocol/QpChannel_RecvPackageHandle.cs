@@ -77,10 +77,9 @@ namespace Quick.Protocol
                     {
                         string commandId;
                         if (bodyBuffer.IsSingleSegment)
-                            commandId = Convert.ToHexString(bodyBuffer.FirstSpan.Slice(0, COMMAND_ID_LENGTH));
+                            commandId = Convert.ToHexStringLower(bodyBuffer.FirstSpan.Slice(0, COMMAND_ID_LENGTH));
                         else
-                            commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray());
-                        commandId = commandId.ToLower();
+                            commandId = Convert.ToHexStringLower(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray());
                         bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
 
                         var typeNameLength = bodyBuffer.First.Span[0];
@@ -105,10 +104,9 @@ namespace Quick.Protocol
                     {
                         string commandId;
                         if (bodyBuffer.IsSingleSegment)
-                            commandId = Convert.ToHexString(bodyBuffer.FirstSpan.Slice(0, COMMAND_ID_LENGTH));
+                            commandId = Convert.ToHexStringLower(bodyBuffer.FirstSpan.Slice(0, COMMAND_ID_LENGTH));
                         else
-                            commandId = Convert.ToHexString(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray());
-                        commandId = commandId.ToLower();
+                            commandId = Convert.ToHexStringLower(bodyBuffer.Slice(0, COMMAND_ID_LENGTH).ToArray());
                         bodyBuffer = bodyBuffer.Slice(COMMAND_ID_LENGTH);
 
                         var code = bodyBuffer.First.Span[0];

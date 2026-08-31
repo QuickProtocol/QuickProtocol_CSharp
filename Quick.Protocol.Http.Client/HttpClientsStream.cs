@@ -71,7 +71,7 @@ public class HttpClientsStream : Stream
             return 0;
         var ret = Math.Min((int)readRet.Buffer.Length, count);
         var srcBuffer = readRet.Buffer.Slice(0, ret);
-        srcBuffer.CopyTo(new Span<byte>(buffer, 0, ret));
+        srcBuffer.CopyTo(new Span<byte>(buffer, offset, ret));
         recvPipe.Reader.AdvanceTo(readRet.Buffer.GetPosition(ret));
         return ret;
     }
@@ -83,7 +83,7 @@ public class HttpClientsStream : Stream
             return 0;
         var ret = Math.Min((int)readRet.Buffer.Length, count);
         var srcBuffer = readRet.Buffer.Slice(0, ret);
-        srcBuffer.CopyTo(new Span<byte>(buffer, 0, ret));
+        srcBuffer.CopyTo(new Span<byte>(buffer, offset, ret));
         recvPipe.Reader.AdvanceTo(readRet.Buffer.GetPosition(ret));
         return ret;
     }

@@ -42,10 +42,11 @@ namespace Quick.Protocol
 
         private async Task FillRecvPipeAsync(Stream stream, PipeWriter writer, CancellationToken token)
         {
-            var readBufferMemory = new Memory<byte>(new byte[minimumBufferSize]);
             while (!token.IsCancellationRequested)
             {
-                int bytesRead = await stream.ReadAsync(readBufferMemory, token);
+                //直接读进管道内存，省去一次全量 memcpy 与每连接缓冲分配
+                var memory = writer.GetMemory(minimumBufferSize);
+                int bytesRead = await stream.ReadAsync(memory, token);
                 if (bytesRead < 0)
                     throw new EndOfStreamException();
                 if (bytesRead == 0)
@@ -62,7 +63,7 @@ namespace Quick.Protocol
                     if (BytesReceived > LONG_HALF_MAX_VALUE)
                         BytesReceived = 0;
                 }
-                await writer.WriteAsync(readBufferMemory.Slice(0, bytesRead), token);
+                writer.Advance(bytesRead);
                 await writer.FlushAsync(token);
             }
         }
