@@ -24,7 +24,7 @@ namespace Quick.Protocol
         /// 最小传输超时时间
         /// </summary>
         public const int MIN_TRANSPORT_TIMEOUT = 3000;
-        private const int minimumBufferSize = 1024;
+        private const int minimumBufferSize = 4 * 1024;
 
         protected Stream channelStream;
         public QpChannelOptions Options { get; }
