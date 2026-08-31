@@ -529,8 +529,7 @@ namespace Quick.Protocol
             var requestType = request.GetType();
             var typeName = requestType.FullName;
             var requestSerializer = getTypeSerializer(requestType);
-            var requestContent = requestSerializer.Serialize(request);
-            await SendCommandRequestPackage(CommandContext.GenerateNewId(), typeName, requestContent).ConfigureAwait(false);
+            await SendCommandRequestPackage(CommandContext.GenerateNewId(), typeName, request, requestSerializer).ConfigureAwait(false);
         }
 
         protected async Task BeginHeartBeat(CancellationToken cancellationToken)
@@ -619,7 +618,6 @@ namespace Quick.Protocol
             var requestType = request.GetType();
             var typeName = requestType.FullName;
             var requestSerializer = getTypeSerializer(requestType);
-            var requestContent = requestSerializer.Serialize(request);
 
             var commandContext = new CommandContext(typeName);
             commandDict.TryAdd(commandContext.Id, commandContext);
@@ -629,13 +627,13 @@ namespace Quick.Protocol
             {
                 if (timeout <= 0)
                 {
-                    await SendCommandRequestPackage(commandContext.Id, typeName, requestContent, ignoreCompressAndEncrypt).ConfigureAwait(false);
+                    await SendCommandRequestPackage(commandContext.Id, typeName, request, requestSerializer, ignoreCompressAndEncrypt).ConfigureAwait(false);
                     ret = await commandContext.ResponseTask.ConfigureAwait(false);
                 }
                 //如果设置了超时
                 else
                 {
-                    await SendCommandRequestPackage(commandContext.Id, typeName, requestContent, ignoreCompressAndEncrypt)
+                    await SendCommandRequestPackage(commandContext.Id, typeName, request, requestSerializer, ignoreCompressAndEncrypt)
                         .WaitAsync(TimeSpan.FromMilliseconds(timeout))
                         .ConfigureAwait(false);
                     ret = await commandContext.ResponseTask
@@ -650,7 +648,7 @@ namespace Quick.Protocol
                 if (!commandContext.ResponseTask.IsCompleted)
                 {
                     if (Options.Logger is { LogCommand: true })
-                        Options.Logger.Log("{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandContext.Id, typeName, Options.Logger.LogContent ? requestContent : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                        Options.Logger.Log("{0}: [Send-CommandRequestPackage-Timeout]CommandId:{1},Type:{2},Content:{3}", DateTime.Now, commandContext.Id, typeName, Options.Logger.LogContent ? requestSerializer.Serialize(request) : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
                     commandContext.Timeout();
                     commandDict.TryRemove(commandContext.Id, out _);
                 }

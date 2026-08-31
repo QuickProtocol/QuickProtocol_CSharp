@@ -64,13 +64,11 @@ namespace Quick.Protocol
                         var typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
                         bodyBuffer = bodyBuffer.Slice(typeNameLength);
 
-                        var content = encoding.GetString(bodyBuffer);
-
                         if (Options.Logger is { LogNotice: true })
                             Options.Logger.Log("{0}: [Recv-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
-                                .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-                        //异步等待执行通知处理器
-                        await OnRawNoticePackageReceived(typeName, content);
+                                .Logger.LogContent ? encoding.GetString(bodyBuffer) : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                        //异步等待执行通知处理器（直接传模型字节，反序列化时免去二次转码）
+                        await OnRawNoticePackageReceived(typeName, bodyBuffer);
                         break;
                     }
                 case PACKAGETYPE_COMMAND_REQUEST:
@@ -91,13 +89,11 @@ namespace Quick.Protocol
                         var typeName = encoding.GetString(bodyBuffer.Slice(0, typeNameLength));
                         bodyBuffer = bodyBuffer.Slice(typeNameLength);
 
-                        var content = encoding.GetString(bodyBuffer);
-
                         if (Options.Logger != null && Options.Logger.LogCommand)
                             Options.Logger.Log("{0}: [Recv-CommandRequestPackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
-                                .Logger.LogContent ? content : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
-                        //异步执行命令请求事件处理器
-                        _ = OnCommandRequestReceived(commandId, typeName, content);
+                                .Logger.LogContent ? encoding.GetString(bodyBuffer) : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                        //异步执行命令请求事件处理器（直接传模型字节，反序列化时免去二次转码）
+                        _ = OnCommandRequestReceived(commandId, typeName, bodyBuffer);
                         break;
                     }
                 case PACKAGETYPE_COMMAND_RESPONSE:
@@ -165,20 +161,24 @@ namespace Quick.Protocol
         /// 接收到原始通知数据包时
         /// </summary>
         /// <param name="typeName"></param>
-        /// <param name="content"></param>
-        protected async Task OnRawNoticePackageReceived(string typeName, string content)
+        /// <param name="contentBuffer">模型 JSON 的 UTF-8 字节（已切掉 typeName 前缀）</param>
+        protected async Task OnRawNoticePackageReceived(string typeName, ReadOnlySequence<byte> contentBuffer)
         {
-            //触发RawNoticePackageReceived事件
-            RawNoticePackageReceived?.Invoke(this, new RawNoticePackageReceivedEventArgs()
+            //触发RawNoticePackageReceived事件（仅在订阅时把字节解码为字符串，避免热路径无谓分配）
+            if (RawNoticePackageReceived != null)
             {
-                TypeName = typeName,
-                Content = content
-            });
+                var content = encoding.GetString(contentBuffer);
+                RawNoticePackageReceived?.Invoke(this, new RawNoticePackageReceivedEventArgs()
+                {
+                    TypeName = typeName,
+                    Content = content
+                });
+            }
             //如果在字典中未找到此类型名称，则直接返回
             if (!noticeTypeDict.TryGetValue(typeName, out var noticeType))
                 return;
             var noticeSerializer = getTypeSerializer(noticeType);
-            var contentModel = noticeSerializer.Deserialize(content);
+            var contentModel = noticeSerializer.Deserialize(contentBuffer);
 
             //处理通知
             var hasNoticeHandler = false;
@@ -210,19 +210,24 @@ namespace Quick.Protocol
         /// </summary>
         /// <param name="commandId"></param>
         /// <param name="typeName"></param>
-        /// <param name="content"></param>
-        private async Task OnCommandRequestReceived(string commandId, string typeName, string content)
+        /// <param name="contentBuffer">模型 JSON 的 UTF-8 字节（已切掉 commandId / typeName 前缀）</param>
+        private async Task OnCommandRequestReceived(string commandId, string typeName, ReadOnlySequence<byte> contentBuffer)
         {
-            var eventArgs = new RawCommandRequestPackageReceivedEventArgs()
+            RawCommandRequestPackageReceivedEventArgs eventArgs = null;
+            //仅在订阅时构造事件参数并解码字符串；无订阅者则跳过，避免热路径无谓分配
+            if (RawCommandRequestPackageReceived != null)
             {
-                CommandId = commandId,
-                TypeName = typeName,
-                Content = content
-            };
-            RawCommandRequestPackageReceived?.Invoke(this, eventArgs);
-            //如果已经处理，则直接返回
-            if (eventArgs.Handled)
-                return;
+                eventArgs = new RawCommandRequestPackageReceivedEventArgs()
+                {
+                    CommandId = commandId,
+                    TypeName = typeName,
+                    Content = encoding.GetString(contentBuffer)
+                };
+                RawCommandRequestPackageReceived?.Invoke(this, eventArgs);
+                //如果已经处理，则直接返回
+                if (eventArgs.Handled)
+                    return;
+            }
 
             try
             {
@@ -231,7 +236,7 @@ namespace Quick.Protocol
                     throw new CommandException(255, $"Unknown RequestType[{typeName}].");
                 var cmdResponseType = commandRequestTypeResponseTypeDict[cmdRequestType];
                 var requestSerilizer = getTypeSerializer(cmdRequestType);
-                var contentModel = requestSerilizer.Deserialize(content);
+                var contentModel = requestSerilizer.Deserialize(contentBuffer);
                 CommandRequestPackageReceived?.Invoke(this, new CommandRequestPackageReceivedEventArgs()
                 {
                     CommandId = commandId,
@@ -250,7 +255,7 @@ namespace Quick.Protocol
                         var responseSerializer = getTypeSerializer(cmdResponseType);
                         _ = SendCommandResponsePackage(commandId, 0, null,
                             cmdResponseType.FullName,
-                            responseSerializer.Serialize(responseModel));
+                            responseModel, responseSerializer);
                         break;
                     }
                 }

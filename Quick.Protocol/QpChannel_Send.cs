@@ -363,6 +363,53 @@ namespace Quick.Protocol
         }
 
         /// <summary>
+        /// 发送命令请求包（模型直写：序列化直接落入管道，省去 Serialize→string→GetBytes 的中间分配）。
+        /// 供通道内部在已持有模型对象时调用（如 SendCommand&lt;TRequest,TResponse&gt; 与 SendCommandRequest(object)）。
+        /// </summary>
+        private async Task SendCommandRequestPackage(string commandId, string typeName, object model,
+            IQpSerializer serializer, bool ignoreCompressAndEncrypt = false)
+        {
+            await SendPackage(PACKAGETYPE_COMMAND_REQUEST, async writer =>
+            {
+                var bodyLength = 0;
+                //写入指令编号
+                {
+                    var commandIdLength = commandId.Length / 2;
+                    Convert.FromHexString(commandId, writer.GetMemory(commandIdLength).Span, out _, out var _);
+                    writer.Advance(commandIdLength);
+                    bodyLength += commandIdLength;
+                }
+                //写入类名和长度
+                {
+                    var typeNameByteLength = encoding.GetByteCount(typeName);
+                    writer.GetSpan(1)[0] = Convert.ToByte(typeNameByteLength);
+                    writer.Advance(1);
+                    bodyLength += 1;
+
+                    encoding.GetBytes(typeName, writer.GetSpan(typeNameByteLength));
+                    writer.Advance(typeNameByteLength);
+                    bodyLength += typeNameByteLength;
+                }
+                //写入内容（模型直写管道，零 string 分配）
+                {
+                    var beforeContent = writer.UnflushedBytes;
+                    serializer.Serialize(model, writer);
+                    bodyLength += (int)(writer.UnflushedBytes - beforeContent);
+                }
+
+                await writer.FlushAsync().ConfigureAwait(false);
+                if (Options.Logger is { LogCommand: true })
+                    Options.Logger.Log("{0}: [Send-CommandRequestPackage]CommandId:{1},Type:{2},Content:{3}",
+                        DateTime.Now, commandId, typeName, Options
+                            .Logger.LogContent
+                            ? serializer.Serialize(model)
+                            : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+
+                return bodyLength;
+            }, ignoreCompressAndEncrypt).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// 发送命令响应包
         /// </summary>
         public async Task SendCommandResponsePackage(string commandId, byte code, string message, string typeName,
@@ -432,6 +479,78 @@ namespace Quick.Protocol
                 await writer.FlushAsync().ConfigureAwait(false);
                 return bodyLength;
             }).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// 发送命令响应包（模型直写：序列化直接落入管道，省去 Serialize→string→GetBytes 的中间分配）。
+        /// 与公开重载（接收已序列化的 string）并存；本方法供通道内部在已持有响应模型时调用。
+        /// </summary>
+        private async Task SendCommandResponsePackage(string commandId, byte code, string message, string typeName,
+            object responseModel, IQpSerializer responseSerializer, bool ignoreCompressAndEncrypt = false)
+        {
+            await SendPackage(PACKAGETYPE_COMMAND_RESPONSE, async writer =>
+            {
+                var bodyLength = 0;
+                //写入指令编号
+                {
+                    var commandIdLength = commandId.Length / 2;
+                    Convert.FromHexString(commandId, writer.GetMemory(commandIdLength).Span, out _, out var _);
+                    writer.Advance(commandIdLength);
+                    bodyLength += commandIdLength;
+                }
+                //写入返回码
+                {
+                    writer.GetSpan(1)[0] = code;
+                    writer.Advance(1);
+                    bodyLength += 1;
+                }
+                //如果是成功
+                if (code == 0)
+                {
+                    //写入类名和长度
+                    {
+                        var typeNameByteLength = encoding.GetByteCount(typeName);
+                        writer.GetSpan(1)[0] = Convert.ToByte(typeNameByteLength);
+                        writer.Advance(1);
+                        bodyLength += 1;
+
+                        encoding.GetBytes(typeName, writer.GetSpan(typeNameByteLength));
+                        writer.Advance(typeNameByteLength);
+                        bodyLength += typeNameByteLength;
+                    }
+                    //写入内容（模型直写管道，零 string 分配）
+                    {
+                        var beforeContent = writer.UnflushedBytes;
+                        responseSerializer.Serialize(responseModel, writer);
+                        bodyLength += (int)(writer.UnflushedBytes - beforeContent);
+                    }
+
+                    if (Options.Logger is { LogCommand: true })
+                        Options.Logger.Log(
+                            "{0}: [Send-CommandResponsePackage]CommandId:{1},Code:{2},Type:{3},Content:{4}",
+                            DateTime.Now, commandId, code, typeName, Options
+                                .Logger.LogContent
+                                ? responseSerializer.Serialize(responseModel)
+                                : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                }
+                //如果是失败
+                else
+                {
+                    //写入消息
+                    {
+                        var messageLength = encoding.GetByteCount(message);
+                        encoding.GetBytes(message, writer.GetSpan(messageLength));
+                        writer.Advance(messageLength);
+                        bodyLength += messageLength;
+                    }
+                    if (Options.Logger is { LogNotice: true })
+                        Options.Logger.Log("{0}: [Send-CommandResponsePackage]CommandId:{1},Code:{2},Message:{3}",
+                            DateTime.Now, commandId, code, message);
+                }
+
+                await writer.FlushAsync().ConfigureAwait(false);
+                return bodyLength;
+            }, ignoreCompressAndEncrypt).ConfigureAwait(false);
         }
     }
 }
