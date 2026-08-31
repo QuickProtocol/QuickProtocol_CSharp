@@ -161,7 +161,7 @@ namespace Quick.Protocol
                         writer.Advance(packageBodyLength);
                     }
 
-                    await writer.FlushAsync();
+                    await writer.FlushAsync().ConfigureAwait(false);
 
                     //发送
                     var reader = sendRawPipe.Reader;
@@ -197,7 +197,7 @@ namespace Quick.Protocol
                         reader.AdvanceTo(rawRet.Buffer.End);
                     }
                 }
-                await stream.FlushAsync();
+                await stream.FlushAsync().ConfigureAwait(false);
             }
             finally
             {
