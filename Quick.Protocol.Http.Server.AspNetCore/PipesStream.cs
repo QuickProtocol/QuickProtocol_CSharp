@@ -32,42 +32,52 @@ namespace Quick.Protocol.Http.Server.AspNetCore
 
         public override void Flush() { }
 
+        /// <summary>
+        /// 不支持同步读取。底层是 PipeReader（只有异步 API），以 .Result 阻塞等待会阻塞
+        /// ASP.NET Core 请求线程（线程池饥饿），且在管道背压下可能死锁。
+        /// 本流的使用方（QpChannel 收发循环）全部走异步重载。
+        /// </summary>
         public override int Read(byte[] buffer, int offset, int count)
+            => throw new NotSupportedException($"{nameof(PipesStream)} 不支持同步读取，请使用 ReadAsync。");
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => ReadAsync(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+
+        /// <summary>
+        /// 直接把管道数据拷入调用方内存，避免基类默认实现的 byte[] 中转，
+        /// 且返回 ValueTask（数据已缓冲、同步完成时零分配）。
+        /// </summary>
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             var reader = readPipe.Reader;
-            var readResult = reader.ReadAsync().Result;
-            var ret = Math.Min((int)readResult.Buffer.Length, count);
+            var readResult = await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+            var ret = Math.Min((int)readResult.Buffer.Length, buffer.Length);
             var srcBuffer = readResult.Buffer.Slice(0, ret);
-            srcBuffer.CopyTo(new Span<byte>(buffer, offset, ret));
+            srcBuffer.CopyTo(buffer.Span);
             reader.AdvanceTo(srcBuffer.GetPosition(ret));
             return ret;
         }
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            var reader = readPipe.Reader;
-            var readResult = await reader.ReadAsync(cancellationToken);
-            var ret = Math.Min((int)readResult.Buffer.Length, count);
-            var srcBuffer = readResult.Buffer.Slice(0, ret);
-            srcBuffer.CopyTo(new Span<byte>(buffer, offset, ret));
-            reader.AdvanceTo(srcBuffer.GetPosition(ret));
-            return ret;
-        }
-
+        /// <summary>
+        /// 不支持同步写入。理由同 <see cref="Read(byte[], int, int)"/>：
+        /// FlushAsync 在管道触发背压时会挂起，以 .Result 阻塞等待可能死锁。
+        /// </summary>
         public override void Write(byte[] buffer, int offset, int count)
-        {
-            var memory = writePipe.Writer.GetMemory(count);
-            new ReadOnlySpan<byte>(buffer, offset, count).CopyTo(memory.Span);
-            writePipe.Writer.Advance(count);
-            _ = writePipe.Writer.FlushAsync().Result;
-        }
+            => throw new NotSupportedException($"{nameof(PipesStream)} 不支持同步写入，请使用 WriteAsync。");
 
-        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).AsTask();
+
+        /// <summary>
+        /// 直接从调用方内存拷入管道，避免基类默认实现的 byte[] 中转。
+        /// </summary>
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            var memory = writePipe.Writer.GetMemory(count);
-            new ReadOnlySpan<byte>(buffer, offset, count).CopyTo(memory.Span);
-            writePipe.Writer.Advance(count);
-            await writePipe.Writer.FlushAsync(cancellationToken);
+            var writer = writePipe.Writer;
+            var memory = writer.GetMemory(buffer.Length);
+            buffer.Span.CopyTo(memory.Span);
+            writer.Advance(buffer.Length);
+            await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
 
         protected override void Dispose(bool disposing)
