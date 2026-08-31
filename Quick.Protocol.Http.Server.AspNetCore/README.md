@@ -27,7 +27,11 @@ var app = builder.Build();
 app.UseQuickProtocolHttpServer(new QpHttpServerOptions
 {
     Password = "HelloQP"
-});
+}, out var server);
+
+// 必须通过 out 参数拿到 server 实例并调用 Start()，
+// 否则中间件接住连接后会因 isStarted=false 直接丢弃（详见 QpHttpServer.HandleRequest）。
+server.Start();
 
 app.Run();
 ```
