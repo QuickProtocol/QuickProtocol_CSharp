@@ -29,10 +29,16 @@ namespace Quick.Protocol.WebSocket.Client
             return result.Count;
         }
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => ReadAsync(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+
+        /// <summary>
+        /// 直接走 ClientWebSocket 的 Memory&lt;byte&gt; 原生 ValueTask 重载，避免一次 ArraySegment 分配，
+        /// 且在数据已缓冲（同步完成）时零分配。
+        /// </summary>
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken)
-                .ConfigureAwait(false);
+            var result = await client.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
             return result.Count;
         }
 
@@ -46,9 +52,13 @@ namespace Quick.Protocol.WebSocket.Client
         }
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            return client.SendAsync(new ArraySegment<byte>(buffer, offset, count), System.Net.WebSockets.WebSocketMessageType.Binary, true, cancellationToken);
-        }
+            => WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).AsTask();
+
+        /// <summary>
+        /// 直接走 ClientWebSocket 的 ReadOnlyMemory&lt;byte&gt; 原生 ValueTask 重载，避免一次 ArraySegment 分配。
+        /// </summary>
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+            => client.SendAsync(buffer, System.Net.WebSockets.WebSocketMessageType.Binary, true, cancellationToken);
 
         protected override void Dispose(bool disposing)
         {
