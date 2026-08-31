@@ -89,8 +89,7 @@ namespace Quick.Protocol
                     {
                         var readTask = currentReader.ReadAtLeastAsync(PACKAGE_HEAD_LENGTH, token);
                         var ret = await readTask.AsTask()
-                            .WaitAsync(TimeSpan.FromMilliseconds(TransportTimeout), token)
-                            .ConfigureAwait(false);
+                            .WaitAsync(TimeSpan.FromMilliseconds(TransportTimeout), token);
                         if (ret.IsCanceled)
                             return;
                         if (ret.Buffer.Length < PACKAGE_HEAD_LENGTH)
@@ -104,7 +103,7 @@ namespace Quick.Protocol
                         currentReader.AdvanceTo(ret.Buffer.Start);
 
                         //读取完整包
-                        ret = await currentReader.ReadAtLeastAsync(packageTotalLength, token).ConfigureAwait(false);
+                        ret = await currentReader.ReadAtLeastAsync(packageTotalLength, token);
                         if (ret.IsCanceled)
                             return;
                         if (ret.Buffer.Length < packageTotalLength)
@@ -152,7 +151,7 @@ namespace Quick.Protocol
                                         decryptPipe.Writer.Advance(count);
                                         packageBodyLength += count;
                                     }
-                                await decryptPipe.Writer.FlushAsync().ConfigureAwait(false);
+                                await decryptPipe.Writer.FlushAsync();
                                 var ret = await decryptPipe.Reader.ReadAtLeastAsync(packageBodyLength);
                                 //解密完成，释放缓存
                                 currentReader?.AdvanceTo(packageBodyBuffer.End);
@@ -179,15 +178,15 @@ namespace Quick.Protocol
                             {
                                 while (true)
                                 {
-                                    var count = await gzStream.ReadAsync(decompressPipe.Writer.GetMemory(minimumBufferSize), token).ConfigureAwait(false);
+                                    var count = await gzStream.ReadAsync(decompressPipe.Writer.GetMemory(minimumBufferSize), token);
                                     if (count <= 0)
                                         break;
                                     decompressPipe.Writer.Advance(count);
                                     packageBodyLength += count;
                                 }
                             }
-                            await decompressPipe.Writer.FlushAsync().ConfigureAwait(false);
-                            var ret = await decompressPipe.Reader.ReadAtLeastAsync(packageBodyLength, token).ConfigureAwait(false);
+                            await decompressPipe.Writer.FlushAsync();
+                            var ret = await decompressPipe.Reader.ReadAtLeastAsync(packageBodyLength, token);
                             //解压完成，释放缓存
                             currentReader?.AdvanceTo(packageBodyBuffer.End);
                             packageBodyBuffer = ret.Buffer;
@@ -217,22 +216,24 @@ namespace Quick.Protocol
         {
             lastReadDataTime = DateTime.Now;
             var pipe = new Pipe();
+            //检查接收超时
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    await CheckRecvTimeoutAsync(token).ConfigureAwait(false);
+                    await CheckRecvTimeoutAsync(token);
                 }
                 catch (Exception ex)
                 {
                     OnReadError(ex);
                 }
             });
+            //填充接收管道
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    await FillRecvPipeAsync(channelStream, pipe.Writer, token).ConfigureAwait(false);
+                    await FillRecvPipeAsync(channelStream, pipe.Writer, token);
                 }
                 catch (Exception ex)
                 {
@@ -240,14 +241,15 @@ namespace Quick.Protocol
                 }
                 finally
                 {
-                    await pipe.Writer.CompleteAsync().ConfigureAwait(false);
+                    await pipe.Writer.CompleteAsync();
                 }
             });
+            //从接收管道读取数据并解析
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    await ReadRecvPipeAsync(pipe.Reader, token).ConfigureAwait(false);
+                    await ReadRecvPipeAsync(pipe.Reader, token);
                 }
                 catch (Exception ex)
                 {
@@ -255,7 +257,7 @@ namespace Quick.Protocol
                 }
                 finally
                 {
-                    await pipe.Reader.CompleteAsync().ConfigureAwait(false);
+                    await pipe.Reader.CompleteAsync();
                 }
             });
         }
