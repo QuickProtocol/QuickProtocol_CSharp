@@ -44,7 +44,6 @@ namespace Quick.Protocol
         {
             while (!token.IsCancellationRequested)
             {
-                //直接读进管道内存，省去一次全量 memcpy 与每连接缓冲分配
                 var memory = writer.GetMemory(minimumBufferSize);
                 int bytesRead = await stream.ReadAsync(memory, token);
                 if (bytesRead < 0)
@@ -87,9 +86,8 @@ namespace Quick.Protocol
                     //读取包
                     var currentReader = recvReader;
                     {
-                        var readTask = currentReader.ReadAtLeastAsync(PACKAGE_HEAD_LENGTH, token);
-                        var ret = await readTask.AsTask()
-                            .WaitAsync(TimeSpan.FromMilliseconds(TransportTimeout), token);
+                        //读取包头
+                        var ret = await currentReader.ReadAtLeastAsync(PACKAGE_HEAD_LENGTH, token);
                         if (ret.IsCanceled)
                             return;
                         if (ret.Buffer.Length < PACKAGE_HEAD_LENGTH)
@@ -148,8 +146,6 @@ namespace Quick.Protocol
                         if (EnableEncrypt)
                         {
                             //准备管道
-                            //使用关闭背压的管道选项：本管道是「先整体解密写入、再整体读出」的暂存，
-                            //若沿用默认 64KB 背压，FlushAsync 会先阻塞、而解除背压的读取在其后，形成死锁。
                             if (decryptPipe == null)
                                 decryptPipe = new Pipe(STAGING_PIPE_OPTIONS);
                             packageBodyLength = 0;
