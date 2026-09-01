@@ -521,7 +521,7 @@ namespace Quick.Protocol
             {
                 encoding.GetBytes(data, dataSpan);
                 MD5.HashData(dataSpan, hashSpan);
-                return Convert.ToHexString(hashSpan).ToLower();
+                return Convert.ToHexStringLower(hashSpan);
             }
             finally
             {

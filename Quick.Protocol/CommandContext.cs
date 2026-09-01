@@ -4,7 +4,7 @@ namespace Quick.Protocol
 {
     public class CommandContext
     {
-        public static string GenerateNewId() => Guid.NewGuid().ToString("N").ToLower();
+        public static string GenerateNewId() => Guid.NewGuid().ToString("n");
         public string Id { get; private set; }
         private readonly TaskCompletionSource<CommandResponseTypeNameAndContent> tcs;
         public Task<CommandResponseTypeNameAndContent> ResponseTask => tcs.Task;
