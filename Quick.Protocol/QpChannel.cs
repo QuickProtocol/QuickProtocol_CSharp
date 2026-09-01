@@ -495,7 +495,7 @@ namespace Quick.Protocol
         {
             var type = package.GetType();
             var serializer = getTypeSerializer(type);
-            return SendNoticePackage(type.FullName, serializer.Serialize(package));
+            return SendNoticePackage(type.FullName, package, serializer);
         }
 
         protected string ComputeMD5Hash(string data)

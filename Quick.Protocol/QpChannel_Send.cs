@@ -311,6 +311,45 @@ namespace Quick.Protocol
             }).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// 发送通知包（模型直写：序列化直接落入管道，省去 Serialize→string→GetBytes 的中间分配）。
+        /// 与公开重载（接收已序列化的 string）并存；本方法供通道内部在已持有通知模型时调用
+        /// （如 public SendNoticePackage(object)）。
+        /// </summary>
+        private async Task SendNoticePackage(string noticePackageTypeName, object model, IQpSerializer serializer)
+        {
+            await SendPackage(PACKAGETYPE_NOTICE, async writer =>
+            {
+                var typeName = noticePackageTypeName;
+                var bodyLength = 0;
+                //写入类名和长度
+                {
+                    var typeNameByteLength = encoding.GetByteCount(typeName);
+                    writer.GetSpan(1)[0] = Convert.ToByte(typeNameByteLength);
+                    writer.Advance(1);
+                    bodyLength += 1;
+
+                    encoding.GetBytes(typeName, writer.GetSpan(typeNameByteLength));
+                    writer.Advance(typeNameByteLength);
+                    bodyLength += typeNameByteLength;
+                }
+                //写入内容（模型直写管道，零 string 分配）
+                {
+                    var beforeContent = writer.UnflushedBytes;
+                    serializer.Serialize(model, writer);
+                    bodyLength += (int)(writer.UnflushedBytes - beforeContent);
+                }
+
+                await writer.FlushAsync().ConfigureAwait(false);
+                if (Options.Logger is { LogNotice: true })
+                    Options.Logger.Log("{0}: [Send-NoticePackage]Type:{1},Content:{2}", DateTime.Now, typeName, Options
+                        .Logger.LogContent
+                        ? serializer.Serialize(model)
+                        : QpLogger.NOT_SHOW_CONTENT_MESSAGE);
+                return bodyLength;
+            }).ConfigureAwait(false);
+        }
+
         public Task SendCommandRequestPackage(string commandId, string typeName, string content)
         {
             return SendCommandRequestPackage(commandId, typeName, content, false);
