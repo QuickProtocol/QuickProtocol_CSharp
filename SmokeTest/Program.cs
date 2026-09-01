@@ -31,6 +31,21 @@ class Program
         }
     }
 
+    /// <summary>
+    /// 等待 notice 回调设置 TCS，超时则记一次失败。返回回调捕获到的内容（超时返回 null）。
+    /// </summary>
+    static async Task<string> WaitForNotice(TaskCompletionSource<string> tcs, int timeoutMs, string testName)
+    {
+        var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeoutMs));
+        if (completed == tcs.Task)
+        {
+            Assert(true, testName);
+            return tcs.Task.Result;
+        }
+        Assert(false, $"{testName} (timeout)");
+        return null;
+    }
+
     static async Task<int> Main()
     {
         Console.WriteLine("=== Quick.Protocol Smoke Test ===\n");
@@ -48,20 +63,25 @@ class Program
         return failed;
     }
 
-    static void RegisterTestHandlers(QpServerOptions serverOptions)
+    static void RegisterTestHandlers(QpServerOptions serverOptions,
+        Action<Quick.Protocol.Notices.PrivateNotice> onServerNoticeReceived = null)
     {
         var commandExecuterManager = new CommandExecuterManager();
         commandExecuterManager.Register<Quick.Protocol.Commands.PrivateCommand.Request, Quick.Protocol.Commands.PrivateCommand.Response>(
             async (handler, req) => new Quick.Protocol.Commands.PrivateCommand.Response { Content = req.Content });
         serverOptions.RegisterCommandExecuterManager(commandExecuterManager);
         var noticeHandlerManager = new NoticeHandlerManager();
-        noticeHandlerManager.Register<Quick.Protocol.Notices.PrivateNotice>(async (handler, notice) => { });
+        noticeHandlerManager.Register<Quick.Protocol.Notices.PrivateNotice>(async (handler, notice) =>
+        {
+            onServerNoticeReceived?.Invoke(notice);
+        });
         serverOptions.RegisterNoticeHandlerManager(noticeHandlerManager);
     }
 
-    static QpServer CreateAndStartServer(QpServerOptions serverOptions)
+    static QpServer CreateAndStartServer(QpServerOptions serverOptions,
+        Action<Quick.Protocol.Notices.PrivateNotice> onServerNoticeReceived = null)
     {
-        RegisterTestHandlers(serverOptions);
+        RegisterTestHandlers(serverOptions, onServerNoticeReceived);
         var server = serverOptions.CreateServer();
         server.Start();
         return server;
@@ -79,9 +99,28 @@ class Program
             ServerProgram = "SmokeTest"
         };
 
-        var server = CreateAndStartServer(serverOptions);
+        var serverReceivedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var clientReceivedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var server = CreateAndStartServer(serverOptions, notice => serverReceivedTcs.TrySetResult(notice.Content));
         int channelConnectedCount = 0;
         int channelDisconnectedCount = 0;
+        server.ChannelConnected += (_, channel) =>
+        {
+            // 连接建立后由服务端主动向该 client 回推一条 notice，
+            // 闭合 server→client 方向的 bytes 直进直出路径断言
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await channel.SendNoticePackage(new Quick.Protocol.Notices.PrivateNotice
+                    {
+                        Action = "down",
+                        Content = "from-server"
+                    });
+                }
+                catch { }
+            });
+        };
         server.ChannelConnected += (_, _) => Interlocked.Increment(ref channelConnectedCount);
         server.ChannelDisconnected += (_, _) => Interlocked.Increment(ref channelDisconnectedCount);
 
@@ -94,6 +133,13 @@ class Program
             Port = port,
             Password = "TestPass"
         };
+        // client 端注册 notice handler：接收 server 回推的 notice（recv bytes 路径）
+        var clientNoticeManager = new NoticeHandlerManager();
+        clientNoticeManager.Register<Quick.Protocol.Notices.PrivateNotice>(async (handler, notice) =>
+        {
+            clientReceivedTcs.TrySetResult(notice.Content);
+        });
+        clientOptions.RegisterNoticeHandlerManager(clientNoticeManager);
         var client = clientOptions.CreateClient();
         int disconnectedCount = 0;
         client.Disconnected += (_, _) => Interlocked.Increment(ref disconnectedCount);
@@ -115,13 +161,19 @@ class Program
         await Task.Delay(500);
         Assert(channelConnectedCount == 1, "Server received channel connected event");
 
-        // Send a notice
+        // 双向 notice 往返断言（替换原先装饰性的 Assert(true)）
+        // ① client → server：服务端 handler 捕获并断言内容
         await client.SendNoticePackage(new Quick.Protocol.Notices.PrivateNotice
         {
-            Action = "test",
-            Content = "hello"
+            Action = "up",
+            Content = "from-client"
         });
-        Assert(true, "Notice sent successfully");
+        var serverGot = await WaitForNotice(serverReceivedTcs, 5000, "Notice round-trip (client→server)");
+        Assert(serverGot == "from-client", "Notice payload client→server matched");
+
+        // ② server → client：服务端 ChannelConnected 时已回推，这里等待并断言内容
+        var clientGot = await WaitForNotice(clientReceivedTcs, 5000, "Notice round-trip (server→client)");
+        Assert(clientGot == "from-server", "Notice payload server→client matched");
 
         // Disconnect
         client.Disconnect();
