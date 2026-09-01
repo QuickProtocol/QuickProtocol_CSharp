@@ -4,6 +4,8 @@
 
 Quick.Protocol 核心库，提供协议基础实现。
 
+> 核心库仅包含协议基础能力，不包含具体传输实现。使用 TCP/WebSocket/HTTP 等传输时，需额外安装对应的传输层包，例如 `Quick.Protocol.Tcp`（提供 `QpTcpClientOptions`/`QpTcpServerOptions` 等）。
+
 ## 功能特性
 
 - 基于 TCP / SerialPort / WebSocket / HTTP / Pipeline / STDIO 的通信协议
