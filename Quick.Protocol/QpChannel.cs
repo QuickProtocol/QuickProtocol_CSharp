@@ -50,7 +50,8 @@ namespace Quick.Protocol
         /// </summary>
         private const byte PACKAGE_TYPE_MAX_VALUE = 255;
 
-        private Dictionary<byte, QpPackageHandler> packageHandlerDict = new();
+        private volatile Dictionary<byte, QpPackageHandler> packageHandlerDict = new();
+        private readonly object packageHandlerDictLock = new();
         private volatile CommandExecuterManager[] commandExecuterManagers = Array.Empty<CommandExecuterManager>();
         private readonly object commandExecuterManagerLock = new();
         private volatile NoticeHandlerManager[] noticeHandlerManagers = Array.Empty<NoticeHandlerManager>();
@@ -197,8 +198,8 @@ namespace Quick.Protocol
 
         public void ClearPackageHandlerDict()
         {
-            lock (packageHandlerDict)
-                packageHandlerDict.Clear();
+            lock (packageHandlerDictLock)
+                packageHandlerDict = new Dictionary<byte, QpPackageHandler>();
         }
 
         /// <summary>
@@ -274,12 +275,16 @@ namespace Quick.Protocol
                 return;
             if (packageType < PACKAGE_TYPE_MIN_VALUE || packageType > PACKAGE_TYPE_MAX_VALUE)
                 throw new ArgumentOutOfRangeException($"packageType[{packageType}] must between {PACKAGE_TYPE_MIN_VALUE} and {PACKAGE_TYPE_MAX_VALUE}");
-            lock (packageHandlerDict)
+            lock (packageHandlerDictLock)
             {
                 if (packageHandlerDict.ContainsKey(packageType))
                     throw new ArgumentException($"PackageType[{packageType}] is busy.");
 
-                packageHandlerDict[packageType] = qpPackageHandler;
+                var next = new Dictionary<byte, QpPackageHandler>(packageHandlerDict)
+                {
+                    [packageType] = qpPackageHandler
+                };
+                packageHandlerDict = next;
             }
         }
 
@@ -289,8 +294,14 @@ namespace Quick.Protocol
         /// <param name="packageType"></param>
         public void UnregisterPackageHandler(byte packageType)
         {
-            lock (packageHandlerDict)
-                packageHandlerDict.Remove(packageType);
+            lock (packageHandlerDictLock)
+            {
+                if (!packageHandlerDict.ContainsKey(packageType))
+                    return;
+                var next = new Dictionary<byte, QpPackageHandler>(packageHandlerDict);
+                next.Remove(packageType);
+                packageHandlerDict = next;
+            }
         }
 
         /// <summary>
